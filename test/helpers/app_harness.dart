@@ -15,8 +15,10 @@ Future<SharedPreferences> pumpAnuvaadApp(
   Map<String, Object> prefs = const {},
   AppConfig config = const AppConfig(apiBaseUrl: null, releasesRepo: null),
   List<Override> overrides = const [],
+  String version = '0.1.0',
+  String buildNumber = '1',
 }) async {
-  final shared = await mockPlatform(prefs: prefs);
+  final shared = await mockPlatform(prefs: prefs, version: version, buildNumber: buildNumber);
   await tester.pumpWidget(ProviderScope(
     overrides: [
       sharedPreferencesProvider.overrideWithValue(shared),

@@ -215,4 +215,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get capabilityVoiceOutput => 'Voice output';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsAppearanceDefault => 'Default: System';
+
+  @override
+  String get themeSystem => 'System';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String get settingsAboutAnuvaad => 'About Anuvaad';
+
+  @override
+  String settingsVersion(String version, String build) {
+    return 'v$version ($build)';
+  }
 }

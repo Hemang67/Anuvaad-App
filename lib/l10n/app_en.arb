@@ -109,5 +109,24 @@
   "languagesSaved": "Language preferences saved",
   "capabilitySpeechInput": "Speech input",
   "capabilityTranslation": "Translation",
-  "capabilityVoiceOutput": "Voice output"
+  "capabilityVoiceOutput": "Voice output",
+  "settingsTitle": "Settings",
+  "settingsAppearance": "Appearance",
+  "settingsAppearanceDefault": "Default: System",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "settingsAbout": "About",
+  "settingsAboutAnuvaad": "About Anuvaad",
+  "settingsVersion": "v{version} ({build})",
+  "@settingsVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "build": {
+        "type": "String"
+      }
+    }
+  }
 }

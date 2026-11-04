@@ -471,6 +471,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Voice output'**
   String get capabilityVoiceOutput;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearance;
+
+  /// No description provided for @settingsAppearanceDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default: System'**
+  String get settingsAppearanceDefault;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeSystem;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeDark;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsAbout;
+
+  /// No description provided for @settingsAboutAnuvaad.
+  ///
+  /// In en, this message translates to:
+  /// **'About Anuvaad'**
+  String get settingsAboutAnuvaad;
+
+  /// No description provided for @settingsVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'v{version} ({build})'**
+  String settingsVersion(String version, String build);
 }
 
 class _AppLocalizationsDelegate
