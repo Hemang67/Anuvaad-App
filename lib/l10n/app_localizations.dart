@@ -99,6 +99,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Anuvaad'**
   String get appTitle;
+
+  /// No description provided for @brandName.
+  ///
+  /// In en, this message translates to:
+  /// **'Anuvaad'**
+  String get brandName;
+
+  /// No description provided for @brandTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak Any Language. Be Closer.'**
+  String get brandTagline;
+
+  /// No description provided for @poweredBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Powered by REA Intelligence'**
+  String get poweredBy;
+
+  /// No description provided for @brandLogoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Anuvaad logo'**
+  String get brandLogoLabel;
+
+  /// No description provided for @splashStartFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Anuvaad couldn\'t start. Please try again.'**
+  String get splashStartFailed;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgain;
+
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navLanguages.
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get navLanguages;
+
+  /// No description provided for @navSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get navSettings;
 }
 
 class _AppLocalizationsDelegate

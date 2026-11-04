@@ -11,4 +11,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appTitle => 'Anuvaad';
+
+  @override
+  String get brandName => 'Anuvaad';
+
+  @override
+  String get brandTagline => 'Speak Any Language. Be Closer.';
+
+  @override
+  String get poweredBy => 'Powered by REA Intelligence';
+
+  @override
+  String get brandLogoLabel => 'Anuvaad logo';
+
+  @override
+  String get splashStartFailed => 'Anuvaad couldn\'t start. Please try again.';
+
+  @override
+  String get tryAgain => 'Try again';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navLanguages => 'Languages';
+
+  @override
+  String get navSettings => 'Settings';
 }

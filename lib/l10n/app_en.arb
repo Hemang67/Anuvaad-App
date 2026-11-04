@@ -3,5 +3,14 @@
   "appTitle": "Anuvaad",
   "@appTitle": {
     "description": "Application name shown in the task switcher."
-  }
+  },
+  "brandName": "Anuvaad",
+  "brandTagline": "Speak Any Language. Be Closer.",
+  "poweredBy": "Powered by REA Intelligence",
+  "brandLogoLabel": "Anuvaad logo",
+  "splashStartFailed": "Anuvaad couldn't start. Please try again.",
+  "tryAgain": "Try again",
+  "navHome": "Home",
+  "navLanguages": "Languages",
+  "navSettings": "Settings"
 }

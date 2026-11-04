@@ -73,7 +73,8 @@ String defaultMyLanguage(Locale deviceLocale) => switch (deviceLocale.languageCo
 
 Future<Map<String, Object?>> _readJson(AssetBundle bundle, String path) async {
   try {
-    final decoded = jsonDecode(await bundle.loadString(path));
+    // Read once at startup; uncached so no Future outlives the load.
+    final decoded = jsonDecode(await bundle.loadString(path, cache: false));
     if (decoded is! Map<String, Object?>) throw const FormatException('not a JSON object');
     return decoded;
   } on FormatException catch (e) {

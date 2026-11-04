@@ -6,9 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../helpers/platform_mocks.dart';
+
 Future<SharedPreferences> _pumpApp(WidgetTester tester, Brightness platform) async {
-  SharedPreferences.setMockInitialValues({});
-  final prefs = await SharedPreferences.getInstance();
+  final prefs = await mockPlatform();
   tester.platformDispatcher.platformBrightnessTestValue = platform;
   addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
   await tester.pumpWidget(ProviderScope(
