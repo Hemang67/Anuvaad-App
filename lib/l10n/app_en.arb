@@ -61,5 +61,53 @@
   "homeMyLanguage": "MY LANGUAGE",
   "homeChange": "Change",
   "homeQuickAccessTitle": "Quick access",
-  "homeQuickAccessSubtitle": "Explore Anuvaad"
+  "homeQuickAccessSubtitle": "Explore Anuvaad",
+  "languagesTitle": "Languages",
+  "languagesIntro": "Choose the language you understand and the language spoken by the other person. All {count} core languages are included by default.",
+  "@languagesIntro": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "languagesMyLabel": "MY LANGUAGE · TRANSLATE INTO",
+  "languagesOtherLabel": "OTHER PERSON · SPEAKING",
+  "languagesAutoDetect": "Automatic detection",
+  "languagesSwap": "Swap languages",
+  "languagesSameLanguage": "Choose two different languages.",
+  "languagesIncludedTitle": "Included by default",
+  "languagesIncludedCount": "{count} core languages",
+  "@languagesIncludedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "languagesCoreChip": "CORE",
+  "languagesMoreTitle": "More languages",
+  "languagesMoreSubtitle": "Future releases",
+  "languagesPackDetail": "{nativeName} · Language pack",
+  "@languagesPackDetail": {
+    "placeholders": {
+      "nativeName": {
+        "type": "String"
+      }
+    }
+  },
+  "languagesSoon": "Soon",
+  "languagesPackPlanned": "{name} language pack is planned for a future release.",
+  "@languagesPackPlanned": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "languagesSave": "Save language preferences",
+  "languagesSaved": "Language preferences saved",
+  "capabilitySpeechInput": "Speech input",
+  "capabilityTranslation": "Translation",
+  "capabilityVoiceOutput": "Voice output"
 }

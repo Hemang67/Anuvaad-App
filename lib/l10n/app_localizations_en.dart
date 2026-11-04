@@ -147,4 +147,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeQuickAccessSubtitle => 'Explore Anuvaad';
+
+  @override
+  String get languagesTitle => 'Languages';
+
+  @override
+  String languagesIntro(int count) {
+    return 'Choose the language you understand and the language spoken by the other person. All $count core languages are included by default.';
+  }
+
+  @override
+  String get languagesMyLabel => 'MY LANGUAGE · TRANSLATE INTO';
+
+  @override
+  String get languagesOtherLabel => 'OTHER PERSON · SPEAKING';
+
+  @override
+  String get languagesAutoDetect => 'Automatic detection';
+
+  @override
+  String get languagesSwap => 'Swap languages';
+
+  @override
+  String get languagesSameLanguage => 'Choose two different languages.';
+
+  @override
+  String get languagesIncludedTitle => 'Included by default';
+
+  @override
+  String languagesIncludedCount(int count) {
+    return '$count core languages';
+  }
+
+  @override
+  String get languagesCoreChip => 'CORE';
+
+  @override
+  String get languagesMoreTitle => 'More languages';
+
+  @override
+  String get languagesMoreSubtitle => 'Future releases';
+
+  @override
+  String languagesPackDetail(String nativeName) {
+    return '$nativeName · Language pack';
+  }
+
+  @override
+  String get languagesSoon => 'Soon';
+
+  @override
+  String languagesPackPlanned(String name) {
+    return '$name language pack is planned for a future release.';
+  }
+
+  @override
+  String get languagesSave => 'Save language preferences';
+
+  @override
+  String get languagesSaved => 'Language preferences saved';
+
+  @override
+  String get capabilitySpeechInput => 'Speech input';
+
+  @override
+  String get capabilityTranslation => 'Translation';
+
+  @override
+  String get capabilityVoiceOutput => 'Voice output';
 }

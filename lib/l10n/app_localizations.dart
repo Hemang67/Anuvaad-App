@@ -351,6 +351,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Explore Anuvaad'**
   String get homeQuickAccessSubtitle;
+
+  /// No description provided for @languagesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get languagesTitle;
+
+  /// No description provided for @languagesIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the language you understand and the language spoken by the other person. All {count} core languages are included by default.'**
+  String languagesIntro(int count);
+
+  /// No description provided for @languagesMyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'MY LANGUAGE · TRANSLATE INTO'**
+  String get languagesMyLabel;
+
+  /// No description provided for @languagesOtherLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'OTHER PERSON · SPEAKING'**
+  String get languagesOtherLabel;
+
+  /// No description provided for @languagesAutoDetect.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic detection'**
+  String get languagesAutoDetect;
+
+  /// No description provided for @languagesSwap.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap languages'**
+  String get languagesSwap;
+
+  /// No description provided for @languagesSameLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose two different languages.'**
+  String get languagesSameLanguage;
+
+  /// No description provided for @languagesIncludedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Included by default'**
+  String get languagesIncludedTitle;
+
+  /// No description provided for @languagesIncludedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} core languages'**
+  String languagesIncludedCount(int count);
+
+  /// No description provided for @languagesCoreChip.
+  ///
+  /// In en, this message translates to:
+  /// **'CORE'**
+  String get languagesCoreChip;
+
+  /// No description provided for @languagesMoreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'More languages'**
+  String get languagesMoreTitle;
+
+  /// No description provided for @languagesMoreSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Future releases'**
+  String get languagesMoreSubtitle;
+
+  /// No description provided for @languagesPackDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{nativeName} · Language pack'**
+  String languagesPackDetail(String nativeName);
+
+  /// No description provided for @languagesSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Soon'**
+  String get languagesSoon;
+
+  /// No description provided for @languagesPackPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} language pack is planned for a future release.'**
+  String languagesPackPlanned(String name);
+
+  /// No description provided for @languagesSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save language preferences'**
+  String get languagesSave;
+
+  /// No description provided for @languagesSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Language preferences saved'**
+  String get languagesSaved;
+
+  /// No description provided for @capabilitySpeechInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech input'**
+  String get capabilitySpeechInput;
+
+  /// No description provided for @capabilityTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation'**
+  String get capabilityTranslation;
+
+  /// No description provided for @capabilityVoiceOutput.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice output'**
+  String get capabilityVoiceOutput;
 }
 
 class _AppLocalizationsDelegate
