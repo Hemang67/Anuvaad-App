@@ -153,6 +153,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get navSettings;
+
+  /// No description provided for @listOr.
+  ///
+  /// In en, this message translates to:
+  /// **' or '**
+  String get listOr;
+
+  /// No description provided for @listAnd.
+  ///
+  /// In en, this message translates to:
+  /// **' and '**
+  String get listAnd;
+
+  /// No description provided for @onboardingWelcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Talk naturally with people who speak {languages}.'**
+  String onboardingWelcomeBody(String languages);
+
+  /// No description provided for @onboardingModesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Two simple modes'**
+  String get onboardingModesTitle;
+
+  /// No description provided for @onboardingListenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get onboardingListenTitle;
+
+  /// No description provided for @onboardingListenBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Anuvaad listens to the other person and plays the translation in your earphones.'**
+  String get onboardingListenBody;
+
+  /// No description provided for @onboardingSpeakTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak'**
+  String get onboardingSpeakTitle;
+
+  /// No description provided for @onboardingSpeakBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply in your own language. Anuvaad says it aloud in theirs.'**
+  String get onboardingSpeakBody;
+
+  /// No description provided for @onboardingPrivacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your privacy'**
+  String get onboardingPrivacyTitle;
+
+  /// No description provided for @onboardingPrivacySpeech.
+  ///
+  /// In en, this message translates to:
+  /// **'Your speech is turned into text by your phone\'s speech service.'**
+  String get onboardingPrivacySpeech;
+
+  /// No description provided for @onboardingPrivacyText.
+  ///
+  /// In en, this message translates to:
+  /// **'The text is sent to the Anuvaad server to be translated. It isn\'t stored.'**
+  String get onboardingPrivacyText;
+
+  /// No description provided for @onboardingPrivacyStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw audio is never saved. History stays off unless you turn it on.'**
+  String get onboardingPrivacyStorage;
+
+  /// No description provided for @onboardingPrivacyQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation quality and speed can vary with your network and device.'**
+  String get onboardingPrivacyQuality;
+
+  /// No description provided for @onboardingPrivacyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the full privacy notice'**
+  String get onboardingPrivacyLink;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingGetStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started'**
+  String get onboardingGetStarted;
 }
 
 class _AppLocalizationsDelegate

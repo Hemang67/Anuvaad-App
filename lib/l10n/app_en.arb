@@ -12,5 +12,30 @@
   "tryAgain": "Try again",
   "navHome": "Home",
   "navLanguages": "Languages",
-  "navSettings": "Settings"
+  "navSettings": "Settings",
+  "listOr": " or ",
+  "listAnd": " and ",
+  "onboardingWelcomeBody": "Talk naturally with people who speak {languages}.",
+  "@onboardingWelcomeBody": {
+    "placeholders": {
+      "languages": {
+        "type": "String",
+        "example": "English, Hindi or Gujarati"
+      }
+    }
+  },
+  "onboardingModesTitle": "Two simple modes",
+  "onboardingListenTitle": "Listen",
+  "onboardingListenBody": "Anuvaad listens to the other person and plays the translation in your earphones.",
+  "onboardingSpeakTitle": "Speak",
+  "onboardingSpeakBody": "Reply in your own language. Anuvaad says it aloud in theirs.",
+  "onboardingPrivacyTitle": "Your privacy",
+  "onboardingPrivacySpeech": "Your speech is turned into text by your phone's speech service.",
+  "onboardingPrivacyText": "The text is sent to the Anuvaad server to be translated. It isn't stored.",
+  "onboardingPrivacyStorage": "Raw audio is never saved. History stays off unless you turn it on.",
+  "onboardingPrivacyQuality": "Translation quality and speed can vary with your network and device.",
+  "onboardingPrivacyLink": "Read the full privacy notice",
+  "onboardingSkip": "Skip",
+  "onboardingNext": "Next",
+  "onboardingGetStarted": "Get started"
 }
