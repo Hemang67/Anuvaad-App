@@ -1,0 +1,52 @@
+{
+  "languages": [
+    {
+      "code": "mr-IN",
+      "name": "Marathi",
+      "nativeName": "मराठी",
+      "installation": "not_released",
+      "input": false,
+      "output": false
+    },
+    {
+      "code": "bn-IN",
+      "name": "Bengali",
+      "nativeName": "বাংলা",
+      "installation": "not_released",
+      "input": false,
+      "output": false
+    },
+    {
+      "code": "ta-IN",
+      "name": "Tamil",
+      "nativeName": "தமிழ்",
+      "installation": "not_released",
+      "input": false,
+      "output": false
+    },
+    {
+      "code": "te-IN",
+      "name": "Telugu",
+      "nativeName": "తెలుగు",
+      "installation": "not_released",
+      "input": false,
+      "output": false
+    },
+    {
+      "code": "pa-IN",
+      "name": "Punjabi",
+      "nativeName": "ਪੰਜਾਬੀ",
+      "installation": "not_released",
+      "input": false,
+      "output": false
+    },
+    {
+      "code": "kn-IN",
+      "name": "Kannada",
+      "nativeName": "ಕನ್ನಡ",
+      "installation": "not_released",
+      "input": false,
+      "output": false
+    }
+  ]
+}

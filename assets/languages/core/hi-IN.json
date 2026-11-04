@@ -1,0 +1,18 @@
+{
+  "languageCode": "hi-IN",
+  "displayName": "Hindi",
+  "nativeName": "हिन्दी",
+  "shortLabel": "हि",
+  "version": "1.0.0",
+  "installationType": "builtin",
+  "capabilities": {
+    "speechRecognition": true,
+    "languageIdentification": true,
+    "translationInput": true,
+    "translationOutput": true,
+    "textToSpeech": true,
+    "offlineSpeechRecognition": false,
+    "offlineTranslation": false,
+    "offlineTextToSpeech": false
+  }
+}

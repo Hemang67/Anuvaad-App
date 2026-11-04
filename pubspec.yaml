@@ -80,6 +80,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/fonts/licenses/
+    - assets/languages/
+    - assets/languages/core/
   fonts:
     - family: Inter
       fonts:

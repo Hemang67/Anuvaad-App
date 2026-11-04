@@ -1,0 +1,18 @@
+{
+  "languageCode": "en-IN",
+  "displayName": "English",
+  "nativeName": "English",
+  "shortLabel": "EN",
+  "version": "1.0.0",
+  "installationType": "builtin",
+  "capabilities": {
+    "speechRecognition": true,
+    "languageIdentification": true,
+    "translationInput": true,
+    "translationOutput": true,
+    "textToSpeech": true,
+    "offlineSpeechRecognition": false,
+    "offlineTranslation": false,
+    "offlineTextToSpeech": false
+  }
+}

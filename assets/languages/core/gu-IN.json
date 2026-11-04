@@ -1,0 +1,18 @@
+{
+  "languageCode": "gu-IN",
+  "displayName": "Gujarati",
+  "nativeName": "ગુજરાતી",
+  "shortLabel": "ગુ",
+  "version": "1.0.0",
+  "installationType": "builtin",
+  "capabilities": {
+    "speechRecognition": true,
+    "languageIdentification": true,
+    "translationInput": true,
+    "translationOutput": true,
+    "textToSpeech": true,
+    "offlineSpeechRecognition": false,
+    "offlineTranslation": false,
+    "offlineTextToSpeech": false
+  }
+}
