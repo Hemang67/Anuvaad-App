@@ -97,4 +97,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingGetStarted => 'Get started';
+
+  @override
+  String get homeGreeting => 'YOUR PERSONAL LANGUAGE BRIDGE';
+
+  @override
+  String get homeHeadlineTop => 'Speak freely.';
+
+  @override
+  String get homeHeadlineBottom => 'Understand everyone.';
+
+  @override
+  String get homeHeroTitle => 'Your voice, understood worldwide.';
+
+  @override
+  String homeHeroBody(String languages) {
+    return 'Real-time translation in $languages.';
+  }
+
+  @override
+  String get homeModesTitle => 'Start communicating';
+
+  @override
+  String get homeModesSubtitle => 'Choose a mode';
+
+  @override
+  String get homeInPersonTitle => 'In-person conversation';
+
+  @override
+  String get homeInPersonSubtitle => 'Talk naturally face-to-face';
+
+  @override
+  String get homeMeetingTitle => 'Online meeting';
+
+  @override
+  String get homeMeetingSubtitle => 'Supported audio sources only';
+
+  @override
+  String get homeComingSoon => 'Coming in an update';
+
+  @override
+  String get homeMyLanguage => 'MY LANGUAGE';
+
+  @override
+  String get homeChange => 'Change';
+
+  @override
+  String get homeQuickAccessTitle => 'Quick access';
+
+  @override
+  String get homeQuickAccessSubtitle => 'Explore Anuvaad';
 }

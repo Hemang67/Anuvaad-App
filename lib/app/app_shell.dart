@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../l10n/app_localizations.dart';
 import 'routes.dart';
+import 'theme/anuvaad_colors.dart';
 
 /// Bottom navigation for the main tabs: Home, Languages, Settings.
 class AppShell extends StatelessWidget {
@@ -22,9 +23,12 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final tokens = Theme.of(context).extension<AnuvaadColors>()!;
     return Scaffold(
       body: child,
       bottomNavigationBar: NavigationBar(
+        backgroundColor: tokens.card,
+        indicatorColor: tokens.soft,
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) => context.go(_tabs[index]),
         destinations: [

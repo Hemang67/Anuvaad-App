@@ -37,5 +37,29 @@
   "onboardingPrivacyLink": "Read the full privacy notice",
   "onboardingSkip": "Skip",
   "onboardingNext": "Next",
-  "onboardingGetStarted": "Get started"
+  "onboardingGetStarted": "Get started",
+  "homeGreeting": "YOUR PERSONAL LANGUAGE BRIDGE",
+  "homeHeadlineTop": "Speak freely.",
+  "homeHeadlineBottom": "Understand everyone.",
+  "homeHeroTitle": "Your voice, understood worldwide.",
+  "homeHeroBody": "Real-time translation in {languages}.",
+  "@homeHeroBody": {
+    "placeholders": {
+      "languages": {
+        "type": "String",
+        "example": "English, Hindi and Gujarati"
+      }
+    }
+  },
+  "homeModesTitle": "Start communicating",
+  "homeModesSubtitle": "Choose a mode",
+  "homeInPersonTitle": "In-person conversation",
+  "homeInPersonSubtitle": "Talk naturally face-to-face",
+  "homeMeetingTitle": "Online meeting",
+  "homeMeetingSubtitle": "Supported audio sources only",
+  "homeComingSoon": "Coming in an update",
+  "homeMyLanguage": "MY LANGUAGE",
+  "homeChange": "Change",
+  "homeQuickAccessTitle": "Quick access",
+  "homeQuickAccessSubtitle": "Explore Anuvaad"
 }

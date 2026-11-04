@@ -255,6 +255,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Get started'**
   String get onboardingGetStarted;
+
+  /// No description provided for @homeGreeting.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR PERSONAL LANGUAGE BRIDGE'**
+  String get homeGreeting;
+
+  /// No description provided for @homeHeadlineTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak freely.'**
+  String get homeHeadlineTop;
+
+  /// No description provided for @homeHeadlineBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'Understand everyone.'**
+  String get homeHeadlineBottom;
+
+  /// No description provided for @homeHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your voice, understood worldwide.'**
+  String get homeHeroTitle;
+
+  /// No description provided for @homeHeroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Real-time translation in {languages}.'**
+  String homeHeroBody(String languages);
+
+  /// No description provided for @homeModesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start communicating'**
+  String get homeModesTitle;
+
+  /// No description provided for @homeModesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a mode'**
+  String get homeModesSubtitle;
+
+  /// No description provided for @homeInPersonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'In-person conversation'**
+  String get homeInPersonTitle;
+
+  /// No description provided for @homeInPersonSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Talk naturally face-to-face'**
+  String get homeInPersonSubtitle;
+
+  /// No description provided for @homeMeetingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Online meeting'**
+  String get homeMeetingTitle;
+
+  /// No description provided for @homeMeetingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Supported audio sources only'**
+  String get homeMeetingSubtitle;
+
+  /// No description provided for @homeComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming in an update'**
+  String get homeComingSoon;
+
+  /// No description provided for @homeMyLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'MY LANGUAGE'**
+  String get homeMyLanguage;
+
+  /// No description provided for @homeChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get homeChange;
+
+  /// No description provided for @homeQuickAccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick access'**
+  String get homeQuickAccessTitle;
+
+  /// No description provided for @homeQuickAccessSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore Anuvaad'**
+  String get homeQuickAccessSubtitle;
 }
 
 class _AppLocalizationsDelegate
