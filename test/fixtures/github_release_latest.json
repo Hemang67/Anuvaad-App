@@ -1,0 +1,63 @@
+{
+  "id": 1,
+  "tag_name": "v0.1.1",
+  "name": "Anuvaad 0.1.1",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2026-11-12T09:55:00Z",
+  "published_at": "2026-11-12T10:00:00Z",
+  "html_url": "https://github.com/test/anuvaad-app/releases/tag/v0.1.1",
+  "body": "### What's new\n- Release notes history in Settings.\n\n### Fixed\n- Update popup text fits large font sizes.\n",
+  "assets": [
+    {
+      "id": 1000,
+      "name": "anuvaad-0.1.1-arm64-v8a.apk",
+      "label": null,
+      "content_type": "application/vnd.android.package-archive",
+      "state": "uploaded",
+      "size": 21455872,
+      "download_count": 0,
+      "browser_download_url": "https://github.com/test/anuvaad-app/releases/download/v0.1.1/anuvaad-0.1.1-arm64-v8a.apk"
+    },
+    {
+      "id": 1001,
+      "name": "anuvaad-0.1.1-armeabi-v7a.apk",
+      "label": null,
+      "content_type": "application/vnd.android.package-archive",
+      "state": "uploaded",
+      "size": 19033120,
+      "download_count": 0,
+      "browser_download_url": "https://github.com/test/anuvaad-app/releases/download/v0.1.1/anuvaad-0.1.1-armeabi-v7a.apk"
+    },
+    {
+      "id": 1002,
+      "name": "anuvaad-0.1.1-x86_64.apk",
+      "label": null,
+      "content_type": "application/vnd.android.package-archive",
+      "state": "uploaded",
+      "size": 22100544,
+      "download_count": 0,
+      "browser_download_url": "https://github.com/test/anuvaad-app/releases/download/v0.1.1/anuvaad-0.1.1-x86_64.apk"
+    },
+    {
+      "id": 1003,
+      "name": "anuvaad-0.1.1-universal.apk",
+      "label": null,
+      "content_type": "application/vnd.android.package-archive",
+      "state": "uploaded",
+      "size": 52330496,
+      "download_count": 0,
+      "browser_download_url": "https://github.com/test/anuvaad-app/releases/download/v0.1.1/anuvaad-0.1.1-universal.apk"
+    },
+    {
+      "id": 2000,
+      "name": "release.json",
+      "label": null,
+      "content_type": "application/json",
+      "state": "uploaded",
+      "size": 1200,
+      "download_count": 0,
+      "browser_download_url": "https://github.com/test/anuvaad-app/releases/download/v0.1.1/release.json"
+    }
+  ]
+}

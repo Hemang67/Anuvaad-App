@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "version": "0.1.1",
+  "build": 2,
+  "publishedAt": "2026-11-12T10:00:00Z",
+  "mandatory": false,
+  "minSupportedBuild": 1,
+  "notes": {
+    "whatsNew": [
+      "Release notes history in Settings."
+    ],
+    "fixed": [
+      "Update popup text fits large font sizes."
+    ]
+  },
+  "assets": [
+    {
+      "abi": "arm64-v8a",
+      "file": "anuvaad-0.1.1-arm64-v8a.apk",
+      "size": 21455872,
+      "sha256": "673611a97e40493b3f7ca1074b145668f2183308d8c28e29d273a1012544bc19"
+    },
+    {
+      "abi": "armeabi-v7a",
+      "file": "anuvaad-0.1.1-armeabi-v7a.apk",
+      "size": 19033120,
+      "sha256": "1c52f4eebe30a1fe926593e310f1e211424fbad0dbaa1ffb8867ef8098b48d16"
+    },
+    {
+      "abi": "x86_64",
+      "file": "anuvaad-0.1.1-x86_64.apk",
+      "size": 22100544,
+      "sha256": "400996d57126c5d46222a35d0ed6d9b543879320503816bf56f8dd29f8fef0db"
+    },
+    {
+      "abi": "universal",
+      "file": "anuvaad-0.1.1-universal.apk",
+      "size": 52330496,
+      "sha256": "3b282bf34c6232f27facb081b012df1a979363d0c95a0f2daca226adeca6cfa2"
+    }
+  ]
+}
