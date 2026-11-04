@@ -1,0 +1,7 @@
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/branding/icon_full_interim.png"
+  adaptive_icon_background: "#FCFCFE"
+  adaptive_icon_foreground: "assets/branding/icon_foreground_interim.png"
+  min_sdk_android: 29
