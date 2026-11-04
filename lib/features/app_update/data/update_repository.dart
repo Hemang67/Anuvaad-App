@@ -25,14 +25,12 @@ const _githubHeaders = {'Accept': 'application/vnd.github+json'};
 /// public GitHub Releases API when the backend is unreachable or returns bad data.
 class UpdateRepository {
   UpdateRepository({
-    required Dio dio,
+    required this._dio,
     required Uri? apiBaseUrl,
     required String? releasesRepo,
-    required Map<String, String> clientHeaders,
-  })  : _dio = dio,
-        _api = apiBaseUrl,
-        _repo = releasesRepo,
-        _clientHeaders = clientHeaders;
+    required this._clientHeaders,
+  })  : _api = apiBaseUrl,
+        _repo = releasesRepo;
 
   final Dio _dio;
   final Uri? _api;
@@ -63,7 +61,7 @@ class UpdateRepository {
       );
       if (response.statusCode == 404) return null;
       if (response.statusCode != 200) throw UpdateCheckException('GitHub returned ${response.statusCode}');
-      return _resolveGitHubRelease(_asMap(response.data));
+      return await _resolveGitHubRelease(_asMap(response.data));
     } on DioException catch (e) {
       throw UpdateCheckException('GitHub unreachable: ${e.type.name}');
     } on FormatException catch (e) {

@@ -102,6 +102,15 @@ void main() {
     expect(await repo(api: null).fetchLatest(), isNull);
   });
 
+  test('a failed release.json download surfaces as UpdateCheckException', () async {
+    adapter.onGet(_ghLatest, (server) => server.reply(200, _json('github_release_latest.json')));
+    adapter.onGet(_manifestUrl, (server) => server.throws(
+          500,
+          DioException.connectionError(requestOptions: RequestOptions(path: _manifestUrl), reason: 'offline'),
+        ));
+    await expectLater(repo(api: null).fetchLatest(), throwsA(isA<UpdateCheckException>()));
+  });
+
   test('returns null when GitHub has no published release', () async {
     adapter.onGet(_ghLatest, (server) => server.reply(404, {'message': 'Not Found'}));
     expect(await repo(api: null).fetchLatest(), isNull);
