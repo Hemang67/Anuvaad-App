@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../l10n/app_localizations.dart';
 import 'theme/anuvaad_theme.dart';
+import 'theme/theme_mode_controller.dart';
 
 /// Temporary route table; replaced by the guarded router in Task 6.
 final _placeholderRouter = GoRouter(
@@ -20,6 +21,7 @@ class AnuvaadApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: buildAnuvaadTheme(Brightness.light),
       darkTheme: buildAnuvaadTheme(Brightness.dark),
+      themeMode: ref.watch(themeModeProvider),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: const [Locale('en')],
       routerConfig: _placeholderRouter,
