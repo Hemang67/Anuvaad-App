@@ -1,0 +1,7 @@
+{
+  "@@locale": "en",
+  "appTitle": "Anuvaad",
+  "@appTitle": {
+    "description": "Application name shown in the task switcher."
+  }
+}
