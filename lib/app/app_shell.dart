@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/app_update/presentation/update_listener.dart';
 import '../l10n/app_localizations.dart';
 import 'routes.dart';
 import 'theme/anuvaad_colors.dart';
@@ -25,7 +26,7 @@ class AppShell extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final tokens = Theme.of(context).extension<AnuvaadColors>()!;
     return Scaffold(
-      body: child,
+      body: UpdateListener(child: child),
       bottomNavigationBar: NavigationBar(
         backgroundColor: tokens.card,
         indicatorColor: tokens.soft,

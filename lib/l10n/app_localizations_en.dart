@@ -244,4 +244,117 @@ class AppLocalizationsEn extends AppLocalizations {
   String settingsVersion(String version, String build) {
     return 'v$version ($build)';
   }
+
+  @override
+  String get updateAvailableTitle => 'Update available';
+
+  @override
+  String updateSubtitle(String version, String date, String size) {
+    return 'Version $version · $date · $size MB';
+  }
+
+  @override
+  String get updateWhatsNew => 'What\'s new';
+
+  @override
+  String get updateFixed => 'Fixed';
+
+  @override
+  String get updateLater => 'Later';
+
+  @override
+  String get updateNow => 'Update now';
+
+  @override
+  String get updateMandatory =>
+      'This update is required to keep using Anuvaad.';
+
+  @override
+  String updateDownloading(int percent) {
+    return 'Downloading… $percent%';
+  }
+
+  @override
+  String get updateVerifying => 'Checking the download…';
+
+  @override
+  String get updateInstalling => 'Opening the installer…';
+
+  @override
+  String get updatePermissionTitle => 'Allow updates';
+
+  @override
+  String get updatePermissionBody =>
+      'To install the update, Android needs you to allow Anuvaad to install apps. Turn on “Allow from this source”, then come back.';
+
+  @override
+  String get updateOpenSettings => 'Open settings';
+
+  @override
+  String get updateFailedPermission =>
+      'Updates can\'t be installed until you allow this. You can try again any time from Settings → Check for updates.';
+
+  @override
+  String get updateFailedCheck =>
+      'Couldn\'t check for updates. Check your connection and try again.';
+
+  @override
+  String get updateFailedDownload =>
+      'The download didn\'t finish. Check your connection and try again.';
+
+  @override
+  String get updateFailedIntegrity =>
+      'The download was damaged, so it wasn\'t installed. Please try again.';
+
+  @override
+  String get updateFailedInstall =>
+      'Android couldn\'t open the installer. Please try again.';
+
+  @override
+  String get updateClose => 'Close';
+
+  @override
+  String get updateNotInstalledTitle => 'The update wasn\'t installed';
+
+  @override
+  String get updateNotInstalledBody =>
+      'If Android said “App not installed”, uninstall this copy of Anuvaad and install it again from the website.';
+
+  @override
+  String get updateOpenWebsite => 'Open website';
+
+  @override
+  String whatsNewTitle(String version) {
+    return 'What\'s new in $version';
+  }
+
+  @override
+  String get whatsNewGotIt => 'Got it';
+
+  @override
+  String get settingsCheckUpdates => 'Check for updates';
+
+  @override
+  String get settingsUpToDate => 'You\'re on the latest version';
+
+  @override
+  String get settingsReleaseNotes => 'Release notes';
+
+  @override
+  String get settingsUpdatesUnavailable =>
+      'Updates aren\'t available in this preview build.';
+
+  @override
+  String get releaseNotesTitle => 'Release notes';
+
+  @override
+  String releaseNotesVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get releaseNotesLoadFailed => 'Couldn\'t load release notes.';
+
+  @override
+  String get releaseNotesEmpty => 'No releases yet.';
 }

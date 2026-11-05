@@ -525,6 +525,198 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'v{version} ({build})'**
   String settingsVersion(String version, String build);
+
+  /// No description provided for @updateAvailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get updateAvailableTitle;
+
+  /// No description provided for @updateSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} · {date} · {size} MB'**
+  String updateSubtitle(String version, String date, String size);
+
+  /// No description provided for @updateWhatsNew.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new'**
+  String get updateWhatsNew;
+
+  /// No description provided for @updateFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed'**
+  String get updateFixed;
+
+  /// No description provided for @updateLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get updateLater;
+
+  /// No description provided for @updateNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Update now'**
+  String get updateNow;
+
+  /// No description provided for @updateMandatory.
+  ///
+  /// In en, this message translates to:
+  /// **'This update is required to keep using Anuvaad.'**
+  String get updateMandatory;
+
+  /// No description provided for @updateDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading… {percent}%'**
+  String updateDownloading(int percent);
+
+  /// No description provided for @updateVerifying.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking the download…'**
+  String get updateVerifying;
+
+  /// No description provided for @updateInstalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening the installer…'**
+  String get updateInstalling;
+
+  /// No description provided for @updatePermissionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow updates'**
+  String get updatePermissionTitle;
+
+  /// No description provided for @updatePermissionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To install the update, Android needs you to allow Anuvaad to install apps. Turn on “Allow from this source”, then come back.'**
+  String get updatePermissionBody;
+
+  /// No description provided for @updateOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get updateOpenSettings;
+
+  /// No description provided for @updateFailedPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates can\'t be installed until you allow this. You can try again any time from Settings → Check for updates.'**
+  String get updateFailedPermission;
+
+  /// No description provided for @updateFailedCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check for updates. Check your connection and try again.'**
+  String get updateFailedCheck;
+
+  /// No description provided for @updateFailedDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'The download didn\'t finish. Check your connection and try again.'**
+  String get updateFailedDownload;
+
+  /// No description provided for @updateFailedIntegrity.
+  ///
+  /// In en, this message translates to:
+  /// **'The download was damaged, so it wasn\'t installed. Please try again.'**
+  String get updateFailedIntegrity;
+
+  /// No description provided for @updateFailedInstall.
+  ///
+  /// In en, this message translates to:
+  /// **'Android couldn\'t open the installer. Please try again.'**
+  String get updateFailedInstall;
+
+  /// No description provided for @updateClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get updateClose;
+
+  /// No description provided for @updateNotInstalledTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The update wasn\'t installed'**
+  String get updateNotInstalledTitle;
+
+  /// No description provided for @updateNotInstalledBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If Android said “App not installed”, uninstall this copy of Anuvaad and install it again from the website.'**
+  String get updateNotInstalledBody;
+
+  /// No description provided for @updateOpenWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Open website'**
+  String get updateOpenWebsite;
+
+  /// No description provided for @whatsNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new in {version}'**
+  String whatsNewTitle(String version);
+
+  /// No description provided for @whatsNewGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get whatsNewGotIt;
+
+  /// No description provided for @settingsCheckUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates'**
+  String get settingsCheckUpdates;
+
+  /// No description provided for @settingsUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re on the latest version'**
+  String get settingsUpToDate;
+
+  /// No description provided for @settingsReleaseNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Release notes'**
+  String get settingsReleaseNotes;
+
+  /// No description provided for @settingsUpdatesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates aren\'t available in this preview build.'**
+  String get settingsUpdatesUnavailable;
+
+  /// No description provided for @releaseNotesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Release notes'**
+  String get releaseNotesTitle;
+
+  /// No description provided for @releaseNotesVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String releaseNotesVersion(String version);
+
+  /// No description provided for @releaseNotesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load release notes.'**
+  String get releaseNotesLoadFailed;
+
+  /// No description provided for @releaseNotesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No releases yet.'**
+  String get releaseNotesEmpty;
 }
 
 class _AppLocalizationsDelegate

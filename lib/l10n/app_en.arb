@@ -128,5 +128,71 @@
         "type": "String"
       }
     }
-  }
+  },
+  "updateAvailableTitle": "Update available",
+  "updateSubtitle": "Version {version} · {date} · {size} MB",
+  "@updateSubtitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "updateWhatsNew": "What's new",
+  "updateFixed": "Fixed",
+  "updateLater": "Later",
+  "updateNow": "Update now",
+  "updateMandatory": "This update is required to keep using Anuvaad.",
+  "updateDownloading": "Downloading… {percent}%",
+  "@updateDownloading": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "updateVerifying": "Checking the download…",
+  "updateInstalling": "Opening the installer…",
+  "updatePermissionTitle": "Allow updates",
+  "updatePermissionBody": "To install the update, Android needs you to allow Anuvaad to install apps. Turn on “Allow from this source”, then come back.",
+  "updateOpenSettings": "Open settings",
+  "updateFailedPermission": "Updates can't be installed until you allow this. You can try again any time from Settings → Check for updates.",
+  "updateFailedCheck": "Couldn't check for updates. Check your connection and try again.",
+  "updateFailedDownload": "The download didn't finish. Check your connection and try again.",
+  "updateFailedIntegrity": "The download was damaged, so it wasn't installed. Please try again.",
+  "updateFailedInstall": "Android couldn't open the installer. Please try again.",
+  "updateClose": "Close",
+  "updateNotInstalledTitle": "The update wasn't installed",
+  "updateNotInstalledBody": "If Android said “App not installed”, uninstall this copy of Anuvaad and install it again from the website.",
+  "updateOpenWebsite": "Open website",
+  "whatsNewTitle": "What's new in {version}",
+  "@whatsNewTitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewGotIt": "Got it",
+  "settingsCheckUpdates": "Check for updates",
+  "settingsUpToDate": "You're on the latest version",
+  "settingsReleaseNotes": "Release notes",
+  "settingsUpdatesUnavailable": "Updates aren't available in this preview build.",
+  "releaseNotesTitle": "Release notes",
+  "releaseNotesVersion": "Version {version}",
+  "@releaseNotesVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "releaseNotesLoadFailed": "Couldn't load release notes.",
+  "releaseNotesEmpty": "No releases yet."
 }

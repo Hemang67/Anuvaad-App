@@ -1,14 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/bootstrap.dart';
+import '../../../app/routes.dart';
 import '../../../app/theme/anuvaad_colors.dart';
 import '../../../app/theme/theme_mode_controller.dart';
+import '../../../core/config/app_config.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../app_update/application/update_controller.dart';
 import 'widgets.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
+
+  Future<void> _checkForUpdates(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    await ref.read(updateControllerProvider.notifier).check(UpdateTrigger.manual);
+    final state = ref.read(updateControllerProvider);
+    final message = switch (state) {
+      UpdateUpToDate() => l10n.settingsUpToDate,
+      UpdateFailed(decision: null) => l10n.updateFailedCheck,
+      _ => null, // an available update opens the update popup
+    };
+    if (message != null) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(message)));
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,6 +37,9 @@ class SettingsScreen extends ConsumerWidget {
     final tokens = Theme.of(context).extension<AnuvaadColors>()!;
     final info = ref.watch(packageInfoProvider);
     final mode = ref.watch(themeModeProvider);
+    final config = ref.watch(appConfigProvider);
+    final updatesEnabled = config.apiBaseUrl != null || config.releasesRepo != null;
+    final checking = ref.watch(updateControllerProvider) is UpdateChecking;
 
     return Scaffold(
       key: const Key('settings-screen'),
@@ -57,6 +81,19 @@ class SettingsScreen extends ConsumerWidget {
                     l10n.settingsVersion(info.version, info.buildNumber),
                     style: TextStyle(color: tokens.muted, fontWeight: FontWeight.w600),
                   ),
+                ),
+                SettingsRow(
+                  title: l10n.settingsCheckUpdates,
+                  subtitle: updatesEnabled ? null : l10n.settingsUpdatesUnavailable,
+                  trailing: checking
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.system_update_outlined),
+                  onTap: updatesEnabled && !checking ? () => _checkForUpdates(context, ref) : null,
+                ),
+                SettingsRow(
+                  title: l10n.settingsReleaseNotes,
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: updatesEnabled ? () => context.go(Routes.releaseNotes) : null,
                 ),
               ],
             ),
