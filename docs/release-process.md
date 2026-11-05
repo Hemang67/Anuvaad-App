@@ -27,8 +27,8 @@ In the GitHub repo, go to **Settings → Secrets and variables → Actions**.
 | Secret | `ANDROID_KEY_ALIAS` | `anuvaad` (or the alias you chose) |
 | Secret | `ANDROID_KEY_PASSWORD` | Key password (same as the keystore password if you used one) |
 | Secret | `REVALIDATE_SECRET` | The same random value set on Vercel |
-| Variable | `API_BASE_URL` | The website, e.g. `https://<project>.vercel.app` |
-| Variable | `WEB_REVALIDATE_URL` | `https://<project>.vercel.app/api/v1/revalidate` |
+| Variable | `API_BASE_URL` | The website: `https://anuvaad-app.vercel.app` |
+| Variable | `WEB_REVALIDATE_URL` | `https://anuvaad-app.vercel.app/api/v1/revalidate` (set it once the website is deployed) |
 
 ### 3. Optional: sign release builds on your own computer
 
