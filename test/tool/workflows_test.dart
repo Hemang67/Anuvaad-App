@@ -1,0 +1,39 @@
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:yaml/yaml.dart';
+
+/// GitHub rejects a workflow with invalid YAML only after it is pushed, so parse them here.
+void main() {
+  final workflows = Directory('.github/workflows')
+      .listSync()
+      .whereType<File>()
+      .where((f) => f.path.endsWith('.yml') || f.path.endsWith('.yaml'))
+      .toList();
+
+  test('workflow files exist', () {
+    expect(workflows.map((f) => f.uri.pathSegments.last), containsAll(['ci.yml', 'release.yml']));
+  });
+
+  for (final file in workflows) {
+    test('${file.uri.pathSegments.last} is valid YAML with jobs and steps', () {
+      final doc = loadYaml(file.readAsStringSync()) as YamlMap;
+      final jobs = doc['jobs'] as YamlMap;
+      expect(jobs, isNotEmpty);
+      for (final job in jobs.values) {
+        for (final step in (job as YamlMap)['steps'] as YamlList) {
+          final run = (step as YamlMap)['run'];
+          if (run != null) expect(run, isA<String>(), reason: 'run must be a string: $step');
+        }
+      }
+    });
+  }
+
+  test('release workflow runs only for version tags', () {
+    final doc = loadYaml(File('.github/workflows/release.yml').readAsStringSync()) as YamlMap;
+    // YAML 1.1 reads a bare `on` key as true.
+    final on = (doc['on'] ?? doc[true]) as YamlMap;
+    expect((on['push'] as YamlMap)['tags'], ['v*.*.*']);
+    expect((on['push'] as YamlMap).containsKey('branches'), isFalse);
+  });
+}
