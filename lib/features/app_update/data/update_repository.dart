@@ -43,8 +43,8 @@ class UpdateRepository {
     final api = _api;
     if (api != null) {
       final backend = await _backend(api, '/api/v1/app/latest');
-      if (backend is _Found) {
-        if (backend.status == 404) return null;
+      if (backend is _Found && backend.status == 404 && _isNoRelease(backend.body)) return null;
+      if (backend is _Found && backend.status == 200) {
         try {
           return parseReleaseInfo(_asMap(_asMap(backend.body)['release']));
         } on FormatException {
@@ -166,6 +166,16 @@ class UpdateRepository {
       enriched.add({...map, 'url': url});
     }
     return _tryParse({...manifest, 'assets': enriched, 'releaseUrl': release['html_url']});
+  }
+
+  /// Only the backend's own `no_release` answer means nothing is published; any other
+  /// 404 (e.g. a removed deployment) is treated as "backend unavailable".
+  static bool _isNoRelease(Object? body) {
+    try {
+      return _asMap(_asMap(body)['error'])['code'] == 'no_release';
+    } on FormatException {
+      return false;
+    }
   }
 
   static ReleaseInfo? _tryParse(Object? json) {

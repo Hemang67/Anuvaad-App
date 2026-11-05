@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -9,6 +10,7 @@ import 'package:anuvaad/features/app_update/data/update_downloader.dart';
 import 'package:anuvaad/features/app_update/data/update_repository.dart';
 import 'package:anuvaad/features/app_update/domain/release_info.dart';
 import 'package:anuvaad/features/app_update/domain/update_decision.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -47,6 +49,7 @@ void main() {
   late _MockInstaller installer;
   late SharedPreferences prefs;
   late DateTime now;
+  late bool foreground;
   final apk = File('/cache/updates/anuvaad-0.1.2-arm64-v8a.apk');
 
   setUpAll(() {
@@ -59,6 +62,8 @@ void main() {
     downloader = _MockDownloader();
     installer = _MockInstaller();
     now = DateTime.utc(2026, 11, 20, 9);
+    foreground = true;
+    when(() => downloader.clear()).thenAnswer((_) async {});
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
     when(() => installer.canInstallPackages()).thenAnswer((_) async => true);
@@ -80,6 +85,7 @@ void main() {
       ),
       deviceAbisProvider.overrideWith((ref) async => ['arm64-v8a', 'armeabi-v7a']),
       clockProvider.overrideWithValue(() => now),
+      appIsForegroundProvider.overrideWithValue(() => foreground),
       updateRepositoryProvider.overrideWithValue(repo),
       updateDownloaderProvider.overrideWithValue(downloader),
       apkInstallerProvider.overrideWithValue(installer),
@@ -276,6 +282,68 @@ void main() {
     final c = container(build: '1');
     expect(controller(c).consumeJustUpdatedRelease(), isNull);
     expect(prefs.getInt('last_seen_build'), 1);
+  });
+
+  test('a resume check while the launch check is running reuses it', () async {
+    final pending = Completer<ReleaseInfo?>();
+    when(() => repo.fetchLatest()).thenAnswer((_) => pending.future);
+    final c = container();
+    final launch = controller(c).check(UpdateTrigger.launch);
+    final resume = controller(c).check(UpdateTrigger.resume);
+    pending.complete(_release(build: 2));
+    await Future.wait([launch, resume]);
+    verify(() => repo.fetchLatest()).called(1);
+    expect(c.read(updateControllerProvider), isA<UpdateAvailable>());
+  });
+
+  test('an unexpected download error ends in Failed(downloadFailed), never a stuck dialog', () async {
+    when(() => repo.fetchLatest()).thenAnswer((_) async => _release(build: 2));
+    when(() => downloader.download(any(), onProgress: any(named: 'onProgress'), cancelToken: any(named: 'cancelToken')))
+        .thenThrow(StateError('cache directory unavailable'));
+    final c = container();
+    await controller(c).check(UpdateTrigger.launch);
+    await controller(c).startUpdate();
+    expect((c.read(updateControllerProvider) as UpdateFailed).failure, UpdateFailure.downloadFailed);
+  });
+
+  test('an unexpected installer error ends in Failed(installFailed)', () async {
+    when(() => repo.fetchLatest()).thenAnswer((_) async => _release(build: 2));
+    when(() => installer.install(any())).thenThrow(MissingPluginException('no installer channel'));
+    final c = container();
+    await controller(c).check(UpdateTrigger.launch);
+    await controller(c).startUpdate();
+    expect((c.read(updateControllerProvider) as UpdateFailed).failure, UpdateFailure.installFailed);
+  });
+
+  test('a download that finishes in the background waits for the app to return before opening the installer', () async {
+    when(() => repo.fetchLatest()).thenAnswer((_) async => _release(build: 2));
+    final c = container();
+    await controller(c).check(UpdateTrigger.launch);
+    foreground = false;
+    await controller(c).startUpdate();
+    expect(c.read(updateControllerProvider), isA<UpdateReadyToInstall>());
+    verifyNever(() => installer.install(any()));
+
+    foreground = true;
+    await controller(c).onResumed();
+    verify(() => installer.install(apk)).called(1);
+    expect(c.read(updateControllerProvider), isA<UpdateInstalling>());
+  });
+
+  test('first launch after an update clears downloaded APKs', () async {
+    await prefs.setString('pending_update', jsonEncode(_release(build: 2).toJson()));
+    final c = container(build: '2');
+    controller(c).consumeJustUpdatedRelease();
+    await pumpEventQueue();
+    verify(() => downloader.clear()).called(1);
+  });
+
+  test('a pending newer build keeps its downloaded APK for a retry', () async {
+    await prefs.setString('pending_update', jsonEncode(_release(build: 3).toJson()));
+    final c = container(build: '2');
+    controller(c).consumeJustUpdatedRelease();
+    await pumpEventQueue();
+    verifyNever(() => downloader.clear());
   });
 }
 

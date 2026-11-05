@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../domain/update_decision.dart';
 
 enum UpdateTrigger { launch, resume, manual }
@@ -43,6 +45,13 @@ final class UpdateNeedsPermission extends UpdateState {
   final UpdateDecision decision;
 }
 
+/// Verified and waiting for the app to return to the foreground before opening the installer.
+final class UpdateReadyToInstall extends UpdateState {
+  const UpdateReadyToInstall(this.decision, this.apk);
+  final UpdateDecision decision;
+  final File apk;
+}
+
 final class UpdateInstalling extends UpdateState {
   const UpdateInstalling(this.decision);
   final UpdateDecision decision;
@@ -65,6 +74,7 @@ UpdateDecision? decisionOf(UpdateState state) => switch (state) {
       UpdateDownloading(:final decision) ||
       UpdateVerifying(:final decision) ||
       UpdateNeedsPermission(:final decision) ||
+      UpdateReadyToInstall(:final decision) ||
       UpdateInstalling(:final decision) ||
       UpdateInstallNotCompleted(:final decision) =>
         decision,

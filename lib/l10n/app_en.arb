@@ -194,5 +194,7 @@
     }
   },
   "releaseNotesLoadFailed": "Couldn't load release notes.",
-  "releaseNotesEmpty": "No releases yet."
+  "releaseNotesEmpty": "No releases yet.",
+  "updateReadyToInstall": "The update is downloaded and checked. It's ready to install.",
+  "updateInstallNow": "Install now"
 }

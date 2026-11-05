@@ -357,4 +357,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get releaseNotesEmpty => 'No releases yet.';
+
+  @override
+  String get updateReadyToInstall =>
+      'The update is downloaded and checked. It\'s ready to install.';
+
+  @override
+  String get updateInstallNow => 'Install now';
 }

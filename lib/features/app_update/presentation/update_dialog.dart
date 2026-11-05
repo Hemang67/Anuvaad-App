@@ -76,6 +76,11 @@ class _UpdateDialogState extends ConsumerState<UpdateDialog> {
           const <Widget>[],
         ),
       UpdateVerifying() => (l10n.updateAvailableTitle, [subtitle, const SizedBox(height: 16), const LinearProgressIndicator(), const SizedBox(height: 8), Text(l10n.updateVerifying)], const <Widget>[]),
+      UpdateReadyToInstall() => (
+          l10n.updateAvailableTitle,
+          [subtitle, const SizedBox(height: 16), Text(l10n.updateReadyToInstall)],
+          [FilledButton(onPressed: controller.startUpdate, child: Text(l10n.updateInstallNow))],
+        ),
       UpdateInstalling() => (l10n.updateAvailableTitle, [subtitle, const SizedBox(height: 16), Text(l10n.updateInstalling)], const <Widget>[]),
       UpdateNeedsPermission() => (
           l10n.updatePermissionTitle,

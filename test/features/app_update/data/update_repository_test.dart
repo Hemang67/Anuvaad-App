@@ -54,6 +54,12 @@ void main() {
     expect(await repo().fetchLatest(), isNull);
   });
 
+  test('falls back to GitHub when a backend 404 is not a no_release answer', () async {
+    adapter.onGet(_latestUrl, (server) => server.reply(404, 'The deployment could not be found on Vercel. DEPLOYMENT_NOT_FOUND'));
+    githubServesLatest();
+    expect((await repo().fetchLatest())!.build, 2);
+  });
+
   test('falls back to GitHub on backend 503 and resolves asset URLs', () async {
     adapter.onGet(_latestUrl, (server) => server.reply(503, {'error': {'code': 'unavailable'}}));
     githubServesLatest();

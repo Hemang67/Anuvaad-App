@@ -31,11 +31,10 @@ jobs:
 
       - name: Check configuration
         run: |
-          if [ -z "$API_BASE_URL" ]; then
-            echo "::error::Set the repository variable API_BASE_URL (the Vercel site, e.g. https://<project>.vercel.app)"
-            exit 1
-          fi
+          # API_BASE_URL is compiled into the app; a non-https value would break update checks.
+          dart run tool/release/config_check.dart "$API_BASE_URL"
           echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          echo "BUILD=$(grep '^version:' pubspec.yaml | sed 's/.*+//')" >> "$GITHUB_ENV"
 
       - name: Decode signing key
         env:
@@ -59,6 +58,11 @@ jobs:
           done
           flutter build apk --release $DEFINES
           cp build/app/outputs/flutter-apk/app-release.apk "build/release/apks/anuvaad-$VERSION-universal.apk"
+
+      - name: Check every APK (permissions and versionCode)
+        run: |
+          AAPT2="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/aapt2"
+          for apk in build/release/apks/*.apk; do bash tool/release/check_apk.sh "$AAPT2" "$apk" "$BUILD"; done
 
       - name: Prepare release.json and notes
         run: dart run tool/release/prepare_release.dart --version "$VERSION" --apk-dir build/release/apks --out build/release

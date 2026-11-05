@@ -717,6 +717,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No releases yet.'**
   String get releaseNotesEmpty;
+
+  /// No description provided for @updateReadyToInstall.
+  ///
+  /// In en, this message translates to:
+  /// **'The update is downloaded and checked. It\'s ready to install.'**
+  String get updateReadyToInstall;
+
+  /// No description provided for @updateInstallNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Install now'**
+  String get updateInstallNow;
 }
 
 class _AppLocalizationsDelegate

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/bootstrap.dart';
@@ -23,6 +24,12 @@ final deviceAbisProvider = FutureProvider<List<String>>(
 
 final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 
+/// Whether the app is on screen; Android blocks activity starts (the installer) from the background.
+final appIsForegroundProvider = Provider<bool Function()>((ref) => () {
+      final state = WidgetsBinding.instance.lifecycleState;
+      return state == null || state == AppLifecycleState.resumed;
+    });
+
 final updateControllerProvider = NotifierProvider<UpdateController, UpdateState>(UpdateController.new);
 
 /// Checks GitHub-published releases and walks the user through download,
@@ -32,6 +39,7 @@ class UpdateController extends Notifier<UpdateState> {
 
   bool _launchChecked = false;
   bool _working = false;
+  Future<void>? _inFlight;
   final Set<int> _dismissedBuilds = {};
 
   @override
@@ -55,8 +63,20 @@ class UpdateController extends Notifier<UpdateState> {
     }
     // Automatic checks never interrupt something already on screen.
     if (!manual && state is! UpdateIdle && state is! UpdateUpToDate) return;
-    if (_working || state is UpdateChecking) return;
+    if (_working) return;
+    // A check already running (e.g. launch, then a quick resume) is shared, never duplicated.
+    final running = _inFlight;
+    if (running != null) return running;
+    final check = _runCheck(manual);
+    _inFlight = check;
+    try {
+      await check;
+    } finally {
+      _inFlight = null;
+    }
+  }
 
+  Future<void> _runCheck(bool manual) async {
     if (manual) state = const UpdateChecking();
     try {
       final latest = await ref.read(updateRepositoryProvider).fetchLatest();
@@ -76,7 +96,12 @@ class UpdateController extends Notifier<UpdateState> {
   }
 
   Future<void> startUpdate() async {
-    final decision = switch (state) {
+    final current = state;
+    if (current is UpdateReadyToInstall) {
+      await _installNow(current);
+      return;
+    }
+    final decision = switch (current) {
       UpdateAvailable(:final decision) || UpdateInstallNotCompleted(:final decision) => decision,
       UpdateFailed(decision: final UpdateDecision decision) => decision,
       _ => null,
@@ -121,6 +146,10 @@ class UpdateController extends Notifier<UpdateState> {
 
   Future<void> onResumed() async {
     final current = state;
+    if (current is UpdateReadyToInstall) {
+      if (ref.read(appIsForegroundProvider)()) await _installNow(current);
+      return;
+    }
     if (current is UpdateInstalling) {
       final pending = _pendingRelease();
       if (pending != null && pending.build > _currentBuild) state = UpdateInstallNotCompleted(current.decision);
@@ -134,6 +163,8 @@ class UpdateController extends Notifier<UpdateState> {
     final current = _currentBuild;
     final pending = _pendingRelease();
     if (pending != null && pending.build <= current) unawaited(settings.setPendingUpdateJson(null));
+    // Downloaded APKs are kept only while a newer build is still waiting to be installed.
+    if (pending == null || pending.build <= current) unawaited(ref.read(updateDownloaderProvider).clear());
     if (settings.lastSeenBuild != current) unawaited(settings.setLastSeenBuild(current));
     return pending != null && pending.build == current ? pending : null;
   }
@@ -152,15 +183,34 @@ class UpdateController extends Notifier<UpdateState> {
     } on UpdateIntegrityException {
       state = UpdateFailed(decision, UpdateFailure.integrityFailed);
       return;
-    } on UpdateDownloadException {
+    } on Object {
+      // UpdateDownloadException or anything unexpected: never leave the dialog stuck.
       state = UpdateFailed(decision, UpdateFailure.downloadFailed);
       return;
     }
     await _settings.setPendingUpdateJson(jsonEncode(decision.release!.toJson()));
+    if (!ref.read(appIsForegroundProvider)()) {
+      state = UpdateReadyToInstall(decision, apk);
+      return;
+    }
+    await _install(decision, apk);
+  }
+
+  Future<void> _installNow(UpdateReadyToInstall ready) async {
+    if (_working) return;
+    _working = true;
+    try {
+      await _install(ready.decision, ready.apk);
+    } finally {
+      _working = false;
+    }
+  }
+
+  Future<void> _install(UpdateDecision decision, File apk) async {
     try {
       await ref.read(apkInstallerProvider).install(apk);
       state = UpdateInstalling(decision);
-    } on UpdateInstallException {
+    } on Object {
       state = UpdateFailed(decision, UpdateFailure.installFailed);
     }
   }
