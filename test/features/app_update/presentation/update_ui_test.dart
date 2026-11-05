@@ -291,6 +291,8 @@ void main() {
       expect(find.text("Updates aren't available in this preview build."), findsOneWidget);
       final row = tester.widget<ListTile>(find.widgetWithText(ListTile, 'Check for updates'));
       expect(row.onTap, isNull);
+      expect(row.enabled, isFalse);
+      expect(tester.widget<ListTile>(find.widgetWithText(ListTile, 'Release notes')).enabled, isFalse);
       verifyNever(() => repo.fetchLatest());
     });
   });

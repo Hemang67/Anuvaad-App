@@ -38,6 +38,7 @@ void main() {
 
   testWidgets('my language row shows native-first label; Change opens Languages', (tester) async {
     await pumpAnuvaadApp(tester, prefs: {..._onboarded, 'my_language': 'gu-IN'});
+    await tester.scrollUntilVisible(find.text('ગુજરાતી · Gujarati'), 200, scrollable: find.byType(Scrollable).first);
     expect(find.text('ગુજરાતી · Gujarati'), findsOneWidget);
     await tester.ensureVisible(find.text('Change'));
     await tester.pumpAndSettle();
@@ -50,6 +51,7 @@ void main() {
     tester.platformDispatcher.localeTestValue = const Locale('en', 'US');
     addTearDown(tester.platformDispatcher.clearLocaleTestValue);
     await pumpAnuvaadApp(tester, prefs: _onboarded);
+    await tester.scrollUntilVisible(find.text('English · English'), 200, scrollable: find.byType(Scrollable).first);
     expect(find.text('English · English'), findsOneWidget);
   });
 
@@ -60,5 +62,12 @@ void main() {
     await tester.tap(find.widgetWithText(ActionChip, 'Settings'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('settings-screen')), findsOneWidget);
+  });
+
+  testWidgets('mode card chip sits under the subtitle so the title keeps the full width', (tester) async {
+    await pumpAnuvaadApp(tester, prefs: _onboarded);
+    final subtitle = tester.getRect(find.text('Talk naturally face-to-face'));
+    final chip = tester.getRect(find.text('Coming in an update').first);
+    expect(chip.top, greaterThanOrEqualTo(subtitle.bottom));
   });
 }

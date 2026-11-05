@@ -35,6 +35,13 @@ ThemeData buildAnuvaadTheme(Brightness brightness) {
         side: BorderSide(color: tokens.line),
       ),
     ),
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? tokens.soft : tokens.card),
+        foregroundColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? tokens.blue : tokens.ink),
+        side: WidgetStatePropertyAll(BorderSide(color: tokens.line)),
+      ),
+    ),
     extensions: <ThemeExtension<dynamic>>[tokens],
   );
 }

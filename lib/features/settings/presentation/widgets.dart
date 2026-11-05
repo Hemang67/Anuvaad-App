@@ -35,18 +35,22 @@ class SettingsSection extends StatelessWidget {
 
 /// One line in a [SettingsSection]: title, optional subtitle, trailing widget, optional tap.
 class SettingsRow extends StatelessWidget {
-  const SettingsRow({super.key, required this.title, this.subtitle, this.trailing, this.onTap});
+  const SettingsRow({super.key, required this.title, this.subtitle, this.trailing, this.onTap, this.enabled = true});
 
   final String title;
   final String? subtitle;
   final Widget? trailing;
   final VoidCallback? onTap;
 
+  /// False draws the row greyed out (for features unavailable in this build).
+  final bool enabled;
+
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<AnuvaadColors>()!;
     return ListTile(
-      title: Text(title, style: TextStyle(fontWeight: FontWeight.w700, color: tokens.ink)),
+      enabled: enabled,
+      title: Text(title, style: TextStyle(fontWeight: FontWeight.w700, color: enabled ? tokens.ink : tokens.muted)),
       subtitle: subtitle == null ? null : Text(subtitle!, style: TextStyle(color: tokens.muted)),
       trailing: trailing,
       onTap: onTap,

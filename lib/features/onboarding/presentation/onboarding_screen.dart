@@ -189,9 +189,15 @@ class _PageBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: children),
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+        child: ConstrainedBox(
+          // Centre the content on tall screens; scroll when it doesn't fit.
+          constraints: BoxConstraints(minHeight: (constraints.maxHeight - 32).clamp(0, double.infinity)),
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: children),
+        ),
+      ),
     );
   }
 }

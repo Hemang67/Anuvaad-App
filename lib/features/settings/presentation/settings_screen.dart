@@ -89,11 +89,13 @@ class SettingsScreen extends ConsumerWidget {
                       ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.system_update_outlined),
                   onTap: updatesEnabled && !checking ? () => _checkForUpdates(context, ref) : null,
+                  enabled: updatesEnabled,
                 ),
                 SettingsRow(
                   title: l10n.settingsReleaseNotes,
                   trailing: const Icon(Icons.chevron_right),
                   onTap: updatesEnabled ? () => context.go(Routes.releaseNotes) : null,
+                  enabled: updatesEnabled,
                 ),
               ],
             ),

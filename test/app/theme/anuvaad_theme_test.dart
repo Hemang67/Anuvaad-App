@@ -39,4 +39,10 @@ void main() {
     final mid = AnuvaadColors.light.lerp(AnuvaadColors.dark, 0.5);
     expect(mid.bg, Color.lerp(const Color(0xFFF5F8FF), const Color(0xFF081629), 0.5));
   });
+
+  test('selected segments use the brand soft colour, not a seed-derived tint', () {
+    final style = buildAnuvaadTheme(Brightness.light).segmentedButtonTheme.style!;
+    expect(style.backgroundColor!.resolve({WidgetState.selected}), const Color(0xFFEAF4FF));
+    expect(style.foregroundColor!.resolve({WidgetState.selected}), const Color(0xFF1678ED));
+  });
 }

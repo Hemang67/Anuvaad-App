@@ -65,4 +65,15 @@ void main() {
     await pumpAnuvaadApp(tester, prefs: {'onboarding_complete': true});
     expect(find.byKey(_homeScreen), findsOneWidget);
   });
+
+  testWidgets('welcome content is vertically centred on a tall phone', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 2.625;
+    addTearDown(tester.view.reset);
+    await pumpAnuvaadApp(tester);
+    final page = tester.getRect(find.byType(PageView));
+    final top = tester.getTopLeft(find.bySemanticsLabel('Anuvaad logo')).dy;
+    final bottom = tester.getBottomLeft(find.textContaining('Talk naturally')).dy;
+    expect(((top + bottom) / 2 - page.center.dy).abs(), lessThan(24));
+  });
 }
