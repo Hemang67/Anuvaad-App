@@ -39,58 +39,65 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final tokens = Theme.of(context).extension<AnuvaadColors>()!;
     final last = _page == _pageCount - 1;
 
-    return Scaffold(
-      key: const Key('onboarding-screen'),
-      body: SafeArea(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 48,
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: last ? null : TextButton(onPressed: _finish, child: Text(l10n.onboardingSkip)),
+    // Back steps through the onboarding pages; on the first page it leaves the app.
+    return PopScope(
+      canPop: _page == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) _controller.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeOutCubic);
+      },
+      child: Scaffold(
+        key: const Key('onboarding-screen'),
+        body: SafeArea(
+          child: Column(
+            children: [
+              SizedBox(
+                height: 48,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: last ? null : TextButton(onPressed: _finish, child: Text(l10n.onboardingSkip)),
+                ),
               ),
-            ),
-            Expanded(
-              child: PageView(
-                controller: _controller,
-                onPageChanged: (page) => setState(() => _page = page),
-                children: const [_WelcomePage(), _ModesPage(), _PrivacyPage()],
+              Expanded(
+                child: PageView(
+                  controller: _controller,
+                  onPageChanged: (page) => setState(() => _page = page),
+                  children: const [_WelcomePage(), _ModesPage(), _PrivacyPage()],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      for (var i = 0; i < _pageCount; i++)
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: i == _page ? 22 : 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: i == _page ? tokens.blue : tokens.line,
-                            borderRadius: BorderRadius.circular(4),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        for (var i = 0; i < _pageCount; i++)
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            width: i == _page ? 22 : 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: i == _page ? tokens.blue : tokens.line,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
                           ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: FilledButton(
-                      onPressed: last ? _finish : _next,
-                      child: Text(last ? l10n.onboardingGetStarted : l10n.onboardingNext),
+                      ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: FilledButton(
+                        onPressed: last ? _finish : _next,
+                        child: Text(last ? l10n.onboardingGetStarted : l10n.onboardingNext),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -111,9 +118,16 @@ class _WelcomePage extends ConsumerWidget {
       children: [
         const BrandLogo(size: 140),
         const SizedBox(height: 20),
-        Text(l10n.brandName, style: textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w800, color: tokens.ink)),
+        Text(
+          l10n.brandName,
+          style: textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w800, color: tokens.ink),
+        ),
         const SizedBox(height: 6),
-        Text(l10n.brandTagline, textAlign: TextAlign.center, style: textTheme.titleMedium?.copyWith(color: tokens.muted)),
+        Text(
+          l10n.brandTagline,
+          textAlign: TextAlign.center,
+          style: textTheme.titleMedium?.copyWith(color: tokens.muted),
+        ),
         const SizedBox(height: 28),
         Text(
           l10n.onboardingWelcomeBody(joinList(names, lastSeparator: l10n.listOr)),
@@ -169,13 +183,16 @@ class _PrivacyPage extends ConsumerWidget {
               children: [
                 Icon(icon, color: tokens.blue, size: 22),
                 const SizedBox(width: 12),
-                Expanded(child: Text(text, style: TextStyle(color: tokens.ink, height: 1.4))),
+                Expanded(
+                  child: Text(text, style: TextStyle(color: tokens.ink, height: 1.4)),
+                ),
               ],
             ),
           ),
         if (base != null)
           TextButton(
-            onPressed: () => launchUrl(base.replace(path: '${base.path}/privacy'), mode: LaunchMode.externalApplication),
+            onPressed: () =>
+                launchUrl(base.replace(path: '${base.path}/privacy'), mode: LaunchMode.externalApplication),
             child: Text(l10n.onboardingPrivacyLink),
           ),
       ],
@@ -243,7 +260,10 @@ class _InfoCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.w700, color: tokens.ink, fontSize: 16)),
+                  Text(
+                    title,
+                    style: TextStyle(fontWeight: FontWeight.w700, color: tokens.ink, fontSize: 16),
+                  ),
                   const SizedBox(height: 4),
                   Text(body, style: TextStyle(color: tokens.muted, height: 1.4)),
                 ],
