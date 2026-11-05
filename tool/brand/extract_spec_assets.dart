@@ -29,6 +29,11 @@ List<EmbeddedImage> extractEmbeddedImages(String html) {
 // tagline, progress bar or caption). Recorded in assets/branding/README.md.
 const globeCrop = (x: 0, y: 610, width: 900, height: 710);
 
+// The complete approved logo inside the same artwork (the separately embedded
+// logo image is cut off at the bottom). Measured: logo pixels x 286-611,
+// y 180-469; the wordmark starts at y 480.
+const logoCrop = (x: 278, y: 172, width: 342, height: 305);
+
 void main(List<String> args) {
   if (args.length != 2) {
     stderr.writeln('usage: dart run tool/brand/extract_spec_assets.dart <spec.html> <outDir>');
@@ -37,14 +42,14 @@ void main(List<String> args) {
   final images = extractEmbeddedImages(File(args[0]).readAsStringSync());
   final outDir = Directory(args[1])..createSync(recursive: true);
 
-  final logo = images.isNotEmpty && images[0].mimeType == 'image/png' ? img.decodePng(images[0].bytes) : null;
   final art = images.length > 1 && images[1].mimeType == 'image/jpeg' ? img.decodeJpg(images[1].bytes) : null;
-  if (logo == null || art == null || logo.width != 372 || logo.height != 320 || art.width != 900 || art.height != 1609) {
+  if (art == null || art.width != 900 || art.height != 1609) {
     stderr.writeln('Spec images changed; update tool/brand/extract_spec_assets.dart');
     exit(2);
   }
 
-  File('${outDir.path}/logo_interim.png').writeAsBytesSync(images[0].bytes);
+  final logo = img.copyCrop(art, x: logoCrop.x, y: logoCrop.y, width: logoCrop.width, height: logoCrop.height);
+  File('${outDir.path}/logo.png').writeAsBytesSync(img.encodePng(logo));
 
   final globe = img.copyCrop(art, x: globeCrop.x, y: globeCrop.y, width: globeCrop.width, height: globeCrop.height);
   File('${outDir.path}/globe_light_interim.jpg').writeAsBytesSync(img.encodeJpg(globe, quality: 90));

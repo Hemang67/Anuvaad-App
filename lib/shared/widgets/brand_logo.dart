@@ -4,9 +4,9 @@ import '../../app/theme/anuvaad_colors.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Background colour of the approved logo image (median of its border pixels).
-const logoBackgroundColor = Color(0xFFFCFCFE);
+const logoBackgroundColor = Color(0xFFFBFDFE);
 
-const _logoAsset = 'assets/branding/logo_interim.png';
+const _logoAsset = 'assets/branding/logo.png';
 
 /// The approved Anuvaad logo, never redrawn. The image is not transparent, so it
 /// always sits on a circular badge in its own background colour; [size] is the

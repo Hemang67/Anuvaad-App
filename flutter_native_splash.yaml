@@ -6,7 +6,7 @@ flutter_native_splash:
     image: assets/branding/splash_icon_interim.png
     color: "#F5F8FF"
     color_dark: "#081629"
-    icon_background_color: "#FCFCFE"
-    icon_background_color_dark: "#FCFCFE"
+    icon_background_color: "#FBFDFE"
+    icon_background_color_dark: "#FBFDFE"
   ios: false
   web: false
