@@ -32,6 +32,9 @@ class OfflineModels {
 
   final OfflineModelStore _store;
 
+  /// The download pass in progress, shared by overlapping callers.
+  Future<void>? _inFlight;
+
   Future<bool> isReady(String languageCode) async {
     final code = mlKitCodes[languageCode];
     if (code == null) return false;
@@ -44,7 +47,10 @@ class OfflineModels {
   }
 
   /// Downloads missing models one at a time, Wi-Fi only. Never throws: offline translation is a fallback.
-  Future<void> ensureDownloaded() async {
+  /// Safe to call often (launch, resume, Try again): overlapping calls share one pass.
+  Future<void> ensureDownloaded() => _inFlight ??= _downloadMissing().whenComplete(() => _inFlight = null);
+
+  Future<void> _downloadMissing() async {
     for (final code in mlKitCodes.values) {
       try {
         if (await _store.isDownloaded(code)) continue;

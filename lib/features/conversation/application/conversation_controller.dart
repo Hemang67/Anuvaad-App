@@ -8,6 +8,7 @@ import '../../../core/permissions/microphone_permission.dart';
 import '../../app_update/application/update_controller.dart' show clockProvider;
 import '../../language_settings/application/language_preferences_controller.dart';
 import '../data/android_speech_recognizer.dart';
+import '../data/offline_models.dart';
 import '../domain/segment.dart';
 import '../domain/speech_recognition.dart';
 import '../domain/translation.dart';
@@ -173,6 +174,8 @@ class ConversationController extends Notifier<ConversationState> {
   Future<void> retryTranslation(String segmentId) async {
     final segment = _segment(segmentId);
     if (segment == null || segment.status != SegmentStatus.failed) return;
+    // The card asked for Wi-Fi: try the model download again (Wi-Fi only; skips models already present).
+    if (segment.offlineNotReady) unawaited(ref.read(offlineModelsProvider).ensureDownloaded());
     _update(segmentId, (s) => s.copyWith(status: SegmentStatus.translating, offlineNotReady: false));
     await _translate(segmentId);
   }

@@ -24,6 +24,7 @@ class AppShell extends ConsumerStatefulWidget {
 
 class _AppShellState extends ConsumerState<AppShell> {
   static const _tabs = [Routes.home, Routes.languages, Routes.settings];
+  AppLifecycleListener? _lifecycle;
 
   int get _selectedIndex {
     final index = _tabs.lastIndexWhere((tab) => widget.location.startsWith(tab));
@@ -33,8 +34,16 @@ class _AppShellState extends ConsumerState<AppShell> {
   @override
   void initState() {
     super.initState();
-    // Offline translation models download in the background on Wi-Fi, once per launch.
+    // Offline translation models download in the background on Wi-Fi: at launch, and again whenever the
+    // app returns to the foreground, so a download interrupted by lost Wi-Fi is retried.
     unawaited(ref.read(offlineModelsProvider).ensureDownloaded());
+    _lifecycle = AppLifecycleListener(onResume: () => unawaited(ref.read(offlineModelsProvider).ensureDownloaded()));
+  }
+
+  @override
+  void dispose() {
+    _lifecycle?.dispose();
+    super.dispose();
   }
 
   @override

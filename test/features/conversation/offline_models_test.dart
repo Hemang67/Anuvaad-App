@@ -17,6 +17,16 @@ void main() {
     expect(store.downloads, [(code: 'hi', wifiOnly: true), (code: 'gu', wifiOnly: true)]);
   });
 
+  test('concurrent ensureDownloaded calls share one run', () async {
+    final store = FakeOfflineModelStore(downloaded: {});
+    final models = OfflineModels(store);
+    await Future.wait([models.ensureDownloaded(), models.ensureDownloaded()]);
+    expect(store.downloads.map((d) => d.code), ['en', 'hi', 'gu']);
+    // A later call runs again (nothing left to download).
+    await models.ensureDownloaded();
+    expect(store.downloads, hasLength(3));
+  });
+
   test('ensureDownloaded survives a failed download', () async {
     final store = FakeOfflineModelStore(downloaded: {}, failing: {'hi'});
     await OfflineModels(store).ensureDownloaded();

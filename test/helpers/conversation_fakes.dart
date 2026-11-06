@@ -53,6 +53,9 @@ class FakeTranslator implements TranslatorPort {
 
   /// Per-segment gates: the answer for that segment waits until its completer finishes.
   final Map<String, Completer<void>> gates = {};
+
+  /// When set, every answer waits for it (for tests that don't know segment ids).
+  Completer<void>? holdAll;
   final List<TranslateRequest> requests = [];
 
   @override
@@ -60,6 +63,8 @@ class FakeTranslator implements TranslatorPort {
     requests.add(request);
     final gate = gates[request.segmentId];
     if (gate != null) await gate.future;
+    final hold = holdAll;
+    if (hold != null) await hold.future;
     final failure = error;
     if (failure != null) throw failure;
     return Translation(

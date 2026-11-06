@@ -6,6 +6,7 @@ import 'package:anuvaad/features/conversation/application/conversation_controlle
 import 'package:anuvaad/features/conversation/application/translation_service.dart';
 import 'package:anuvaad/features/conversation/data/android_speech_recognizer.dart';
 import 'package:anuvaad/features/conversation/data/mlkit_translator.dart';
+import 'package:anuvaad/features/conversation/data/offline_models.dart';
 import 'package:anuvaad/features/conversation/domain/segment.dart';
 import 'package:anuvaad/features/conversation/domain/speech_recognition.dart';
 import 'package:anuvaad/features/conversation/domain/translation.dart';
@@ -25,6 +26,7 @@ void main() {
   late FakeMicrophonePermission mic;
   late ProviderContainer container;
   late ProviderSubscription<ConversationState> keepAlive;
+  late CountingOfflineModels models;
   var now = DateTime(2026, 11, 6, 10);
 
   ProviderContainer build({String my = 'en-IN', String other = 'hi-IN'}) {
@@ -36,6 +38,7 @@ void main() {
         () => FixedLanguagePreferences(LanguagePreferences(myLanguage: my, otherLanguage: other)),
       ),
       clockProvider.overrideWithValue(() => now),
+      offlineModelsProvider.overrideWithValue(models),
     ]);
     keepAlive = c.listen(conversationControllerProvider, (_, _) {});
     return c;
@@ -50,6 +53,7 @@ void main() {
     cloud = FakeTranslator(reply: (r) => 'Where are you going today?');
     offline = FakeTranslator(provenance: TranslationProvenance.offline, provider: 'mlkit');
     mic = FakeMicrophonePermission();
+    models = CountingOfflineModels();
     container = build();
   });
 
@@ -195,6 +199,20 @@ void main() {
     await flush();
     expect(state().segments.last.status, SegmentStatus.translated);
     expect(state().segments.last.offlineNotReady, isFalse);
+  });
+
+  test('retrying a segment that failed for missing models starts the model download again', () async {
+    cloud.error = Exception('offline');
+    offline.error = const OfflineModelMissing(['hi-IN']);
+    await controller().startTurn(Speaker.other);
+    recognizer.emit(const FinalResult('नमस्ते'));
+    await flush();
+    expect(models.ensureCalls, 0);
+
+    await controller().retryTranslation(state().segments.single.id);
+    await flush();
+    expect(models.ensureCalls, 1);
+    expect(offline.requests, hasLength(2));
   });
 
   test('denied microphone is requested once; permanently denied is never requested', () async {

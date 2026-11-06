@@ -19,4 +19,22 @@ void main() {
     expect(models.ensureCalls, 1);
     expect(Routes.settings, '/settings');
   });
+
+  testWidgets('returning to the app retries the offline model download', (tester) async {
+    final models = CountingOfflineModels();
+    await pumpAnuvaadApp(tester, prefs: {'onboarding_complete': true}, offlineModels: models);
+    expect(models.ensureCalls, 1);
+    for (final state in [
+      AppLifecycleState.inactive,
+      AppLifecycleState.hidden,
+      AppLifecycleState.paused,
+      AppLifecycleState.hidden,
+      AppLifecycleState.inactive,
+      AppLifecycleState.resumed,
+    ]) {
+      tester.binding.handleAppLifecycleStateChanged(state);
+    }
+    await tester.pump();
+    expect(models.ensureCalls, 2);
+  });
 }
