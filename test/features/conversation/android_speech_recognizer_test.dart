@@ -85,4 +85,49 @@ void main() {
       expect(recognitionErrorCodeFromName(code.name), code);
     }
   });
+
+  test('start sends detectAmong only when given', () async {
+    final recognizer = AndroidSpeechRecognizer();
+    await recognizer.start('hi-IN');
+    await recognizer.start('hi-IN', detectAmong: const ['hi-IN', 'gu-IN']);
+    expect(calls[0].arguments, {'locale': 'hi-IN'});
+    expect(calls[1].arguments, {
+      'locale': 'hi-IN',
+      'detectAmong': ['hi-IN', 'gu-IN'],
+    });
+  });
+
+  test('parses speechStart, level and languageDetected', () async {
+    emit([
+      {'type': 'speechStart'},
+      {'type': 'level', 'value': 0.42},
+      {'type': 'level', 'value': 3},
+      {'type': 'languageDetected', 'locale': 'gu-IN', 'confidence': 2},
+      {'type': 'languageDetected', 'locale': 'hi-IN', 'confidence': 9},
+      {'type': 'languageDetected', 'confidence': 2},
+    ]);
+    final events = await AndroidSpeechRecognizer().events.toList();
+    expect(events, hasLength(5));
+    expect(events[0], isA<SpeechStarted>());
+    expect(events[1], isA<SoundLevel>().having((e) => e.level, 'level', 0.42));
+    expect(events[2], isA<SoundLevel>().having((e) => e.level, 'level', 1.0), reason: 'clamped to 0..1');
+    expect(
+      events[3],
+      isA<LanguageDetected>()
+          .having((e) => e.locale, 'locale', 'gu-IN')
+          .having((e) => e.confidence, 'confidence', LanguageConfidence.confident),
+    );
+    expect(events[4], isA<LanguageDetected>().having((e) => e.confidence, 'confidence', LanguageConfidence.unknown));
+  });
+
+  test('supportsLanguageDetection is false when the platform says so or the plugin is missing', () async {
+    messenger.setMockMethodCallHandler(_methods, (call) async => call.method == 'supportsLanguageDetection' ? true : null);
+    expect(await AndroidSpeechRecognizer().supportsLanguageDetection(), isTrue);
+    messenger.setMockMethodCallHandler(_methods, (call) async => false);
+    expect(await AndroidSpeechRecognizer().supportsLanguageDetection(), isFalse);
+    messenger.setMockMethodCallHandler(_methods, (call) async => throw PlatformException(code: 'boom'));
+    expect(await AndroidSpeechRecognizer().supportsLanguageDetection(), isFalse);
+    messenger.setMockMethodCallHandler(_methods, null);
+    expect(await AndroidSpeechRecognizer().supportsLanguageDetection(), isFalse);
+  });
 }

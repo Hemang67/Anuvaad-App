@@ -84,7 +84,11 @@ class FakeSpeechRecognizer implements SpeechRecognizerPort {
   final _events = StreamController<RecognitionEvent>.broadcast();
 
   bool available = true;
+  bool detectionSupported = false;
   final List<String> started = [];
+
+  /// The detectAmong list of the last start (empty when detection wasn't asked for).
+  List<String> startDetectAmong = const [];
   int stops = 0;
   int cancels = 0;
 
@@ -100,8 +104,12 @@ class FakeSpeechRecognizer implements SpeechRecognizerPort {
   Future<bool> isAvailable() async => available;
 
   @override
-  Future<void> start(String locale) async {
+  Future<bool> supportsLanguageDetection() async => detectionSupported;
+
+  @override
+  Future<void> start(String locale, {List<String> detectAmong = const []}) async {
     started.add(locale);
+    startDetectAmong = detectAmong;
     sharedLog?.add('start:$locale');
   }
 

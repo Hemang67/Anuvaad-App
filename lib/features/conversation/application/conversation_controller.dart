@@ -303,7 +303,7 @@ class ConversationController extends Notifier<ConversationState> {
               : null;
           _drop(id, _noticeFor(code), language: language);
         }
-      case RecognitionReady() || EndOfSpeech():
+      case RecognitionReady() || EndOfSpeech() || SpeechStarted() || SoundLevel() || LanguageDetected():
         break;
     }
   }
