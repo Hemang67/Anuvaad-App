@@ -891,6 +891,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t translate this.'**
   String get translationFailed;
+
+  /// No description provided for @audioDeviceSpeaker.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone speaker'**
+  String get audioDeviceSpeaker;
+
+  /// No description provided for @audioDeviceWired.
+  ///
+  /// In en, this message translates to:
+  /// **'Wired earphones'**
+  String get audioDeviceWired;
+
+  /// No description provided for @audioDeviceBluetooth.
+  ///
+  /// In en, this message translates to:
+  /// **'Bluetooth earphones'**
+  String get audioDeviceBluetooth;
+
+  /// No description provided for @audioDeviceUsb.
+  ///
+  /// In en, this message translates to:
+  /// **'USB earphones'**
+  String get audioDeviceUsb;
 }
 
 class _AppLocalizationsDelegate

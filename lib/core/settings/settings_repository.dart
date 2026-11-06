@@ -17,6 +17,7 @@ class SettingsRepository {
   static const _lastSeenBuild = 'last_seen_build';
   static const _pendingUpdate = 'pending_update';
   static const _lastUpdateCheck = 'last_update_check';
+  static const _outputPrefix = 'output_for_';
 
   ThemeMode get themeMode => switch (_prefs.getString(_themeMode)) {
         'light' => ThemeMode.light,
@@ -61,4 +62,10 @@ class SettingsRepository {
   }
 
   Future<void> setLastUpdateCheck(DateTime at) => _prefs.setString(_lastUpdateCheck, at.toUtc().toIso8601String());
+
+  /// Where spoken translations for [role] play ('earphones' or 'speaker'), stored as `output_for_me` / `output_for_other`.
+  String? outputPreference(String role) => _prefs.getString('$_outputPrefix${_roleKey(role)}');
+  Future<void> setOutputPreference(String role, String value) => _prefs.setString('$_outputPrefix${_roleKey(role)}', value);
+
+  static String _roleKey(String role) => role == 'forMe' ? 'me' : 'other';
 }

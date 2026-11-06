@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:anuvaad/core/permissions/microphone_permission.dart';
 import 'package:anuvaad/features/conversation/data/offline_models.dart';
+import 'package:anuvaad/features/conversation/domain/audio_output.dart';
 import 'package:anuvaad/features/conversation/domain/speech_recognition.dart';
 import 'package:anuvaad/features/conversation/domain/translation.dart';
 import 'package:anuvaad/features/language_settings/application/language_preferences_controller.dart';
@@ -138,4 +139,62 @@ class FixedLanguagePreferences extends LanguagePreferencesController {
 
   @override
   LanguagePreferences build() => initial;
+}
+
+const fakeSpeaker = AudioOutput(id: 1, kind: OutputKind.speaker, name: '');
+const fakeWired = AudioOutput(id: 2, kind: OutputKind.wired, name: 'Wired headset');
+const fakeBuds = AudioOutput(id: 3, kind: OutputKind.bluetooth, name: 'Galaxy Buds');
+
+/// Output device and playback double: records calls; tests push events with [emit] / [setOutputs].
+class FakeAudioOutput implements AudioOutputPort {
+  FakeAudioOutput({List<AudioOutput>? connected}) : connected = connected ?? [fakeSpeaker];
+
+  final _events = StreamController<AudioEvent>.broadcast();
+  List<AudioOutput> connected;
+
+  /// Calls in order: `play:{playbackId}:{deviceId}`, `stop`, `tone:{deviceId}`.
+  final List<String> calls = [];
+  final List<String> playedPaths = [];
+  Object? playError;
+
+  /// Shared call log with other fakes, to check ordering across ports.
+  List<String>? sharedLog;
+
+  void emit(AudioEvent event) => _events.add(event);
+
+  void setOutputs(List<AudioOutput> outputs) {
+    connected = outputs;
+    emit(OutputsChanged(outputs));
+  }
+
+  void _log(String entry) {
+    calls.add(entry);
+    sharedLog?.add(entry);
+  }
+
+  @override
+  Stream<AudioEvent> get events => _events.stream;
+
+  @override
+  Future<List<AudioOutput>> outputs() async => connected;
+
+  @override
+  Future<void> play({required String path, required int? deviceId, required String playbackId}) async {
+    _log('play:$playbackId:$deviceId');
+    playedPaths.add(path);
+    final error = playError;
+    if (error != null) throw error;
+  }
+
+  @override
+  Future<void> stop() async => _log('stop');
+
+  @override
+  Future<AudioOutput?> playTestTone({required int? deviceId}) async {
+    _log('tone:$deviceId');
+    for (final output in connected) {
+      if (output.id == deviceId) return output;
+    }
+    return connected.isEmpty ? null : connected.first;
+  }
 }

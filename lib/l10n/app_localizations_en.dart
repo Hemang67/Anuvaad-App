@@ -463,4 +463,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get translationFailed => 'Couldn\'t translate this.';
+
+  @override
+  String get audioDeviceSpeaker => 'Phone speaker';
+
+  @override
+  String get audioDeviceWired => 'Wired earphones';
+
+  @override
+  String get audioDeviceBluetooth => 'Bluetooth earphones';
+
+  @override
+  String get audioDeviceUsb => 'USB earphones';
 }

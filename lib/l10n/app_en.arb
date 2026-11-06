@@ -263,5 +263,9 @@
   "noticeBusy": "The microphone is busy. Try again in a moment.",
   "noticeGeneric": "Something went wrong with speech recognition. Try again.",
   "translationOfflineNotReady": "You're offline, and offline translation isn't downloaded yet. Connect to Wi-Fi once to download it.",
-  "translationFailed": "Couldn't translate this."
+  "translationFailed": "Couldn't translate this.",
+  "audioDeviceSpeaker": "Phone speaker",
+  "audioDeviceWired": "Wired earphones",
+  "audioDeviceBluetooth": "Bluetooth earphones",
+  "audioDeviceUsb": "USB earphones"
 }

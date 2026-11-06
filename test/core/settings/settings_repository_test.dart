@@ -68,4 +68,14 @@ void main() {
     await repo.setPendingUpdateJson(null);
     expect(prefs.containsKey('pending_update'), isFalse);
   });
+
+  test('output preferences are stored per role as plain strings', () async {
+    SharedPreferences.setMockInitialValues({});
+    final repo = SettingsRepository(await SharedPreferences.getInstance());
+    expect(repo.outputPreference('forMe'), isNull);
+    await repo.setOutputPreference('forMe', 'speaker');
+    await repo.setOutputPreference('forOther', 'earphones');
+    expect(repo.outputPreference('forMe'), 'speaker');
+    expect(repo.outputPreference('forOther'), 'earphones');
+  });
 }
