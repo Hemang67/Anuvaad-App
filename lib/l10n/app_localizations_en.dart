@@ -475,4 +475,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get audioDeviceUsb => 'USB earphones';
+
+  @override
+  String get noticeEarphonesDisconnected =>
+      'Earphones disconnected. Translations now play on the phone speaker.';
+
+  @override
+  String noticeSpeakerUnavailable(String device) {
+    return 'Couldn\'t use the phone speaker. Your reply played in $device.';
+  }
+
+  @override
+  String get noticePlaybackFailed =>
+      'Couldn\'t play the translation. Tap Replay to try again.';
 }

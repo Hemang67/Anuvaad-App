@@ -88,6 +88,9 @@ class FakeSpeechRecognizer implements SpeechRecognizerPort {
   int stops = 0;
   int cancels = 0;
 
+  /// Shared call log with other fakes, to check ordering across ports.
+  List<String>? sharedLog;
+
   void emit(RecognitionEvent event) => _events.add(event);
 
   @override
@@ -97,7 +100,10 @@ class FakeSpeechRecognizer implements SpeechRecognizerPort {
   Future<bool> isAvailable() async => available;
 
   @override
-  Future<void> start(String locale) async => started.add(locale);
+  Future<void> start(String locale) async {
+    started.add(locale);
+    sharedLog?.add('start:$locale');
+  }
 
   @override
   Future<void> stop() async => stops++;

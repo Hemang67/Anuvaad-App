@@ -1,19 +1,26 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:anuvaad/core/permissions/microphone_permission.dart';
+import 'package:anuvaad/core/settings/settings_providers.dart';
 import 'package:anuvaad/features/app_update/application/update_controller.dart' show clockProvider;
 import 'package:anuvaad/features/conversation/application/conversation_controller.dart';
 import 'package:anuvaad/features/conversation/application/translation_service.dart';
+import 'package:anuvaad/features/conversation/application/voice_service.dart';
+import 'package:anuvaad/features/conversation/data/android_audio.dart';
 import 'package:anuvaad/features/conversation/data/android_speech_recognizer.dart';
 import 'package:anuvaad/features/conversation/data/mlkit_translator.dart';
 import 'package:anuvaad/features/conversation/data/offline_models.dart';
+import 'package:anuvaad/features/conversation/domain/audio_output.dart';
 import 'package:anuvaad/features/conversation/domain/segment.dart';
 import 'package:anuvaad/features/conversation/domain/speech_recognition.dart';
 import 'package:anuvaad/features/conversation/domain/translation.dart';
+import 'package:anuvaad/features/conversation/domain/voice.dart';
 import 'package:anuvaad/features/language_settings/application/language_preferences_controller.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/conversation_fakes.dart';
 
@@ -27,6 +34,10 @@ void main() {
   late ProviderContainer container;
   late ProviderSubscription<ConversationState> keepAlive;
   late CountingOfflineModels models;
+  late FakeAudioOutput audio;
+  late FakeSpeechSynth synth;
+  late Directory cache;
+  late SharedPreferences prefs;
   var now = DateTime(2026, 11, 6, 10);
 
   ProviderContainer build({String my = 'en-IN', String other = 'hi-IN'}) {
@@ -39,6 +50,10 @@ void main() {
       ),
       clockProvider.overrideWithValue(() => now),
       offlineModelsProvider.overrideWithValue(models),
+      audioOutputProvider.overrideWithValue(audio),
+      speechSynthProvider.overrideWithValue(synth),
+      voiceServiceProvider.overrideWith((ref) => VoiceService(synth: synth, cacheDir: () async => cache)),
+      sharedPreferencesProvider.overrideWithValue(prefs),
     ]);
     keepAlive = c.listen(conversationControllerProvider, (_, _) {});
     return c;
@@ -48,7 +63,12 @@ void main() {
   ConversationState state() => container.read(conversationControllerProvider);
   Future<void> flush() => pumpEventQueue();
 
-  setUp(() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    prefs = await SharedPreferences.getInstance();
+    audio = FakeAudioOutput(connected: [fakeSpeaker]);
+    synth = FakeSpeechSynth();
+    cache = Directory.systemTemp.createTempSync('anuvaad_controller_test');
     recognizer = FakeSpeechRecognizer();
     cloud = FakeTranslator(reply: (r) => 'Where are you going today?');
     offline = FakeTranslator(provenance: TranslationProvenance.offline, provider: 'mlkit');
@@ -60,6 +80,7 @@ void main() {
   tearDown(() {
     keepAlive.close();
     container.dispose();
+    if (cache.existsSync()) cache.deleteSync(recursive: true);
   });
 
   test('listen turn shows partials then the translation', () async {
@@ -348,5 +369,188 @@ void main() {
     cloud.gates[id]!.complete();
     await flush(); // must not throw "used after dispose"
     container = build();
+  });
+
+  group('speaking', () {
+    Future<String> translatedTurn(Speaker speaker, String text) async {
+      await controller().startTurn(speaker);
+      final id = state().segments.last.id;
+      recognizer.emit(FinalResult(text));
+      await flush();
+      return id;
+    }
+
+    Segment seg(String id) => state().segments.firstWhere((s) => s.id == id);
+
+    test("a listen turn's translation plays for me in the earphones", () async {
+      audio.connected = [fakeSpeaker, fakeWired];
+      final id = await translatedTurn(Speaker.other, 'आप कहाँ जा रहे हैं?');
+      expect(audio.calls, contains('play:$id:${fakeWired.id}'));
+      expect(seg(id).speech, SpeechStatus.preparing);
+      expect(File(audio.playedPaths.single).existsSync(), isTrue);
+
+      audio.emit(PlaybackStarted(id, fakeWired));
+      await flush();
+      expect(seg(id).speech, SpeechStatus.playing);
+      expect(seg(id).output, fakeWired);
+      audio.emit(PlaybackCompleted(id));
+      await flush();
+      expect(seg(id).speech, SpeechStatus.played);
+    });
+
+    test("a speak turn's translation plays on the speaker", () async {
+      audio.connected = [fakeSpeaker, fakeBuds];
+      final id = await translatedTurn(Speaker.me, "I'm going to the office.");
+      expect(audio.calls, contains('play:$id:${fakeSpeaker.id}'));
+      expect(synth.synthesizedPaths.single, endsWith('$id.wav'));
+    });
+
+    test('starting a turn stops playback before the recognizer starts', () async {
+      final id = await translatedTurn(Speaker.other, 'नमस्ते');
+      audio.emit(PlaybackStarted(id, fakeSpeaker));
+      await flush();
+      final log = <String>[];
+      audio.sharedLog = log;
+      recognizer.sharedLog = log;
+      await controller().startTurn(Speaker.me);
+      expect(log, ['stop', 'start:en-IN']);
+      expect(seg(id).speech, SpeechStatus.played);
+    });
+
+    test('late events for an old playback are ignored', () async {
+      final first = await translatedTurn(Speaker.other, 'पहला');
+      audio.emit(PlaybackStarted(first, fakeSpeaker));
+      await flush();
+      final second = await translatedTurn(Speaker.other, 'दूसरा');
+      audio.emit(PlaybackStarted(second, fakeSpeaker));
+      audio.emit(PlaybackCompleted(first)); // late, for the interrupted playback
+      audio.emit(PlaybackFailed(first, '1:-1'));
+      await flush();
+      expect(seg(second).speech, SpeechStatus.playing);
+      expect(seg(first).speech, SpeechStatus.played);
+      expect(state().notice, isNull);
+    });
+
+    test("a late translation of an older segment doesn't play over a newer one", () async {
+      cloud.reply = (r) => 'EN:${r.text}';
+      await controller().startTurn(Speaker.other);
+      final older = state().segments.last.id;
+      cloud.gates[older] = Completer<void>();
+      recognizer.emit(const FinalResult('पहला'));
+      await flush();
+      final newer = await translatedTurn(Speaker.other, 'दूसरा');
+      expect(audio.calls.where((c) => c.startsWith('play:')), ['play:$newer:${fakeSpeaker.id}']);
+
+      cloud.gates[older]!.complete();
+      await flush();
+      expect(audio.calls.where((c) => c.startsWith('play:$older')), isEmpty);
+      expect(seg(older).speech, SpeechStatus.none);
+    });
+
+    test('a missing voice marks the segment noVoice and nothing plays', () async {
+      synth.availabilityByLocale['en-IN'] = VoiceAvailability.needsDownload;
+      final id = await translatedTurn(Speaker.other, 'नमस्ते');
+      expect(seg(id).speech, SpeechStatus.noVoice);
+      expect(audio.calls.where((c) => c.startsWith('play:')), isEmpty);
+      expect(synth.synthesizedPaths, isEmpty);
+    });
+
+    test('earphones disconnecting shows the notice, sounds the tone on the speaker, and the next translation uses the speaker',
+        () async {
+      audio.connected = [fakeSpeaker, fakeBuds];
+      final first = await translatedTurn(Speaker.other, 'पहला');
+      expect(audio.calls, contains('play:$first:${fakeBuds.id}'));
+      audio.emit(PlaybackStarted(first, fakeBuds));
+      audio.emit(PlaybackCompleted(first));
+      await flush();
+
+      audio.setOutputs([fakeSpeaker]);
+      await flush();
+      expect(state().notice, ConversationNotice.earphonesDisconnected);
+      expect(audio.calls, contains('tone:${fakeSpeaker.id}'));
+
+      final second = await translatedTurn(Speaker.other, 'दूसरा');
+      expect(audio.calls, contains('play:$second:${fakeSpeaker.id}'));
+    });
+
+    test('the reply landing on earphones while a speaker exists shows speakerUnavailable with the device', () async {
+      audio.connected = [fakeSpeaker, fakeBuds];
+      final id = await translatedTurn(Speaker.me, 'Hello');
+      expect(audio.calls, contains('play:$id:${fakeSpeaker.id}'));
+      audio.emit(PlaybackStarted(id, fakeBuds));
+      await flush();
+      expect(state().notice, ConversationNotice.speakerUnavailable);
+      expect(state().noticeOutput, fakeBuds);
+      expect(seg(id).output, fakeBuds);
+    });
+
+    test('losing audio focus ends playback', () async {
+      final id = await translatedTurn(Speaker.other, 'नमस्ते');
+      audio.emit(PlaybackStarted(id, fakeSpeaker));
+      audio.emit(PlaybackFocusLost(id));
+      await flush();
+      expect(seg(id).speech, SpeechStatus.played);
+      expect(state().notice, isNull);
+    });
+
+    test('playback failure shows the notice and replay succeeds', () async {
+      audio.playError = Exception('playbackFailed');
+      final id = await translatedTurn(Speaker.other, 'नमस्ते');
+      expect(seg(id).speech, SpeechStatus.failed);
+      expect(state().notice, ConversationNotice.playbackFailed);
+
+      audio.playError = null;
+      await controller().replay(id);
+      await flush();
+      expect(audio.calls.where((c) => c == 'play:$id:${fakeSpeaker.id}'), hasLength(2));
+      expect(synth.synthesizedPaths, hasLength(1), reason: 'replay reuses the file');
+      expect(seg(id).speech, SpeechStatus.preparing);
+
+      audio.emit(PlaybackFailed(id, '1:-1004'));
+      await flush();
+      expect(seg(id).speech, SpeechStatus.failed);
+      expect(state().notice, ConversationNotice.playbackFailed);
+    });
+
+    testWidgets('going to the background stops playback', (tester) async {
+      final id = await tester.runAsync(() => translatedTurn(Speaker.other, 'नमस्ते'));
+      audio.emit(PlaybackStarted(id!, fakeSpeaker));
+      await tester.runAsync(flush);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      await tester.runAsync(flush);
+      expect(audio.calls.last, 'stop');
+      expect(seg(id).speech, SpeechStatus.played);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    });
+
+    test('disposing stops playback and deletes synthesized files', () async {
+      final id = await translatedTurn(Speaker.other, 'नमस्ते');
+      audio.emit(PlaybackStarted(id, fakeSpeaker));
+      await flush();
+      final path = audio.playedPaths.single;
+      expect(File(path).existsSync(), isTrue);
+      keepAlive.close();
+      container.dispose();
+      await flush();
+      expect(audio.calls.last, 'stop');
+      expect(File(path).existsSync(), isFalse);
+      container = build();
+    });
+
+    test('installVoice opens the installer and re-checks availability', () async {
+      synth.availabilityByLocale['en-IN'] = VoiceAvailability.needsDownload;
+      final id = await translatedTurn(Speaker.other, 'नमस्ते');
+      expect(seg(id).speech, SpeechStatus.noVoice);
+
+      await controller().installVoice('en-IN');
+      expect(synth.installsOpened, 1);
+      synth.availabilityByLocale['en-IN'] = VoiceAvailability.available;
+      await controller().replay(id);
+      await flush();
+      expect(audio.calls, contains('play:$id:${fakeSpeaker.id}'));
+      expect(synth.availabilityChecks, 2);
+    });
   });
 }

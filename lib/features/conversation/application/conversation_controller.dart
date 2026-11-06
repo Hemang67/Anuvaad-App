@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,12 +8,17 @@ import 'package:uuid/uuid.dart';
 import '../../../core/permissions/microphone_permission.dart';
 import '../../app_update/application/update_controller.dart' show clockProvider;
 import '../../language_settings/application/language_preferences_controller.dart';
+import '../data/android_audio.dart';
 import '../data/android_speech_recognizer.dart';
 import '../data/offline_models.dart';
+import '../domain/audio_output.dart';
 import '../domain/segment.dart';
 import '../domain/speech_recognition.dart';
 import '../domain/translation.dart';
+import '../domain/voice.dart';
+import 'output_router.dart';
 import 'translation_service.dart';
+import 'voice_service.dart';
 
 /// A message the conversation screen shows above the Listen/Speak buttons.
 enum ConversationNotice {
@@ -25,6 +31,9 @@ enum ConversationNotice {
   languageUnsupported,
   busy,
   generic,
+  earphonesDisconnected,
+  speakerUnavailable,
+  playbackFailed,
 }
 
 class ConversationState {
@@ -33,6 +42,7 @@ class ConversationState {
     this.activeSpeaker,
     this.notice,
     this.noticeLanguage,
+    this.noticeOutput,
     this.otherLanguageOverride,
   });
 
@@ -46,6 +56,9 @@ class ConversationState {
   /// The language a [ConversationNotice.languageUnsupported] notice is about.
   final String? noticeLanguage;
 
+  /// The device a [ConversationNotice.speakerUnavailable] notice is about.
+  final AudioOutput? noticeOutput;
+
   /// The other person's language picked on this screen when Settings says Automatic.
   final String? otherLanguageOverride;
 
@@ -56,6 +69,7 @@ class ConversationState {
     Object? activeSpeaker = _keep,
     Object? notice = _keep,
     Object? noticeLanguage = _keep,
+    Object? noticeOutput = _keep,
     Object? otherLanguageOverride = _keep,
   }) =>
       ConversationState(
@@ -63,12 +77,14 @@ class ConversationState {
         activeSpeaker: identical(activeSpeaker, _keep) ? this.activeSpeaker : activeSpeaker as Speaker?,
         notice: identical(notice, _keep) ? this.notice : notice as ConversationNotice?,
         noticeLanguage: identical(noticeLanguage, _keep) ? this.noticeLanguage : noticeLanguage as String?,
+        noticeOutput: identical(noticeOutput, _keep) ? this.noticeOutput : noticeOutput as AudioOutput?,
         otherLanguageOverride:
             identical(otherLanguageOverride, _keep) ? this.otherLanguageOverride : otherLanguageOverride as String?,
       );
 }
 
-/// Turns recognizer events into ordered segments and translates each finished one (spec §3.3, text half).
+/// Turns recognizer events into ordered segments, translates each finished one and speaks the translation
+/// on the right output (spec §3.3).
 class ConversationController extends Notifier<ConversationState> {
   static const _uuid = Uuid();
 
@@ -84,16 +100,40 @@ class ConversationController extends Notifier<ConversationState> {
   bool _micBlocked = false;
   int _seq = 0;
 
+  late AudioOutputPort _audio;
+  late VoiceService _voice;
+  StreamSubscription<AudioEvent>? _audioEvents;
+
+  /// The playback Android is running now, and who it is for.
+  ({String id, OutputRole role})? _playing;
+
+  /// Highest segment seq auto-played so far: an older segment's late translation never plays over a newer one.
+  int _lastSpokenSeq = 0;
+
+  /// Synthesized files by segment, for Replay.
+  final _paths = <String, String>{};
+
+  /// Whether the last translation for you played in earphones (to notice them disconnecting).
+  bool _forMeOnEarphones = false;
+  List<AudioOutput> _outputs = const [];
+
   @override
   ConversationState build() {
     final recognizer = _recognizer = ref.watch(speechRecognizerProvider);
     _events = recognizer.events.listen(_onEvent);
+    final audio = _audio = ref.watch(audioOutputProvider);
+    final voice = _voice = ref.watch(voiceServiceProvider);
+    _audioEvents = audio.events.listen(_onAudio);
     // Backgrounding releases the microphone (spec §0.4).
     _lifecycle = AppLifecycleListener(onHide: _onBackground, onPause: _onBackground);
     ref.onDispose(() {
       if (_activeId != null) unawaited(recognizer.cancel());
       _activeId = null;
+      // Leaving the screen ends playback and deletes the synthesized files.
+      unawaited(audio.stop());
+      unawaited(voice.clear());
       _events?.cancel();
+      _audioEvents?.cancel();
       _lifecycle?.dispose();
     });
     return const ConversationState();
@@ -121,7 +161,9 @@ class ConversationController extends Notifier<ConversationState> {
     _starting = true;
     try {
       state = state.copyWith(notice: null, noticeLanguage: null);
-      if (!await _ensureMicrophone() || !ref.mounted) return;
+      // The microphone never opens over a translation that is playing (R29).
+      await stopSpeaking();
+      if (!ref.mounted || !await _ensureMicrophone() || !ref.mounted) return;
       if (!await _recognizer.isAvailable()) {
         if (ref.mounted) state = state.copyWith(notice: ConversationNotice.recognizerUnavailable);
         return;
@@ -221,7 +263,10 @@ class ConversationController extends Notifier<ConversationState> {
     return false;
   }
 
-  void _onBackground() => unawaited(cancelTurn());
+  void _onBackground() {
+    unawaited(cancelTurn());
+    unawaited(stopSpeaking());
+  }
 
   void _onEvent(RecognitionEvent event) {
     final id = _activeId;
@@ -299,11 +344,130 @@ class ConversationController extends Notifier<ConversationState> {
             offlineNotReady: false,
             translatedAt: _now(),
           ));
+      unawaited(_speak(id, auto: true));
     } on TranslationUnavailable catch (e) {
       if (ref.mounted) _update(id, (s) => s.copyWith(status: SegmentStatus.failed, offlineNotReady: e.offlineNotReady));
     } catch (error) {
       debugPrint('Translation failed: $error');
       if (ref.mounted) _update(id, (s) => s.copyWith(status: SegmentStatus.failed));
+    }
+  }
+
+  /// Plays a segment's translation again (the card's Replay button).
+  Future<void> replay(String segmentId) async {
+    final segment = _segment(segmentId);
+    if (segment == null || segment.translation == null || segment.speech == SpeechStatus.preparing) return;
+    await _speak(segmentId, auto: false);
+  }
+
+  /// Stops any translation that is playing; returns once Android has stopped it.
+  Future<void> stopSpeaking() async {
+    final playing = _playing;
+    _playing = null;
+    await _audio.stop();
+    if (playing != null && ref.mounted) _update(playing.id, (s) => s.copyWith(speech: SpeechStatus.played));
+  }
+
+  /// The no-voice card's "Install voice" button.
+  Future<void> installVoice(String language) => _voice.installVoice(language);
+
+  OutputRole _roleOf(Segment segment) => segment.speaker == Speaker.other ? OutputRole.forMe : OutputRole.forOther;
+
+  /// Whether an automatic playback may start now: never over an open microphone or a newer segment's speech.
+  bool _mayAutoPlay(Segment segment) => _activeId == null && !_starting && segment.seq >= _lastSpokenSeq;
+
+  Future<void> _speak(String id, {required bool auto}) async {
+    final segment = _segment(id);
+    final translation = segment?.translation;
+    if (segment == null || translation == null) return;
+    if (auto && !_mayAutoPlay(segment)) return; // stays SpeechStatus.none; Replay plays it
+    if (!auto && (_activeId != null || _starting)) return;
+    if (auto) _lastSpokenSeq = segment.seq;
+    _update(id, (s) => s.copyWith(speech: SpeechStatus.preparing));
+
+    final String path;
+    try {
+      final cached = _paths[id];
+      path = cached != null && File(cached).existsSync()
+          ? cached
+          : await _voice.synthesize(segmentId: id, text: translation.text, language: segment.targetLanguage);
+    } on VoiceMissing {
+      if (ref.mounted) _update(id, (s) => s.copyWith(speech: SpeechStatus.noVoice));
+      return;
+    } catch (error) {
+      debugPrint('Speech synthesis failed: $error');
+      if (ref.mounted) _speechFailed(id);
+      return;
+    }
+    if (!ref.mounted) return;
+    _paths[id] = path;
+    // The user may have started a turn while the voice was being prepared.
+    if (_activeId != null || _starting) {
+      _update(id, (s) => s.copyWith(speech: SpeechStatus.none));
+      return;
+    }
+
+    final role = _roleOf(segment);
+    final List<AudioOutput> outputs;
+    try {
+      outputs = await _audio.outputs();
+    } catch (error) {
+      debugPrint('Could not list outputs: $error');
+      if (ref.mounted) _speechFailed(id);
+      return;
+    }
+    if (!ref.mounted) return;
+    _outputs = outputs;
+    final target = resolveOutput(role, ref.read(outputPreferencesProvider)[role]!, outputs);
+
+    final previous = _playing;
+    if (previous != null && previous.id != id) _update(previous.id, (s) => s.copyWith(speech: SpeechStatus.played));
+    _playing = (id: id, role: role);
+    try {
+      await _audio.play(path: path, deviceId: target?.id, playbackId: id);
+    } catch (error) {
+      debugPrint('Playback failed to start: $error');
+      if (ref.mounted && _playing?.id == id) {
+        _playing = null;
+        _speechFailed(id);
+      }
+    }
+  }
+
+  void _speechFailed(String id) {
+    _update(id, (s) => s.copyWith(speech: SpeechStatus.failed));
+    state = state.copyWith(notice: ConversationNotice.playbackFailed, noticeLanguage: null, noticeOutput: null);
+  }
+
+  void _onAudio(AudioEvent event) {
+    if (!ref.mounted) return;
+    switch (event) {
+      case OutputsChanged(:final outputs):
+        _outputs = outputs;
+        if (_forMeOnEarphones && !outputs.any((o) => o.isEarphones)) {
+          _forMeOnEarphones = false;
+          state = state.copyWith(notice: ConversationNotice.earphonesDisconnected, noticeLanguage: null, noticeOutput: null);
+          // An audible cue too (R09): the user may not be looking at the screen.
+          final speaker = outputs.where((o) => o.kind == OutputKind.speaker).firstOrNull;
+          unawaited(_audio.playTestTone(deviceId: speaker?.id).catchError((Object _) => null));
+        }
+      case PlaybackStarted(:final playbackId, :final routed):
+        final playing = _playing;
+        if (playing == null || playing.id != playbackId) return; // a late event for an interrupted playback
+        _update(playbackId, (s) => s.copyWith(speech: SpeechStatus.playing, output: routed));
+        if (playing.role == OutputRole.forMe) _forMeOnEarphones = routed.isEarphones;
+        final speakerExists = _outputs.any((o) => o.kind == OutputKind.speaker);
+        if (playing.role == OutputRole.forOther && routed.kind != OutputKind.speaker && speakerExists) {
+          state = state.copyWith(notice: ConversationNotice.speakerUnavailable, noticeLanguage: null, noticeOutput: routed);
+        }
+      case PlaybackCompleted(:final playbackId) || PlaybackFocusLost(:final playbackId):
+        if (_playing?.id != playbackId) return;
+        _playing = null;
+        _update(playbackId, (s) => s.copyWith(speech: SpeechStatus.played));
+      case PlaybackFailed(:final playbackId):
+        if (_playing?.id != playbackId) return;
+        _playing = null;
+        _speechFailed(playbackId);
     }
   }
 

@@ -1,9 +1,13 @@
+import 'audio_output.dart';
 import 'translation.dart';
 
 /// Who is talking: the other person (Listen) or the user (Speak).
 enum Speaker { other, me }
 
 enum SegmentStatus { listening, translating, translated, failed }
+
+/// The spoken half of a translated segment.
+enum SpeechStatus { none, preparing, playing, played, failed, noVoice }
 
 /// One utterance: live text while listening, then its translation. [id] is stable across updates.
 class Segment {
@@ -21,6 +25,8 @@ class Segment {
     this.offlineNotReady = false,
     this.finalAt,
     this.translatedAt,
+    this.speech = SpeechStatus.none,
+    this.output,
   });
 
   final String id;
@@ -43,6 +49,11 @@ class Segment {
   final DateTime? finalAt;
   final DateTime? translatedAt;
 
+  final SpeechStatus speech;
+
+  /// The device Android actually played the translation on (never the requested one).
+  final AudioOutput? output;
+
   Segment copyWith({
     String? text,
     bool? isFinal,
@@ -51,6 +62,8 @@ class Segment {
     bool? offlineNotReady,
     DateTime? finalAt,
     DateTime? translatedAt,
+    SpeechStatus? speech,
+    AudioOutput? output,
   }) =>
       Segment(
         id: id,
@@ -66,5 +79,7 @@ class Segment {
         offlineNotReady: offlineNotReady ?? this.offlineNotReady,
         finalAt: finalAt ?? this.finalAt,
         translatedAt: translatedAt ?? this.translatedAt,
+        speech: speech ?? this.speech,
+        output: output ?? this.output,
       );
 }

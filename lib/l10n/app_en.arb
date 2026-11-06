@@ -267,5 +267,16 @@
   "audioDeviceSpeaker": "Phone speaker",
   "audioDeviceWired": "Wired earphones",
   "audioDeviceBluetooth": "Bluetooth earphones",
-  "audioDeviceUsb": "USB earphones"
+  "audioDeviceUsb": "USB earphones",
+  "noticeEarphonesDisconnected": "Earphones disconnected. Translations now play on the phone speaker.",
+  "noticeSpeakerUnavailable": "Couldn't use the phone speaker. Your reply played in {device}.",
+  "@noticeSpeakerUnavailable": {
+    "placeholders": {
+      "device": {
+        "type": "String",
+        "example": "Galaxy Buds"
+      }
+    }
+  },
+  "noticePlaybackFailed": "Couldn't play the translation. Tap Replay to try again."
 }

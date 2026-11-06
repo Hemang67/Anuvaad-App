@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:anuvaad/app/app.dart';
 import 'package:anuvaad/core/config/app_config.dart';
 import 'package:anuvaad/core/settings/settings_providers.dart';
+import 'package:anuvaad/features/conversation/application/voice_service.dart';
+import 'package:anuvaad/features/conversation/data/android_audio.dart';
 import 'package:anuvaad/features/conversation/data/offline_models.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -20,7 +24,15 @@ Future<SharedPreferences> pumpAnuvaadApp(
   String version = '0.1.0',
   String buildNumber = '1',
   OfflineModels? offlineModels,
+  FakeAudioOutput? audio,
+  FakeSpeechSynth? synth,
 }) async {
+  final audioFake = audio ?? FakeAudioOutput();
+  final synthFake = synth ?? FakeSpeechSynth();
+  final cache = Directory.systemTemp.createTempSync('anuvaad_widget_test');
+  addTearDown(() {
+    if (cache.existsSync()) cache.deleteSync(recursive: true);
+  });
   final shared = await mockPlatform(prefs: prefs, version: version, buildNumber: buildNumber);
   await tester.pumpWidget(ProviderScope(
     overrides: [
@@ -28,6 +40,10 @@ Future<SharedPreferences> pumpAnuvaadApp(
       appConfigProvider.overrideWithValue(config),
       // Never touch the ML Kit plugin in widget tests: all offline models count as downloaded.
       offlineModelsProvider.overrideWithValue(offlineModels ?? OfflineModels(FakeOfflineModelStore())),
+      // Never touch the native audio plugin in widget tests.
+      audioOutputProvider.overrideWithValue(audioFake),
+      speechSynthProvider.overrideWithValue(synthFake),
+      voiceServiceProvider.overrideWith((ref) => VoiceService(synth: synthFake, cacheDir: () async => cache)),
       ...overrides,
     ],
     child: const AnuvaadApp(),

@@ -6,6 +6,7 @@ import '../../../app/theme/anuvaad_colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../language_settings/application/language_preferences_controller.dart';
 import '../application/conversation_controller.dart';
+import '../application/output_router.dart';
 import 'segment_card.dart';
 import 'turn_buttons.dart';
 
@@ -79,6 +80,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
               _NoticeBanner(
                 notice: notice,
                 languageName: state.noticeLanguage == null ? null : name(state.noticeLanguage!),
+                deviceName: state.noticeOutput == null ? null : outputLabel(state.noticeOutput!, l10n),
                 choices: [
                   for (final language in registry.coreLanguages)
                     if (language.code != prefs.myLanguage) (code: language.code, name: language.displayName),
@@ -133,10 +135,17 @@ class _EmptyState extends StatelessWidget {
 }
 
 class _NoticeBanner extends StatelessWidget {
-  const _NoticeBanner({required this.notice, required this.languageName, required this.choices, required this.controller});
+  const _NoticeBanner({
+    required this.notice,
+    required this.languageName,
+    required this.deviceName,
+    required this.choices,
+    required this.controller,
+  });
 
   final ConversationNotice notice;
   final String? languageName;
+  final String? deviceName;
   final List<({String code, String name})> choices;
   final ConversationController controller;
 
@@ -154,6 +163,9 @@ class _NoticeBanner extends StatelessWidget {
       ConversationNotice.languageUnsupported => l10n.noticeLanguageUnsupported(languageName ?? ''),
       ConversationNotice.busy => l10n.noticeBusy,
       ConversationNotice.generic => l10n.noticeGeneric,
+      ConversationNotice.earphonesDisconnected => l10n.noticeEarphonesDisconnected,
+      ConversationNotice.speakerUnavailable => l10n.noticeSpeakerUnavailable(deviceName ?? ''),
+      ConversationNotice.playbackFailed => l10n.noticePlaybackFailed,
     };
     final action = switch (notice) {
       ConversationNotice.micDenied => TextButton(onPressed: controller.allowMicrophone, child: Text(l10n.conversationAllowMic)),

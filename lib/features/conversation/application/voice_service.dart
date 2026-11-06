@@ -29,9 +29,17 @@ class VoiceService {
     return path;
   }
 
+  /// Opens the phone's voice install screen, then forgets the cached answer so the next check is fresh.
+  Future<bool> installVoice(String language) async {
+    final opened = await _synth.openVoiceInstall(language);
+    forgetAvailability(language);
+    return opened;
+  }
+
   Future<void> clear() async {
     final folder = await _folder();
-    if (await folder.exists()) await folder.delete(recursive: true);
+    // Synchronous on purpose: it runs from dispose, and the files are small.
+    if (folder.existsSync()) folder.deleteSync(recursive: true);
   }
 
   Future<Directory> _folder() async => Directory('${(await _cacheDir()).path}${Platform.pathSeparator}tts');

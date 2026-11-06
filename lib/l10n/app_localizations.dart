@@ -915,6 +915,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'USB earphones'**
   String get audioDeviceUsb;
+
+  /// No description provided for @noticeEarphonesDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Earphones disconnected. Translations now play on the phone speaker.'**
+  String get noticeEarphonesDisconnected;
+
+  /// No description provided for @noticeSpeakerUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t use the phone speaker. Your reply played in {device}.'**
+  String noticeSpeakerUnavailable(String device);
+
+  /// No description provided for @noticePlaybackFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t play the translation. Tap Replay to try again.'**
+  String get noticePlaybackFailed;
 }
 
 class _AppLocalizationsDelegate
