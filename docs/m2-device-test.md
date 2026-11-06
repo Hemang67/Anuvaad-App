@@ -20,6 +20,8 @@ Phone model: ____________ · Android version: ____ · Network: Wi-Fi / mobile da
 - [ ] The first **Listen** shows Android's microphone dialog. After allowing, the button turns into **Stop**.
 - [ ] Saying nothing shows **Didn't catch that…** and the empty card disappears.
 - [ ] Back returns to Home, and the microphone indicator (top of the screen) goes off.
+- [ ] Tap **Listen**, then **Stop** straight away: the screen returns to Listen/Speak (no stuck Stop button).
+- [ ] Do six or more turns in a row: each new translation is fully visible without scrolling by hand.
 
 ## 3. Speech recognition (S1)
 
@@ -128,6 +130,10 @@ Known quirk to judge: a sentence like "My number is 98765 43210" may come out as
       If text appears, the translation shows with the **Offline translation** chip.
 - [ ] Without the downloaded models, the card says **You're offline, and offline translation isn't downloaded yet…**
       with **Try again**.
+- [ ] In airplane mode, which notice appears when you tap Listen? (Network, or "speech recognition isn't
+      available" if the phone has no offline speech pack.) ____________
+- [ ] Turn Wi-Fi off partway through the first-run download, turn it back on, then leave and reopen the app:
+      the download resumes (offline translations work afterwards).
 
 ## Result
 
