@@ -8,7 +8,7 @@ expected=$3
 perms=$("$aapt2" dump permissions "$apk")
 badging=$("$aapt2" dump badging "$apk")
 fail=0
-for permission in android.permission.INTERNET android.permission.REQUEST_INSTALL_PACKAGES; do
+for permission in android.permission.INTERNET android.permission.REQUEST_INSTALL_PACKAGES android.permission.RECORD_AUDIO; do
   if ! grep -q "uses-permission: name='$permission'" <<<"$perms"; then
     echo "::error::$apk is missing $permission"
     fail=1

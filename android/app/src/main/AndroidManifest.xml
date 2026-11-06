@@ -3,6 +3,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- In-app updates from GitHub Releases: Android still asks the user to confirm every install. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Speech recognition for conversations; asked at runtime on the first Listen or Speak. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <application
         android:label="Anuvaad"
         android:name="${applicationName}"
@@ -53,6 +55,10 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Android 11+ hides the speech recognition service unless the app declares it here. -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
         </intent>
     </queries>
 </manifest>
