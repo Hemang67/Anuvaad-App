@@ -15,6 +15,8 @@ class AudioPlugin(private val activity: Activity, messenger: BinaryMessenger) :
 
     private val tts = TtsController(activity)
     private var sink: EventChannel.EventSink? = null
+    private val outputs = OutputController(activity) { list -> send(mapOf("type" to "outputs", "outputs" to list)) }
+    private val playback = PlaybackController(activity, outputs) { event -> send(event) }
 
     init {
         MethodChannel(messenger, "app.anuvaad/audio").setMethodCallHandler(this)
@@ -34,26 +36,37 @@ class AudioPlugin(private val activity: Activity, messenger: BinaryMessenger) :
                 tts.synthesize(text, locale, path, result)
             }
             "openVoiceInstall" -> result.success(tts.openVoiceInstall())
+            "outputs" -> result.success(outputs.list())
+            "play" -> {
+                val path = call.argument<String>("path") ?: return badArgs(result, "path")
+                val playbackId = call.argument<String>("playbackId") ?: return badArgs(result, "playbackId")
+                playback.play(path, call.argument<Int>("deviceId"), playbackId, result)
+            }
+            "stop" -> playback.stop(result)
+            "playTestTone" -> playback.playTestTone(call.argument<Int>("deviceId"), result)
             else -> result.notImplemented()
         }
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
         sink = events
+        outputs.startWatching()
     }
 
     override fun onCancel(arguments: Any?) {
+        outputs.stopWatching()
         sink = null
     }
 
     /** Called from the Activity's onDestroy. */
     fun dispose() {
+        playback.dispose()
+        outputs.stopWatching()
         tts.dispose()
         sink = null
     }
 
-    @Suppress("unused")
-    internal fun send(event: Map<String, Any?>) {
+    private fun send(event: Map<String, Any?>) {
         sink?.success(event)
     }
 
