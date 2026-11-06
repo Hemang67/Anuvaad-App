@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:anuvaad/core/permissions/microphone_permission.dart';
 import 'package:anuvaad/features/conversation/data/offline_models.dart';
 import 'package:anuvaad/features/conversation/domain/audio_output.dart';
 import 'package:anuvaad/features/conversation/domain/speech_recognition.dart';
 import 'package:anuvaad/features/conversation/domain/translation.dart';
+import 'package:anuvaad/features/conversation/domain/voice.dart';
 import 'package:anuvaad/features/language_settings/application/language_preferences_controller.dart';
 
 /// In-memory ML Kit model store. [downloaded] holds BCP codes ('en', 'hi', 'gu').
@@ -196,5 +198,40 @@ class FakeAudioOutput implements AudioOutputPort {
       if (output.id == deviceId) return output;
     }
     return connected.isEmpty ? null : connected.first;
+  }
+}
+
+/// Text-to-speech double that writes small real files, so cleanup can be checked.
+class FakeSpeechSynth implements SpeechSynthPort {
+  final Map<String, VoiceAvailability> availabilityByLocale = {};
+  final List<String> synthesizedPaths = [];
+  int availabilityChecks = 0;
+  int installsOpened = 0;
+  Object? synthesisError;
+
+  /// Shared call log with other fakes, to check ordering across ports.
+  List<String>? sharedLog;
+
+  @override
+  Future<VoiceAvailability> availability(String locale) async {
+    availabilityChecks++;
+    return availabilityByLocale[locale] ?? VoiceAvailability.available;
+  }
+
+  @override
+  Future<void> synthesize({required String text, required String locale, required String path}) async {
+    sharedLog?.add('synthesize:$locale');
+    final error = synthesisError;
+    if (error != null) throw error;
+    File(path)
+      ..parent.createSync(recursive: true)
+      ..writeAsStringSync('wav:$locale:$text');
+    synthesizedPaths.add(path);
+  }
+
+  @override
+  Future<bool> openVoiceInstall(String locale) async {
+    installsOpened++;
+    return true;
   }
 }
