@@ -60,4 +60,30 @@ void main() {
     expect(Directory('${cache.path}${Platform.pathSeparator}tts').existsSync(), isFalse);
     await service.clear(); // clearing twice is fine
   });
+
+  test('only an available voice is remembered; a missing one is asked again', () async {
+    synth.availabilityByLocale['gu-IN'] = VoiceAvailability.needsDownload;
+    await service.availability('gu-IN');
+    await service.availability('gu-IN');
+    expect(synth.availabilityChecks, 2);
+  });
+
+  test('a speech engine that fails reads as no voice, and is asked again next time', () async {
+    synth.availabilityError = const SynthesisFailed('synthesisFailed');
+    expect(await service.availability('gu-IN'), VoiceAvailability.unsupported);
+    await expectLater(service.synthesize(segmentId: 's1', text: 'x', language: 'gu-IN'), throwsA(isA<VoiceMissing>()));
+    synth.availabilityError = null;
+    expect(await service.availability('gu-IN'), VoiceAvailability.available);
+  });
+
+  test('the first synthesis clears files left by an earlier session, once', () async {
+    final leftover = File('${cache.path}${Platform.pathSeparator}tts${Platform.pathSeparator}old.wav')
+      ..parent.createSync(recursive: true)
+      ..writeAsStringSync('wav');
+    final first = await service.synthesize(segmentId: 's1', text: 'x', language: 'en-IN');
+    expect(leftover.existsSync(), isFalse);
+    expect(File(first).existsSync(), isTrue);
+    await service.synthesize(segmentId: 's2', text: 'y', language: 'en-IN');
+    expect(File(first).existsSync(), isTrue, reason: 'the sweep runs once per conversation');
+  });
 }

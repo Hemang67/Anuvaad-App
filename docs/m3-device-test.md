@@ -30,7 +30,10 @@ translation is in that language and note what happens.
 
 - [ ] When a voice is missing, the card says **No {language} voice on this phone, so this translation is text only.** and
       offers **Install voice**.
-- [ ] After installing a voice and coming back to the app, the next translation in that language is spoken.
+- [ ] After installing a voice and coming back to the app, **Replay translation** on the no-voice card speaks it, and
+      the next translation in that language is spoken.
+- [ ] If Speech Services by Google is disabled (Settings → Apps), cards show the no-voice line, not an error. After
+      enabling it again, the next translation is spoken without restarting the app.
 - [ ] The spoken words match the text on the card (no cut-off endings, numbers read sensibly).
 
 ## 3. Routing matrix (S2)
@@ -57,6 +60,7 @@ For each setup, do one **Listen** turn and one **Speak** turn. Write the device 
 - [ ] With no earphones, **Translated voice · You** says **No earphones connected, so this plays on the phone speaker.**
 - [ ] Switching **Translated voice · You** to **Phone speaker** makes the next Listen translation play on the speaker,
       and the choice is still there after closing and reopening the app.
+- [ ] Set **Your reply · Other person** to **Earphones**: replies play in the earphones, with no warning notice.
 - [ ] If a reply could not go to the speaker, the notice **Couldn't use the phone speaker. Your reply played in {device}.**
       names the device it used. Note here if this happened: ______________________
 
@@ -65,8 +69,9 @@ For each setup, do one **Listen** turn and one **Speak** turn. Write the device 
 - [ ] Between turns: with earbuds connected, turn them off (or unplug wired earphones). The notice
       **Earphones disconnected. Translations now play on the phone speaker.** appears, with a short tone on the speaker.
 - [ ] The next Listen translation plays on the phone speaker, and its card says **Output: Phone speaker**.
-- [ ] During playback: start a long Listen translation playing in the earbuds, then turn them off. The notice and tone
-      appear, and Android moves the rest of the translation to the phone speaker. Write what you heard: ______________
+- [ ] During playback: start a long Listen translation playing in the earbuds, then turn them off. The notice appears
+      (no tone, so the translation isn't cut off), Android moves the rest of it to the phone speaker, and the card's
+      **Output:** line changes to **Phone speaker**. Write what you heard: ______________
 - [ ] Reconnect the earbuds: the next Listen translation goes back to them.
 
 ## 5. Talk over playback
@@ -75,7 +80,9 @@ For each setup, do one **Listen** turn and one **Speak** turn. Write the device 
       microphone opens.
 - [ ] The app does not translate its own voice: the new card shows only what the other person said.
 - [ ] Same with **Speak** mid-playback.
-- [ ] **Replay translation** on an older card plays it again, and its **Output:** line updates if the device changed.
+- [ ] Press Home while your reply is still being translated (straight after Stop): nothing plays in the background.
+- [ ] **Replay translation** on an older card plays it again, the list stays where it is, and its **Output:** line
+      updates if the device changed.
 
 ## 6. Interruption
 

@@ -183,8 +183,15 @@ class FakeAudioOutput implements AudioOutputPort {
   @override
   Stream<AudioEvent> get events => _events.stream;
 
+  /// While set and not completed, [outputs] waits for it.
+  Completer<void>? outputsGate;
+
   @override
-  Future<List<AudioOutput>> outputs() async => connected;
+  Future<List<AudioOutput>> outputs() async {
+    final gate = outputsGate;
+    if (gate != null) await gate.future;
+    return connected;
+  }
 
   @override
   Future<void> play({required String path, required int? deviceId, required String playbackId}) async {
@@ -215,18 +222,26 @@ class FakeSpeechSynth implements SpeechSynthPort {
   int installsOpened = 0;
   Object? synthesisError;
 
+  /// Per-text gates: synthesis of that text waits until its completer finishes.
+  final Map<String, Completer<void>> gates = {};
+  Object? availabilityError;
+
   /// Shared call log with other fakes, to check ordering across ports.
   List<String>? sharedLog;
 
   @override
   Future<VoiceAvailability> availability(String locale) async {
     availabilityChecks++;
+    final error = availabilityError;
+    if (error != null) throw error;
     return availabilityByLocale[locale] ?? VoiceAvailability.available;
   }
 
   @override
   Future<void> synthesize({required String text, required String locale, required String path}) async {
     sharedLog?.add('synthesize:$locale');
+    final gate = gates[text];
+    if (gate != null) await gate.future;
     final error = synthesisError;
     if (error != null) throw error;
     File(path)

@@ -35,12 +35,12 @@ AudioOutput? resolveOutput(OutputRole role, OutputPreference preference, List<Au
 /// The device's own name, or a type label when Android gives none.
 String outputLabel(AudioOutput output, AppLocalizations l10n) {
   final name = output.name.trim();
-  if (name.isNotEmpty) return name;
   return switch (output.kind) {
+    // Android names these after the phone model or a kernel switch ("h2w"); the app's labels are clearer.
     OutputKind.speaker => l10n.audioDeviceSpeaker,
     OutputKind.wired => l10n.audioDeviceWired,
-    OutputKind.bluetooth => l10n.audioDeviceBluetooth,
-    OutputKind.usb => l10n.audioDeviceUsb,
+    OutputKind.bluetooth => name.isNotEmpty ? name : l10n.audioDeviceBluetooth,
+    OutputKind.usb => name.isNotEmpty ? name : l10n.audioDeviceUsb,
   };
 }
 

@@ -13,7 +13,12 @@ class AndroidAudio implements SpeechSynthPort, AudioOutputPort {
 
   @override
   Future<VoiceAvailability> availability(String locale) async {
-    final raw = await _methods.invokeMethod<String>('voiceAvailability', {'locale': locale});
+    final String? raw;
+    try {
+      raw = await _methods.invokeMethod<String>('voiceAvailability', {'locale': locale});
+    } on PlatformException catch (e) {
+      throw SynthesisFailed(e.code);
+    }
     return switch (raw) {
       'available' => VoiceAvailability.available,
       'needsDownload' => VoiceAvailability.needsDownload,

@@ -89,10 +89,22 @@ class SegmentCard extends StatelessWidget {
           Text(l10n.conversationNoVoice(languageName(segment.targetLanguage)), style: muted),
           Align(
             alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              onPressed: onInstallVoice,
-              icon: const Icon(Icons.download_outlined),
-              label: Text(l10n.conversationInstallVoice),
+            child: Wrap(
+              alignment: WrapAlignment.end,
+              children: [
+                TextButton.icon(
+                  onPressed: onInstallVoice,
+                  icon: const Icon(Icons.download_outlined),
+                  label: Text(l10n.conversationInstallVoice),
+                ),
+                // After installing the voice in Android's settings, this speaks it.
+                TextButton.icon(
+                  key: Key('replay-${segment.id}'),
+                  onPressed: onReplay,
+                  icon: const Icon(Icons.play_arrow),
+                  label: Text(l10n.conversationReplay),
+                ),
+              ],
             ),
           ),
         ];

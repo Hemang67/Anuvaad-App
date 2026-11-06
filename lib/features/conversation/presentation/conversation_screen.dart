@@ -29,7 +29,19 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     super.dispose();
   }
 
-  void _scrollToEnd() {
+  /// What the cards show, apart from their speech lines.
+  static int _contentKey(ConversationState s) => Object.hashAll([
+        for (final x in s.segments)
+          Object.hash(x.id, x.text, x.isFinal, x.status, x.translation?.text, x.translation?.provenance, x.offlineNotReady),
+      ]);
+
+  /// The newest card's speech line ("Playing…", or Output and Replay).
+  static Object? _newestSpeechKey(ConversationState s) =>
+      s.segments.isEmpty ? null : (s.segments.last.id, s.segments.last.speech, s.segments.last.output?.id);
+
+  void _scrollToEnd({bool onlyIfAtEnd = false}) {
+    // Measured before the change is laid out: someone reading an older card isn't pulled away.
+    if (onlyIfAtEnd && _scroll.hasClients && _scroll.position.maxScrollExtent - _scroll.position.pixels > 48) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scroll.hasClients) return;
       _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
@@ -45,9 +57,12 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     final prefs = ref.watch(languagePreferencesProvider);
     String name(String code) => registry.byCode(code)?.displayName ?? code;
 
-    // Keep the newest line in view whenever any card changes (new card, live text, "Translating…", a
+    // Keep the newest line in view whenever a card's content changes (new card, live text, "Translating…", a
     // translation — including a late one on an older card, which pushes the newest down). Notices don't scroll.
-    ref.listen(conversationControllerProvider.select((s) => s.segments), (_, _) => _scrollToEnd());
+    // The newest card's speech line scrolls only when the list is already at the end, so someone replaying an
+    // older card stays where they are.
+    ref.listen(conversationControllerProvider.select(_contentKey), (_, _) => _scrollToEnd());
+    ref.listen(conversationControllerProvider.select(_newestSpeechKey), (_, _) => _scrollToEnd(onlyIfAtEnd: true));
 
     final other = state.otherLanguageOverride ?? prefs.otherLanguage;
     final listenHint = other == autoDetect ? l10n.languagesAutoDetect : l10n.conversationListenHint(name(other));

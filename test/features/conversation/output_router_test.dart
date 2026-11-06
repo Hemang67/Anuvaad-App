@@ -37,6 +37,10 @@ void main() {
     expect(outputLabel(fakeSpeaker, l10n), 'Phone speaker');
     expect(outputLabel(const AudioOutput(id: 7, kind: OutputKind.wired, name: ''), l10n), 'Wired earphones');
     expect(outputLabel(const AudioOutput(id: 8, kind: OutputKind.bluetooth, name: ' '), l10n), 'Bluetooth earphones');
+    // Android names wired ports and the speaker after the phone model or a kernel switch; the app's labels are clearer.
+    expect(outputLabel(const AudioOutput(id: 9, kind: OutputKind.wired, name: 'h2w'), l10n), 'Wired earphones');
+    expect(outputLabel(const AudioOutput(id: 10, kind: OutputKind.speaker, name: 'Redmi Note 13'), l10n), 'Phone speaker');
+    expect(outputLabel(const AudioOutput(id: 11, kind: OutputKind.usb, name: 'USB-C Headset'), l10n), 'USB-C Headset');
     expect(outputLabel(_usb, l10n), 'USB earphones');
   });
 

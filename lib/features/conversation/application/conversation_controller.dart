@@ -104,8 +104,14 @@ class ConversationController extends Notifier<ConversationState> {
   late VoiceService _voice;
   StreamSubscription<AudioEvent>? _audioEvents;
 
-  /// The playback Android is running now, and who it is for.
-  ({String id, OutputRole role})? _playing;
+  /// The playback Android is running now, who it is for, and the kind of output it was sent to.
+  ({String id, OutputRole role, OutputKind? target})? _playing;
+
+  /// Bumped whenever speech is stopped: a translation still being prepared from before never starts playing.
+  int _speechGen = 0;
+
+  /// False while the app is in the background: nothing starts playing there.
+  bool _foreground = true;
 
   /// Highest segment seq auto-played so far: an older segment's late translation never plays over a newer one.
   int _lastSpokenSeq = 0;
@@ -115,7 +121,6 @@ class ConversationController extends Notifier<ConversationState> {
 
   /// Whether the last translation for you played in earphones (to notice them disconnecting).
   bool _forMeOnEarphones = false;
-  List<AudioOutput> _outputs = const [];
 
   @override
   ConversationState build() {
@@ -125,7 +130,14 @@ class ConversationController extends Notifier<ConversationState> {
     final voice = _voice = ref.watch(voiceServiceProvider);
     _audioEvents = audio.events.listen(_onAudio);
     // Backgrounding releases the microphone (spec §0.4).
-    _lifecycle = AppLifecycleListener(onHide: _onBackground, onPause: _onBackground);
+    _lifecycle = AppLifecycleListener(
+      onHide: _onBackground,
+      onPause: _onBackground,
+      onShow: _onForeground,
+      onResume: _onForeground,
+    );
+    // Files from a conversation the app never finished closing (killed, swiped away) go now.
+    unawaited(voice.sweep().catchError((Object error) => debugPrint('Could not clear old voice files: $error')));
     ref.onDispose(() {
       if (_activeId != null) unawaited(recognizer.cancel());
       _activeId = null;
@@ -264,9 +276,12 @@ class ConversationController extends Notifier<ConversationState> {
   }
 
   void _onBackground() {
+    _foreground = false;
     unawaited(cancelTurn());
     unawaited(stopSpeaking());
   }
+
+  void _onForeground() => _foreground = true;
 
   void _onEvent(RecognitionEvent event) {
     final id = _activeId;
@@ -362,6 +377,7 @@ class ConversationController extends Notifier<ConversationState> {
 
   /// Stops any translation that is playing; returns once Android has stopped it.
   Future<void> stopSpeaking() async {
+    _speechGen++;
     final playing = _playing;
     _playing = null;
     await _audio.stop();
@@ -376,13 +392,17 @@ class ConversationController extends Notifier<ConversationState> {
   /// Whether an automatic playback may start now: never over an open microphone or a newer segment's speech.
   bool _mayAutoPlay(Segment segment) => _activeId == null && !_starting && segment.seq >= _lastSpokenSeq;
 
+  /// Checked again just before playing: nothing was stopped meanwhile (a turn, Home), and the microphone is closed.
+  bool _mayStillPlay(int generation) => generation == _speechGen && _foreground && _activeId == null && !_starting;
+
   Future<void> _speak(String id, {required bool auto}) async {
     final segment = _segment(id);
     final translation = segment?.translation;
     if (segment == null || translation == null) return;
     if (auto && !_mayAutoPlay(segment)) return; // stays SpeechStatus.none; Replay plays it
-    if (!auto && (_activeId != null || _starting)) return;
+    if (!_foreground || (!auto && (_activeId != null || _starting))) return;
     if (auto) _lastSpokenSeq = segment.seq;
+    final generation = _speechGen;
     _update(id, (s) => s.copyWith(speech: SpeechStatus.preparing));
 
     final String path;
@@ -399,10 +419,13 @@ class ConversationController extends Notifier<ConversationState> {
       if (ref.mounted) _speechFailed(id);
       return;
     }
-    if (!ref.mounted) return;
+    if (!ref.mounted) {
+      _deleteQuietly(path); // the conversation closed (and cleared its files) meanwhile
+      return;
+    }
     _paths[id] = path;
-    // The user may have started a turn while the voice was being prepared.
-    if (_activeId != null || _starting) {
+    // The user may have started a turn, or left the app, while the voice was being prepared.
+    if (!_mayStillPlay(generation)) {
       _update(id, (s) => s.copyWith(speech: SpeechStatus.none));
       return;
     }
@@ -417,12 +440,15 @@ class ConversationController extends Notifier<ConversationState> {
       return;
     }
     if (!ref.mounted) return;
-    _outputs = outputs;
+    if (!_mayStillPlay(generation)) {
+      _update(id, (s) => s.copyWith(speech: SpeechStatus.none));
+      return;
+    }
     final target = resolveOutput(role, ref.read(outputPreferencesProvider)[role]!, outputs);
 
     final previous = _playing;
     if (previous != null && previous.id != id) _update(previous.id, (s) => s.copyWith(speech: SpeechStatus.played));
-    _playing = (id: id, role: role);
+    _playing = (id: id, role: role, target: target?.kind);
     try {
       await _audio.play(path: path, deviceId: target?.id, playbackId: id);
     } catch (error) {
@@ -431,6 +457,14 @@ class ConversationController extends Notifier<ConversationState> {
         _playing = null;
         _speechFailed(id);
       }
+    }
+  }
+
+  static void _deleteQuietly(String path) {
+    try {
+      File(path).deleteSync();
+    } on FileSystemException {
+      // already gone
     }
   }
 
@@ -443,21 +477,26 @@ class ConversationController extends Notifier<ConversationState> {
     if (!ref.mounted) return;
     switch (event) {
       case OutputsChanged(:final outputs):
-        _outputs = outputs;
         if (_forMeOnEarphones && !outputs.any((o) => o.isEarphones)) {
           _forMeOnEarphones = false;
           state = state.copyWith(notice: ConversationNotice.earphonesDisconnected, noticeLanguage: null, noticeOutput: null);
-          // An audible cue too (R09): the user may not be looking at the screen.
-          final speaker = outputs.where((o) => o.kind == OutputKind.speaker).firstOrNull;
-          unawaited(_audio.playTestTone(deviceId: speaker?.id).catchError((Object _) => null));
+          // An audible cue too (R09): the user may not be looking at the screen. While a translation plays,
+          // Android moves it to the speaker and that is the cue; a tone would cut it off.
+          if (_playing == null) {
+            final speaker = outputs.where((o) => o.kind == OutputKind.speaker).firstOrNull;
+            unawaited(_audio.playTestTone(deviceId: speaker?.id).catchError((Object _) => null));
+          }
         }
       case PlaybackStarted(:final playbackId, :final routed):
         final playing = _playing;
         if (playing == null || playing.id != playbackId) return; // a late event for an interrupted playback
+        // A second report means Android moved a playback under way (earphones disconnected): the card follows.
+        final moved = _segment(playbackId)?.speech == SpeechStatus.playing;
         _update(playbackId, (s) => s.copyWith(speech: SpeechStatus.playing, output: routed));
-        if (playing.role == OutputRole.forMe) _forMeOnEarphones = routed.isEarphones;
-        final speakerExists = _outputs.any((o) => o.kind == OutputKind.speaker);
-        if (playing.role == OutputRole.forOther && routed.kind != OutputKind.speaker && speakerExists) {
+        // A move off the earphones keeps the flag, so the device-list change still shows the notice.
+        if (playing.role == OutputRole.forMe && (!moved || routed.isEarphones)) _forMeOnEarphones = routed.isEarphones;
+        final missedSpeaker = playing.target == OutputKind.speaker && routed.kind != OutputKind.speaker;
+        if (playing.role == OutputRole.forOther && missedSpeaker) {
           state = state.copyWith(notice: ConversationNotice.speakerUnavailable, noticeLanguage: null, noticeOutput: routed);
         }
       case PlaybackCompleted(:final playbackId) || PlaybackFocusLost(:final playbackId):

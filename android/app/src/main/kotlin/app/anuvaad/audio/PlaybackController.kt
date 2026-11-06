@@ -84,7 +84,10 @@ class PlaybackController(
     }
 
     fun playTestTone(deviceId: Int?, result: MethodChannel.Result) {
+        // The tone takes the audio from a translation that is playing: report that, like any other interruption.
+        val interrupted = playbackId
         stopAll()
+        if (interrupted != null) send(mapOf("type" to "focusLost", "playbackId" to interrupted))
         val requested = deviceId?.let { outputs.device(it) }
         val samples = toneSamples()
         val track = try {
@@ -125,28 +128,22 @@ class PlaybackController(
 
     fun dispose() = stopAll()
 
+    /**
+     * Reports the route once Android settles it, and again whenever Android moves the playback (earphones
+     * disconnected mid-translation), so the card always names where it is playing. The listener goes with the
+     * player when it is released.
+     */
     private fun reportRoute(mp: MediaPlayer, id: String, requested: AudioDeviceInfo?) {
-        mp.routedDevice?.let {
-            sendStarted(id, it)
-            return
+        var reportedId: Int? = null
+        fun report(device: AudioDeviceInfo) {
+            if (player !== mp || device.id == reportedId) return
+            reportedId = device.id
+            sendStarted(id, device)
         }
-        var reported = false
-        lateinit var listener: AudioRouting.OnRoutingChangedListener
-        listener = AudioRouting.OnRoutingChangedListener { router ->
-            val routed = router.routedDevice
-            if (!reported && player === mp && routed != null) {
-                reported = true
-                mp.removeOnRoutingChangedListener(listener)
-                sendStarted(id, routed)
-            }
-        }
-        mp.addOnRoutingChangedListener(listener, main)
+        mp.addOnRoutingChangedListener({ router: AudioRouting -> router.routedDevice?.let { report(it) } }, main)
+        mp.routedDevice?.let { report(it) }
         main.postDelayed({
-            if (!reported && player === mp) {
-                reported = true
-                mp.removeOnRoutingChangedListener(listener)
-                (mp.routedDevice ?: requested ?: outputs.speaker())?.let { sendStarted(id, it) }
-            }
+            if (reportedId == null && player === mp) (mp.routedDevice ?: requested ?: outputs.speaker())?.let { report(it) }
         }, ROUTE_WAIT_MS)
     }
 

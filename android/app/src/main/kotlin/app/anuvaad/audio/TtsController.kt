@@ -95,15 +95,17 @@ class TtsController(private val activity: Activity) {
             action(engine)
             return
         }
-        if (initFailed) {
-            result.error("synthesisFailed", "Speech engine unavailable", null)
-            return
-        }
         waiting.add {
             val started = tts
             if (ready && started != null) action(started) else result.error("synthesisFailed", "Speech engine unavailable", null)
         }
-        if (engine == null) start()
+        // First use, or the engine failed to start last time (missing or disabled then): try again, since the user
+        // may have enabled or installed it from Install voice meanwhile. A start already under way just queues.
+        if (engine == null || initFailed) {
+            initFailed = false
+            engine?.shutdown()
+            start()
+        }
     }
 
     private fun start() {

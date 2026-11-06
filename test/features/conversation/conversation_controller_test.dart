@@ -5,6 +5,7 @@ import 'package:anuvaad/core/permissions/microphone_permission.dart';
 import 'package:anuvaad/core/settings/settings_providers.dart';
 import 'package:anuvaad/features/app_update/application/update_controller.dart' show clockProvider;
 import 'package:anuvaad/features/conversation/application/conversation_controller.dart';
+import 'package:anuvaad/features/conversation/application/output_router.dart';
 import 'package:anuvaad/features/conversation/application/translation_service.dart';
 import 'package:anuvaad/features/conversation/application/voice_service.dart';
 import 'package:anuvaad/features/conversation/data/android_audio.dart';
@@ -551,6 +552,146 @@ void main() {
       await flush();
       expect(audio.calls, contains('play:$id:${fakeSpeaker.id}'));
       expect(synth.availabilityChecks, 2);
+    });
+
+    test('earphones disconnecting mid-playback skips the tone, and the card follows Android to the speaker', () async {
+      audio.connected = [fakeSpeaker, fakeBuds];
+      final id = await translatedTurn(Speaker.other, 'नमस्ते');
+      audio.emit(PlaybackStarted(id, fakeBuds));
+      await flush();
+
+      audio.setOutputs([fakeSpeaker]);
+      await flush();
+      expect(state().notice, ConversationNotice.earphonesDisconnected);
+      expect(audio.calls.where((c) => c.startsWith('tone:')), isEmpty,
+          reason: 'a tone would cut the translation off; the translation itself, now on the speaker, is the cue');
+      expect(seg(id).speech, SpeechStatus.playing);
+
+      audio.emit(PlaybackStarted(id, fakeSpeaker)); // Android moved the rest of it
+      await flush();
+      expect(seg(id).output, fakeSpeaker);
+      expect(seg(id).speech, SpeechStatus.playing);
+      audio.emit(PlaybackCompleted(id));
+      await flush();
+      expect(seg(id).speech, SpeechStatus.played);
+    });
+
+    test('Android moving playback off the earphones before the device list changes still shows the notice', () async {
+      audio.connected = [fakeSpeaker, fakeBuds];
+      final id = await translatedTurn(Speaker.other, 'नमस्ते');
+      audio.emit(PlaybackStarted(id, fakeBuds));
+      audio.emit(PlaybackStarted(id, fakeSpeaker));
+      await flush();
+      audio.setOutputs([fakeSpeaker]);
+      await flush();
+      expect(state().notice, ConversationNotice.earphonesDisconnected);
+    });
+
+    test('a turn started while outputs are being listed never plays over the microphone', () async {
+      final log = <String>[];
+      audio.sharedLog = log;
+      recognizer.sharedLog = log;
+      audio.outputsGate = Completer<void>();
+      await controller().startTurn(Speaker.other);
+      final id = state().segments.last.id;
+      recognizer.emit(const FinalResult('नमस्ते'));
+      await flush(); // translated and voiced; now waiting for the output list
+
+      final turn = controller().startTurn(Speaker.me);
+      await flush();
+      audio.outputsGate!.complete();
+      await turn;
+      await flush();
+      expect(log.where((e) => e.startsWith('play:')), isEmpty, reason: '$log');
+      expect(seg(id).speech, SpeechStatus.none, reason: 'Replay plays it later');
+    });
+
+    testWidgets('a reply still being translated when the app is hidden is not spoken', (tester) async {
+      late String id;
+      await tester.runAsync(() async {
+        await controller().startTurn(Speaker.me);
+        id = state().segments.last.id;
+        cloud.gates[id] = Completer<void>();
+        recognizer.emit(const FinalResult('Hello'));
+        await flush();
+      });
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      await tester.runAsync(() async {
+        cloud.gates[id]!.complete();
+        await flush();
+      });
+      expect(audio.calls.where((c) => c.startsWith('play:')), isEmpty);
+      expect(seg(id).speech, SpeechStatus.none);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.runAsync(() async {
+        await controller().replay(id);
+        await flush();
+      });
+      expect(audio.calls, contains('play:$id:${fakeSpeaker.id}'), reason: 'back in the app, Replay plays it');
+    });
+
+    testWidgets('a reply still being voiced when the app is hidden is not spoken', (tester) async {
+      synth.gates['Where are you going today?'] = Completer<void>();
+      final id = await tester.runAsync(() => translatedTurn(Speaker.me, 'Hello'));
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      await tester.runAsync(() async {
+        synth.gates['Where are you going today?']!.complete();
+        await flush();
+      });
+      expect(audio.calls.where((c) => c.startsWith('play:')), isEmpty);
+      expect(seg(id!).speech, SpeechStatus.none);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    });
+
+    test('a reply set to Earphones on purpose does not claim the speaker failed', () async {
+      audio.connected = [fakeSpeaker, fakeBuds];
+      await container.read(outputPreferencesProvider.notifier).select(OutputRole.forOther, OutputPreference.earphones);
+      final id = await translatedTurn(Speaker.me, 'Hello');
+      expect(audio.calls, contains('play:$id:${fakeBuds.id}'));
+      audio.emit(PlaybackStarted(id, fakeBuds));
+      await flush();
+      expect(state().notice, isNull);
+      expect(seg(id).output, fakeBuds);
+    });
+
+    test('a missing voice is checked again on the next translation', () async {
+      synth.availabilityByLocale['en-IN'] = VoiceAvailability.needsDownload;
+      final first = await translatedTurn(Speaker.other, 'पहला');
+      expect(seg(first).speech, SpeechStatus.noVoice);
+
+      synth.availabilityByLocale['en-IN'] = VoiceAvailability.available; // downloaded in Android's settings
+      final second = await translatedTurn(Speaker.other, 'दूसरा');
+      expect(audio.calls, contains('play:$second:${fakeSpeaker.id}'));
+    });
+
+    test('opening a conversation deletes voice files left by an earlier one', () async {
+      keepAlive.close();
+      container.dispose();
+      await flush();
+      final leftover = File('${cache.path}${Platform.pathSeparator}tts${Platform.pathSeparator}old.wav')
+        ..parent.createSync(recursive: true)
+        ..writeAsStringSync('wav');
+      container = build();
+      await flush();
+      expect(leftover.existsSync(), isFalse);
+    });
+
+    test('a voice finished after the conversation closed is deleted', () async {
+      synth.gates['Where are you going today?'] = Completer<void>();
+      final id = await translatedTurn(Speaker.other, 'नमस्ते');
+      keepAlive.close();
+      container.dispose();
+      await flush();
+      synth.gates['Where are you going today?']!.complete();
+      await flush();
+      final file = File('${cache.path}${Platform.pathSeparator}tts${Platform.pathSeparator}$id.wav');
+      expect(file.existsSync(), isFalse);
+      container = build();
     });
   });
 }

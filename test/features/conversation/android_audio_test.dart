@@ -72,6 +72,11 @@ void main() {
     await expectLater(audio.synthesize(text: 'x', locale: 'gu-IN', path: '/p'), throwsA(isA<SynthesisFailed>()));
   });
 
+  test("voiceAvailability's platform error becomes SynthesisFailed, for the service to treat as no voice", () async {
+    answer = (_) => throw PlatformException(code: 'synthesisFailed', message: 'Speech engine unavailable');
+    await expectLater(AndroidAudio().availability('gu-IN'), throwsA(isA<SynthesisFailed>()));
+  });
+
   test('openVoiceInstall returns the platform answer', () async {
     answer = (_) => true;
     expect(await AndroidAudio().openVoiceInstall('gu-IN'), isTrue);

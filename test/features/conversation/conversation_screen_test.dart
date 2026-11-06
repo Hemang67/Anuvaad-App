@@ -154,6 +154,42 @@ void main() {
     expect(synth.installsOpened, 1);
   });
 
+  testWidgets('after installing a voice, Replay on the no-voice card speaks it', (tester) async {
+    synth.availabilityByLocale['en-IN'] = VoiceAvailability.needsDownload;
+    await openConversation(tester);
+    await tester.tap(find.byKey(const Key('listen-button')));
+    await tester.pumpAndSettle();
+    await say(tester, const FinalResult('नमस्ते'));
+    await tester.tap(find.text('Install voice'));
+    await tester.pumpAndSettle();
+    synth.availabilityByLocale['en-IN'] = VoiceAvailability.available;
+    await tester.tap(find.text('Replay translation'));
+    await tester.pumpAndSettle();
+    expect(audio.calls.where((c) => c.startsWith('play:')), hasLength(1));
+  });
+
+  testWidgets('Replay on an older card keeps the list where it is', (tester) async {
+    cloud.reply = (r) => 'Translation of "${r.text}": a long answer that wraps over several lines on a phone screen, '
+        'so that the card grows when it arrives and the list must scroll to keep it visible.';
+    await openConversation(tester);
+    for (var i = 1; i <= 6; i++) {
+      await tester.tap(find.byKey(const Key('listen-button')));
+      await tester.pumpAndSettle();
+      await say(tester, FinalResult('वाक्य नंबर $i, थोड़ा लंबा ताकि कार्ड बड़ा हो।'));
+    }
+    final first = audio.calls.firstWhere((c) => c.startsWith('play:')).split(':')[1];
+    await tester.drag(find.byType(ListView), const Offset(0, 5000));
+    await tester.pumpAndSettle();
+    final card = find.byKey(ValueKey('segment-$first'));
+    final before = tester.getRect(card).top;
+
+    await tester.tap(find.byKey(Key('replay-$first')));
+    await tester.pumpAndSettle();
+    audio.emit(PlaybackStarted(first, fakeSpeaker));
+    await tester.pumpAndSettle();
+    expect(tester.getRect(card).top, closeTo(before, 1));
+  });
+
   testWidgets('earphones disconnected notice appears', (tester) async {
     audio.connected = [fakeSpeaker, fakeBuds];
     await openConversation(tester);
