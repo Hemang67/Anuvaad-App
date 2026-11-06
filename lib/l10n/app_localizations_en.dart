@@ -364,4 +364,103 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateInstallNow => 'Install now';
+
+  @override
+  String get conversationTitle => 'In-person conversation';
+
+  @override
+  String get conversationListen => 'Listen';
+
+  @override
+  String conversationListenHint(String language) {
+    return 'They speak $language';
+  }
+
+  @override
+  String get conversationSpeak => 'Speak';
+
+  @override
+  String conversationSpeakHint(String language) {
+    return 'You speak $language';
+  }
+
+  @override
+  String get conversationStop => 'Stop';
+
+  @override
+  String get conversationListening => 'Listening…';
+
+  @override
+  String get conversationTranslating => 'Translating…';
+
+  @override
+  String conversationOtherLabel(String language) {
+    return 'OTHER PERSON · $language';
+  }
+
+  @override
+  String conversationYouLabel(String language) {
+    return 'YOU · $language';
+  }
+
+  @override
+  String get conversationOfflineLabel => 'Offline translation';
+
+  @override
+  String get conversationEmptyTitle => 'Start a conversation';
+
+  @override
+  String get conversationEmptyBody =>
+      'Tap Listen when the other person talks, or Speak to reply. Translations appear here as text. Spoken translations arrive in the next update.';
+
+  @override
+  String get conversationChooseOtherLanguage =>
+      'Which language will they speak?';
+
+  @override
+  String get conversationRetry => 'Try again';
+
+  @override
+  String get conversationAllowMic => 'Allow';
+
+  @override
+  String get conversationOpenSettings => 'Open settings';
+
+  @override
+  String get noticeMicDenied => 'Anuvaad needs the microphone to hear speech.';
+
+  @override
+  String get noticeMicPermanentlyDenied =>
+      'Microphone access is off. Turn it on in Settings to use conversations.';
+
+  @override
+  String get noticeRecognizerUnavailable =>
+      'Speech recognition isn\'t available on this phone. Install or update the Google app, then try again.';
+
+  @override
+  String get noticeNoSpeech =>
+      'Didn\'t catch that. Try again a little closer to the phone.';
+
+  @override
+  String get noticeNetwork =>
+      'Speech recognition needs a connection. Check your internet and try again.';
+
+  @override
+  String noticeLanguageUnsupported(String language) {
+    return '$language speech recognition isn\'t available on this phone yet. Update the Google app, or add $language in its voice settings.';
+  }
+
+  @override
+  String get noticeBusy => 'The microphone is busy. Try again in a moment.';
+
+  @override
+  String get noticeGeneric =>
+      'Something went wrong with speech recognition. Try again.';
+
+  @override
+  String get translationOfflineNotReady =>
+      'You\'re offline, and offline translation isn\'t downloaded yet. Connect to Wi-Fi once to download it.';
+
+  @override
+  String get translationFailed => 'Couldn\'t translate this.';
 }

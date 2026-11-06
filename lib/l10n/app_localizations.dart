@@ -729,6 +729,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Install now'**
   String get updateInstallNow;
+
+  /// No description provided for @conversationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'In-person conversation'**
+  String get conversationTitle;
+
+  /// No description provided for @conversationListen.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get conversationListen;
+
+  /// No description provided for @conversationListenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'They speak {language}'**
+  String conversationListenHint(String language);
+
+  /// No description provided for @conversationSpeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak'**
+  String get conversationSpeak;
+
+  /// No description provided for @conversationSpeakHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You speak {language}'**
+  String conversationSpeakHint(String language);
+
+  /// No description provided for @conversationStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get conversationStop;
+
+  /// No description provided for @conversationListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening…'**
+  String get conversationListening;
+
+  /// No description provided for @conversationTranslating.
+  ///
+  /// In en, this message translates to:
+  /// **'Translating…'**
+  String get conversationTranslating;
+
+  /// No description provided for @conversationOtherLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'OTHER PERSON · {language}'**
+  String conversationOtherLabel(String language);
+
+  /// No description provided for @conversationYouLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'YOU · {language}'**
+  String conversationYouLabel(String language);
+
+  /// No description provided for @conversationOfflineLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline translation'**
+  String get conversationOfflineLabel;
+
+  /// No description provided for @conversationEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a conversation'**
+  String get conversationEmptyTitle;
+
+  /// No description provided for @conversationEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Listen when the other person talks, or Speak to reply. Translations appear here as text. Spoken translations arrive in the next update.'**
+  String get conversationEmptyBody;
+
+  /// No description provided for @conversationChooseOtherLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Which language will they speak?'**
+  String get conversationChooseOtherLanguage;
+
+  /// No description provided for @conversationRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get conversationRetry;
+
+  /// No description provided for @conversationAllowMic.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow'**
+  String get conversationAllowMic;
+
+  /// No description provided for @conversationOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get conversationOpenSettings;
+
+  /// No description provided for @noticeMicDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Anuvaad needs the microphone to hear speech.'**
+  String get noticeMicDenied;
+
+  /// No description provided for @noticeMicPermanentlyDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone access is off. Turn it on in Settings to use conversations.'**
+  String get noticeMicPermanentlyDenied;
+
+  /// No description provided for @noticeRecognizerUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech recognition isn\'t available on this phone. Install or update the Google app, then try again.'**
+  String get noticeRecognizerUnavailable;
+
+  /// No description provided for @noticeNoSpeech.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t catch that. Try again a little closer to the phone.'**
+  String get noticeNoSpeech;
+
+  /// No description provided for @noticeNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech recognition needs a connection. Check your internet and try again.'**
+  String get noticeNetwork;
+
+  /// No description provided for @noticeLanguageUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'{language} speech recognition isn\'t available on this phone yet. Update the Google app, or add {language} in its voice settings.'**
+  String noticeLanguageUnsupported(String language);
+
+  /// No description provided for @noticeBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'The microphone is busy. Try again in a moment.'**
+  String get noticeBusy;
+
+  /// No description provided for @noticeGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong with speech recognition. Try again.'**
+  String get noticeGeneric;
+
+  /// No description provided for @translationOfflineNotReady.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline, and offline translation isn\'t downloaded yet. Connect to Wi-Fi once to download it.'**
+  String get translationOfflineNotReady;
+
+  /// No description provided for @translationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t translate this.'**
+  String get translationFailed;
 }
 
 class _AppLocalizationsDelegate

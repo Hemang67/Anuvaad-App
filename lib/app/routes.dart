@@ -5,4 +5,5 @@ abstract final class Routes {
   static const languages = '/languages';
   static const settings = '/settings';
   static const releaseNotes = '/settings/release-notes';
+  static const conversation = '/conversation';
 }

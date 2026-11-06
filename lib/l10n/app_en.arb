@@ -196,5 +196,72 @@
   "releaseNotesLoadFailed": "Couldn't load release notes.",
   "releaseNotesEmpty": "No releases yet.",
   "updateReadyToInstall": "The update is downloaded and checked. It's ready to install.",
-  "updateInstallNow": "Install now"
+  "updateInstallNow": "Install now",
+  "conversationTitle": "In-person conversation",
+  "conversationListen": "Listen",
+  "conversationListenHint": "They speak {language}",
+  "@conversationListenHint": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "Hindi"
+      }
+    }
+  },
+  "conversationSpeak": "Speak",
+  "conversationSpeakHint": "You speak {language}",
+  "@conversationSpeakHint": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "English"
+      }
+    }
+  },
+  "conversationStop": "Stop",
+  "conversationListening": "Listening…",
+  "conversationTranslating": "Translating…",
+  "conversationOtherLabel": "OTHER PERSON · {language}",
+  "@conversationOtherLabel": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "HINDI"
+      }
+    }
+  },
+  "conversationYouLabel": "YOU · {language}",
+  "@conversationYouLabel": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "ENGLISH"
+      }
+    }
+  },
+  "conversationOfflineLabel": "Offline translation",
+  "conversationEmptyTitle": "Start a conversation",
+  "conversationEmptyBody": "Tap Listen when the other person talks, or Speak to reply. Translations appear here as text. Spoken translations arrive in the next update.",
+  "conversationChooseOtherLanguage": "Which language will they speak?",
+  "conversationRetry": "Try again",
+  "conversationAllowMic": "Allow",
+  "conversationOpenSettings": "Open settings",
+  "noticeMicDenied": "Anuvaad needs the microphone to hear speech.",
+  "noticeMicPermanentlyDenied": "Microphone access is off. Turn it on in Settings to use conversations.",
+  "noticeRecognizerUnavailable": "Speech recognition isn't available on this phone. Install or update the Google app, then try again.",
+  "noticeNoSpeech": "Didn't catch that. Try again a little closer to the phone.",
+  "noticeNetwork": "Speech recognition needs a connection. Check your internet and try again.",
+  "noticeLanguageUnsupported": "{language} speech recognition isn't available on this phone yet. Update the Google app, or add {language} in its voice settings.",
+  "@noticeLanguageUnsupported": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "Gujarati"
+      }
+    }
+  },
+  "noticeBusy": "The microphone is busy. Try again in a moment.",
+  "noticeGeneric": "Something went wrong with speech recognition. Try again.",
+  "translationOfflineNotReady": "You're offline, and offline translation isn't downloaded yet. Connect to Wi-Fi once to download it.",
+  "translationFailed": "Couldn't translate this."
 }

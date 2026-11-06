@@ -24,16 +24,13 @@ void main() {
     }
   });
 
-  testWidgets('mode cards are disabled and say Coming in an update', (tester) async {
+  testWidgets('online meeting is still marked coming in an update; in-person opens', (tester) async {
     await pumpAnuvaadApp(tester, prefs: _onboarded);
-    expect(find.text('Coming in an update'), findsNWidgets(2));
-    for (final title in ['In-person conversation', 'Online meeting']) {
-      final card = tester.widget<InkWell>(find.ancestor(of: find.text(title), matching: find.byType(InkWell)).first);
-      expect(card.onTap, isNull, reason: title);
-    }
-    await tester.tap(find.text('In-person conversation'), warnIfMissed: false);
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('home-screen')), findsOneWidget);
+    expect(find.text('Coming in an update'), findsOneWidget);
+    final meeting = tester.widget<InkWell>(find.ancestor(of: find.text('Online meeting'), matching: find.byType(InkWell)).first);
+    expect(meeting.onTap, isNull);
+    final inPerson = tester.widget<InkWell>(find.ancestor(of: find.text('In-person conversation'), matching: find.byType(InkWell)).first);
+    expect(inPerson.onTap, isNotNull);
   });
 
   testWidgets('my language row shows native-first label; Change opens Languages', (tester) async {
@@ -66,8 +63,8 @@ void main() {
 
   testWidgets('mode card chip sits under the subtitle so the title keeps the full width', (tester) async {
     await pumpAnuvaadApp(tester, prefs: _onboarded);
-    final subtitle = tester.getRect(find.text('Talk naturally face-to-face'));
-    final chip = tester.getRect(find.text('Coming in an update').first);
+    final subtitle = tester.getRect(find.text('Supported audio sources only'));
+    final chip = tester.getRect(find.text('Coming in an update'));
     expect(chip.top, greaterThanOrEqualTo(subtitle.bottom));
   });
 }

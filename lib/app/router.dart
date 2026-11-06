@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/app_update/presentation/release_notes_screen.dart';
+import '../features/conversation/presentation/conversation_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/language_settings/presentation/languages_screen.dart';
 import '../features/onboarding/application/onboarding_controller.dart';
@@ -23,6 +24,18 @@ String? appRedirect({required bool bootstrapped, required bool onboardingComplet
   if (location == Routes.onboarding) return Routes.home;
   return null;
 }
+
+/// Full-screen flows opened from a tab slide up over it.
+CustomTransitionPage<void> _slideUp(GoRouterState state, Widget child) => CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 300),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+        position: Tween(begin: const Offset(0, 1), end: Offset.zero)
+            .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+        child: child,
+      ),
+    );
 
 CustomTransitionPage<void> _fade(GoRouterState state, Widget child) => CustomTransitionPage<void>(
       key: state.pageKey,
@@ -48,6 +61,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: Routes.splash, pageBuilder: (context, state) => _fade(state, const SplashScreen())),
       GoRoute(path: Routes.onboarding, pageBuilder: (context, state) => _fade(state, const OnboardingScreen())),
+      GoRoute(
+        path: Routes.conversation,
+        pageBuilder: (context, state) => _slideUp(state, const ConversationScreen()),
+      ),
       ShellRoute(
         builder: (context, state, child) => AppShell(location: state.uri.path, child: child),
         routes: [

@@ -57,8 +57,8 @@ class HomeScreen extends ConsumerWidget {
               icon: Icons.swap_horiz,
               title: l10n.homeInPersonTitle,
               subtitle: l10n.homeInPersonSubtitle,
-              chip: l10n.homeComingSoon,
               primary: true,
+              onTap: () => context.push(Routes.conversation),
             ),
             const SizedBox(height: 10),
             _ModeCard(
@@ -184,14 +184,15 @@ class _SectionRow extends StatelessWidget {
   }
 }
 
-/// A conversation mode. Disabled until its milestone ships, with an honest chip.
+/// A conversation mode. Without [onTap] it is disabled and shows an honest [chip].
 class _ModeCard extends StatelessWidget {
-  const _ModeCard({required this.icon, required this.title, required this.subtitle, required this.chip, this.primary = false});
+  const _ModeCard({required this.icon, required this.title, required this.subtitle, this.chip, this.primary = false, this.onTap});
   final IconData icon;
   final String title;
   final String subtitle;
-  final String chip;
+  final String? chip;
   final bool primary;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -199,9 +200,9 @@ class _ModeCard extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: null,
+        onTap: onTap,
         child: Opacity(
-          opacity: 0.75,
+          opacity: onTap == null ? 0.75 : 1,
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -223,15 +224,18 @@ class _ModeCard extends StatelessWidget {
                       Text(title, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: tokens.ink)),
                       const SizedBox(height: 2),
                       Text(subtitle, style: TextStyle(color: tokens.muted)),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(color: tokens.soft, borderRadius: BorderRadius.circular(12)),
-                        child: Text(chip, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: tokens.blue)),
-                      ),
+                      if (chip case final chip?) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(color: tokens.soft, borderRadius: BorderRadius.circular(12)),
+                          child: Text(chip, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: tokens.blue)),
+                        ),
+                      ],
                     ],
                   ),
                 ),
+                if (onTap != null) Icon(Icons.chevron_right, color: tokens.muted),
               ],
             ),
           ),
