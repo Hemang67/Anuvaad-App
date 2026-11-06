@@ -3,10 +3,9 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../app/bootstrap.dart';
 import '../../../core/config/app_config.dart';
+import '../../../core/network/client_headers.dart';
 import '../../../core/network/dio_provider.dart';
-import '../../../core/settings/settings_providers.dart';
 import '../domain/release_info.dart';
 
 class UpdateCheckException implements Exception {
@@ -212,14 +211,10 @@ class _Failed extends _BackendResult {
 
 final updateRepositoryProvider = Provider<UpdateRepository>((ref) {
   final config = ref.watch(appConfigProvider);
-  final info = ref.watch(packageInfoProvider);
   return UpdateRepository(
     dio: ref.watch(dioProvider),
     apiBaseUrl: config.apiBaseUrl,
     releasesRepo: config.releasesRepo,
-    clientHeaders: {
-      'X-Anuvaad-Install': ref.watch(settingsRepositoryProvider).installId,
-      'X-Anuvaad-Version': '${info.version}+${info.buildNumber}',
-    },
+    clientHeaders: ref.watch(clientHeadersProvider),
   );
 });
