@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:anuvaad/core/permissions/microphone_permission.dart';
 import 'package:anuvaad/features/conversation/application/translation_service.dart';
 import 'package:anuvaad/features/conversation/data/android_speech_recognizer.dart';
@@ -78,6 +80,25 @@ void main() {
     expect(find.text('Where are you going today?'), findsOneWidget);
     expect(find.text('Offline translation'), findsNothing);
     expect(find.text('Start a conversation'), findsNothing);
+  });
+
+  testWidgets('the newest translation stays in view after many turns', (tester) async {
+    cloud.reply = (r) => 'Translation of "${r.text}": a long answer that wraps over several lines on a phone screen, '
+        'so that the card grows when it arrives and the list must scroll to keep it visible.';
+    await openConversation(tester);
+    final list = tester.getRect(find.byType(Scaffold));
+    for (var i = 1; i <= 6; i++) {
+      cloud.holdAll = Completer<void>();
+      await tester.tap(find.byKey(const Key('listen-button')));
+      await tester.pumpAndSettle();
+      await say(tester, FinalResult('वाक्य नंबर $i, थोड़ा लंबा ताकि कार्ड बड़ा हो।'));
+      cloud.holdAll!.complete();
+      await tester.pumpAndSettle();
+      final translation = find.textContaining('Translation of "वाक्य नंबर $i');
+      final viewport = tester.getRect(find.byType(ListView));
+      expect(tester.getRect(translation).bottom, lessThanOrEqualTo(viewport.bottom + 0.5), reason: 'turn $i');
+      expect(viewport.bottom, lessThanOrEqualTo(list.bottom));
+    }
   });
 
   testWidgets('speak turns are labelled as yours', (tester) async {

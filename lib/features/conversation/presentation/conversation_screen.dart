@@ -42,8 +42,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     final prefs = ref.watch(languagePreferencesProvider);
     String name(String code) => registry.byCode(code)?.displayName ?? code;
 
-    // New cards and growing live text keep the newest line in view.
-    ref.listen(conversationControllerProvider.select((s) => (s.segments.length, s.segments.lastOrNull?.text)), (_, _) => _scrollToEnd());
+    // Keep the newest line in view whenever any card changes (new card, live text, "Translating…", a
+    // translation — including a late one on an older card, which pushes the newest down). Notices don't scroll.
+    ref.listen(conversationControllerProvider.select((s) => s.segments), (_, _) => _scrollToEnd());
 
     final other = state.otherLanguageOverride ?? prefs.otherLanguage;
     final listenHint = other == autoDetect ? l10n.languagesAutoDetect : l10n.conversationListenHint(name(other));
