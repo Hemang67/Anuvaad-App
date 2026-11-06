@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/bootstrap.dart';
+import '../../../app/routes.dart';
 import '../../../app/theme/anuvaad_colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../language_settings/application/language_preferences_controller.dart';
@@ -52,7 +54,16 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
 
     return Scaffold(
       key: const Key('conversation-screen'),
-      appBar: AppBar(title: Text(l10n.conversationTitle)),
+      appBar: AppBar(
+        title: Text(l10n.conversationTitle),
+        actions: [
+          IconButton(
+            tooltip: l10n.audioDevicesTitle,
+            icon: const Icon(Icons.headphones_outlined),
+            onPressed: () => context.push(Routes.audioDevices),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -71,6 +82,8 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                               segment: segment,
                               languageName: name,
                               onRetry: () => controller.retryTranslation(segment.id),
+                              onReplay: () => controller.replay(segment.id),
+                              onInstallVoice: () => controller.installVoice(segment.targetLanguage),
                             ),
                           ),
                       ],

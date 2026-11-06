@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/app_update/presentation/release_notes_screen.dart';
+import '../features/audio_devices/presentation/audio_devices_screen.dart';
 import '../features/conversation/presentation/conversation_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/language_settings/presentation/languages_screen.dart';
@@ -64,6 +65,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.conversation,
         pageBuilder: (context, state) => _slideUp(state, const ConversationScreen()),
+      ),
+      GoRoute(
+        path: Routes.audioDevices,
+        pageBuilder: (context, state) => _slideUp(state, const AudioDevicesScreen()),
       ),
       ShellRoute(
         builder: (context, state, child) => AppShell(location: state.uri.path, child: child),

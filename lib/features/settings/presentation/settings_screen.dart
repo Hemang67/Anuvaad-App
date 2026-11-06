@@ -72,6 +72,16 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
             SettingsSection(
+              title: l10n.settingsAudio,
+              children: [
+                SettingsRow(
+                  title: l10n.settingsAudioDevices,
+                  subtitle: l10n.settingsAudioDevicesSubtitle,
+                  onTap: () => context.push(Routes.audioDevices),
+                ),
+              ],
+            ),
+            SettingsSection(
               title: l10n.settingsAbout,
               children: [
                 SettingsRow(

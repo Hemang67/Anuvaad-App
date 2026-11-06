@@ -411,7 +411,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get conversationEmptyBody =>
-      'Tap Listen when the other person talks, or Speak to reply. Translations appear here as text. Spoken translations arrive in the next update.';
+      'Tap Listen when the other person talks, or Speak to reply. Each translation is shown and spoken.';
 
   @override
   String get conversationChooseOtherLanguage =>
@@ -488,4 +488,87 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get noticePlaybackFailed =>
       'Couldn\'t play the translation. Tap Replay to try again.';
+
+  @override
+  String conversationOutput(String device) {
+    return 'Output: $device';
+  }
+
+  @override
+  String get conversationReplay => 'Replay translation';
+
+  @override
+  String get conversationPlaying => 'Playing…';
+
+  @override
+  String conversationNoVoice(String language) {
+    return 'No $language voice on this phone, so this translation is text only.';
+  }
+
+  @override
+  String get conversationInstallVoice => 'Install voice';
+
+  @override
+  String get audioDevicesTitle => 'Audio devices';
+
+  @override
+  String get audioDevicesIntro =>
+      'Choose where each voice plays. Only devices connected right now are shown.';
+
+  @override
+  String get audioMicTitle => 'Microphone input';
+
+  @override
+  String get audioMicSubtitle => 'Capture the other person\'s speech';
+
+  @override
+  String get audioMicPhone => 'Phone microphone';
+
+  @override
+  String get audioForMeTitle => 'Translated voice · You';
+
+  @override
+  String get audioForMeSubtitle => 'Hear translation privately';
+
+  @override
+  String get audioForOtherTitle => 'Your reply · Other person';
+
+  @override
+  String get audioForOtherSubtitle => 'Play translated speech aloud';
+
+  @override
+  String get audioOptionEarphones => 'Earphones';
+
+  @override
+  String get audioOptionSpeaker => 'Phone speaker';
+
+  @override
+  String audioNow(String device) {
+    return 'Now: $device';
+  }
+
+  @override
+  String get audioNoEarphones =>
+      'No earphones connected, so this plays on the phone speaker.';
+
+  @override
+  String get audioTestSound => 'Test output sound';
+
+  @override
+  String audioTestPlayedOn(String device) {
+    return 'Played on $device';
+  }
+
+  @override
+  String get audioCompatibility =>
+      'Bluetooth microphone and playback routing vary by headset and Android version. Anuvaad shows the route Android actually uses.';
+
+  @override
+  String get settingsAudio => 'Audio';
+
+  @override
+  String get settingsAudioDevices => 'Audio devices';
+
+  @override
+  String get settingsAudioDevicesSubtitle => 'Where translations play';
 }

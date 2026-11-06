@@ -6,4 +6,5 @@ abstract final class Routes {
   static const settings = '/settings';
   static const releaseNotes = '/settings/release-notes';
   static const conversation = '/conversation';
+  static const audioDevices = '/audio-devices';
 }

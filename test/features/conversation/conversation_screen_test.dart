@@ -4,8 +4,10 @@ import 'package:anuvaad/core/permissions/microphone_permission.dart';
 import 'package:anuvaad/features/conversation/application/translation_service.dart';
 import 'package:anuvaad/features/conversation/data/android_speech_recognizer.dart';
 import 'package:anuvaad/features/conversation/data/mlkit_translator.dart';
+import 'package:anuvaad/features/conversation/domain/audio_output.dart';
 import 'package:anuvaad/features/conversation/domain/speech_recognition.dart';
 import 'package:anuvaad/features/conversation/domain/translation.dart';
+import 'package:anuvaad/features/conversation/domain/voice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -19,16 +21,20 @@ void main() {
   late FakeTranslator cloud;
   late FakeTranslator offline;
   late FakeMicrophonePermission mic;
+  late FakeAudioOutput audio;
+  late FakeSpeechSynth synth;
 
   setUp(() {
     recognizer = FakeSpeechRecognizer();
     cloud = FakeTranslator(reply: (_) => 'Where are you going today?');
     offline = FakeTranslator(provenance: TranslationProvenance.offline, provider: 'mlkit', reply: (_) => 'Where are you going?');
     mic = FakeMicrophonePermission();
+    audio = FakeAudioOutput();
+    synth = FakeSpeechSynth();
   });
 
   Future<void> openConversation(WidgetTester tester, {Map<String, Object> prefs = _prefs}) async {
-    await pumpAnuvaadApp(tester, prefs: prefs, overrides: [
+    await pumpAnuvaadApp(tester, prefs: prefs, audio: audio, synth: synth, overrides: [
       speechRecognizerProvider.overrideWithValue(recognizer),
       microphonePermissionProvider.overrideWithValue(mic),
       translationServiceProvider.overrideWithValue(TranslationService(cloud: cloud, offline: offline)),
@@ -56,8 +62,7 @@ void main() {
     await openConversation(tester);
     expect(find.text('Start a conversation'), findsOneWidget);
     expect(
-      find.text('Tap Listen when the other person talks, or Speak to reply. Translations appear here as text. '
-          'Spoken translations arrive in the next update.'),
+      find.text('Tap Listen when the other person talks, or Speak to reply. Each translation is shown and spoken.'),
       findsOneWidget,
     );
     expect(find.text('They speak Hindi'), findsOneWidget);
@@ -99,6 +104,77 @@ void main() {
       expect(tester.getRect(translation).bottom, lessThanOrEqualTo(viewport.bottom + 0.5), reason: 'turn $i');
       expect(viewport.bottom, lessThanOrEqualTo(list.bottom));
     }
+  });
+
+  /// The segment id of the last playback the app asked for.
+  String lastPlayedId() => audio.calls.lastWhere((c) => c.startsWith('play:')).split(':')[1];
+
+  Future<String> listenAndTranslate(WidgetTester tester, String text) async {
+    await tester.tap(find.byKey(const Key('listen-button')));
+    await tester.pumpAndSettle();
+    await say(tester, FinalResult(text));
+    return lastPlayedId();
+  }
+
+  testWidgets('a spoken translation shows Playing…, then Output and Replay', (tester) async {
+    await openConversation(tester);
+    final id = await listenAndTranslate(tester, 'आप आज कहाँ जा रहे हैं?');
+    audio.emit(PlaybackStarted(id, fakeSpeaker));
+    await tester.pumpAndSettle();
+    expect(find.text('Playing…'), findsOneWidget);
+    expect(find.text('Replay translation'), findsNothing);
+
+    audio.emit(PlaybackCompleted(id));
+    await tester.pumpAndSettle();
+    expect(find.text('Playing…'), findsNothing);
+    expect(find.text('Output: Phone speaker'), findsOneWidget);
+    expect(find.byKey(Key('replay-$id')), findsOneWidget);
+  });
+
+  testWidgets('Replay plays the segment again', (tester) async {
+    await openConversation(tester);
+    final id = await listenAndTranslate(tester, 'नमस्ते');
+    audio.emit(PlaybackStarted(id, fakeSpeaker));
+    audio.emit(PlaybackCompleted(id));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('replay-$id')));
+    await tester.pumpAndSettle();
+    expect(audio.calls.where((c) => c.startsWith('play:$id:')), hasLength(2));
+  });
+
+  testWidgets('no-voice card offers Install voice', (tester) async {
+    synth.availabilityByLocale['en-IN'] = VoiceAvailability.needsDownload;
+    await openConversation(tester);
+    await tester.tap(find.byKey(const Key('listen-button')));
+    await tester.pumpAndSettle();
+    await say(tester, const FinalResult('नमस्ते'));
+    expect(find.text('No English voice on this phone, so this translation is text only.'), findsOneWidget);
+    await tester.tap(find.text('Install voice'));
+    await tester.pumpAndSettle();
+    expect(synth.installsOpened, 1);
+  });
+
+  testWidgets('earphones disconnected notice appears', (tester) async {
+    audio.connected = [fakeSpeaker, fakeBuds];
+    await openConversation(tester);
+    final id = await listenAndTranslate(tester, 'नमस्ते');
+    audio.emit(PlaybackStarted(id, fakeBuds));
+    audio.emit(PlaybackCompleted(id));
+    await tester.pumpAndSettle();
+    expect(find.text('Output: Galaxy Buds'), findsOneWidget);
+    audio.setOutputs([fakeSpeaker]);
+    await tester.pumpAndSettle();
+    expect(find.text('Earphones disconnected. Translations now play on the phone speaker.'), findsOneWidget);
+  });
+
+  testWidgets('the app bar opens Audio devices, and Back returns to the conversation', (tester) async {
+    await openConversation(tester);
+    await tester.tap(find.byTooltip('Audio devices'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('audio-devices-screen')), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('conversation-screen')), findsOneWidget);
   });
 
   testWidgets('speak turns are labelled as yours', (tester) async {

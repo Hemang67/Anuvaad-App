@@ -241,7 +241,7 @@
   },
   "conversationOfflineLabel": "Offline translation",
   "conversationEmptyTitle": "Start a conversation",
-  "conversationEmptyBody": "Tap Listen when the other person talks, or Speak to reply. Translations appear here as text. Spoken translations arrive in the next update.",
+  "conversationEmptyBody": "Tap Listen when the other person talks, or Speak to reply. Each translation is shown and spoken.",
   "conversationChooseOtherLanguage": "Which language will they speak?",
   "conversationRetry": "Try again",
   "conversationAllowMic": "Allow",
@@ -278,5 +278,61 @@
       }
     }
   },
-  "noticePlaybackFailed": "Couldn't play the translation. Tap Replay to try again."
+  "noticePlaybackFailed": "Couldn't play the translation. Tap Replay to try again.",
+  "conversationOutput": "Output: {device}",
+  "@conversationOutput": {
+    "placeholders": {
+      "device": {
+        "type": "String",
+        "example": "Galaxy Buds"
+      }
+    }
+  },
+  "conversationReplay": "Replay translation",
+  "conversationPlaying": "Playing…",
+  "conversationNoVoice": "No {language} voice on this phone, so this translation is text only.",
+  "@conversationNoVoice": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "Gujarati"
+      }
+    }
+  },
+  "conversationInstallVoice": "Install voice",
+  "audioDevicesTitle": "Audio devices",
+  "audioDevicesIntro": "Choose where each voice plays. Only devices connected right now are shown.",
+  "audioMicTitle": "Microphone input",
+  "audioMicSubtitle": "Capture the other person's speech",
+  "audioMicPhone": "Phone microphone",
+  "audioForMeTitle": "Translated voice · You",
+  "audioForMeSubtitle": "Hear translation privately",
+  "audioForOtherTitle": "Your reply · Other person",
+  "audioForOtherSubtitle": "Play translated speech aloud",
+  "audioOptionEarphones": "Earphones",
+  "audioOptionSpeaker": "Phone speaker",
+  "audioNow": "Now: {device}",
+  "@audioNow": {
+    "placeholders": {
+      "device": {
+        "type": "String",
+        "example": "Galaxy Buds"
+      }
+    }
+  },
+  "audioNoEarphones": "No earphones connected, so this plays on the phone speaker.",
+  "audioTestSound": "Test output sound",
+  "audioTestPlayedOn": "Played on {device}",
+  "@audioTestPlayedOn": {
+    "placeholders": {
+      "device": {
+        "type": "String",
+        "example": "Phone speaker"
+      }
+    }
+  },
+  "audioCompatibility": "Bluetooth microphone and playback routing vary by headset and Android version. Anuvaad shows the route Android actually uses.",
+  "settingsAudio": "Audio",
+  "settingsAudioDevices": "Audio devices",
+  "settingsAudioDevicesSubtitle": "Where translations play"
 }

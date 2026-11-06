@@ -805,7 +805,7 @@ abstract class AppLocalizations {
   /// No description provided for @conversationEmptyBody.
   ///
   /// In en, this message translates to:
-  /// **'Tap Listen when the other person talks, or Speak to reply. Translations appear here as text. Spoken translations arrive in the next update.'**
+  /// **'Tap Listen when the other person talks, or Speak to reply. Each translation is shown and spoken.'**
   String get conversationEmptyBody;
 
   /// No description provided for @conversationChooseOtherLanguage.
@@ -933,6 +933,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t play the translation. Tap Replay to try again.'**
   String get noticePlaybackFailed;
+
+  /// No description provided for @conversationOutput.
+  ///
+  /// In en, this message translates to:
+  /// **'Output: {device}'**
+  String conversationOutput(String device);
+
+  /// No description provided for @conversationReplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Replay translation'**
+  String get conversationReplay;
+
+  /// No description provided for @conversationPlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing…'**
+  String get conversationPlaying;
+
+  /// No description provided for @conversationNoVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'No {language} voice on this phone, so this translation is text only.'**
+  String conversationNoVoice(String language);
+
+  /// No description provided for @conversationInstallVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Install voice'**
+  String get conversationInstallVoice;
+
+  /// No description provided for @audioDevicesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio devices'**
+  String get audioDevicesTitle;
+
+  /// No description provided for @audioDevicesIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose where each voice plays. Only devices connected right now are shown.'**
+  String get audioDevicesIntro;
+
+  /// No description provided for @audioMicTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone input'**
+  String get audioMicTitle;
+
+  /// No description provided for @audioMicSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture the other person\'s speech'**
+  String get audioMicSubtitle;
+
+  /// No description provided for @audioMicPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone microphone'**
+  String get audioMicPhone;
+
+  /// No description provided for @audioForMeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Translated voice · You'**
+  String get audioForMeTitle;
+
+  /// No description provided for @audioForMeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear translation privately'**
+  String get audioForMeSubtitle;
+
+  /// No description provided for @audioForOtherTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reply · Other person'**
+  String get audioForOtherTitle;
+
+  /// No description provided for @audioForOtherSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Play translated speech aloud'**
+  String get audioForOtherSubtitle;
+
+  /// No description provided for @audioOptionEarphones.
+  ///
+  /// In en, this message translates to:
+  /// **'Earphones'**
+  String get audioOptionEarphones;
+
+  /// No description provided for @audioOptionSpeaker.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone speaker'**
+  String get audioOptionSpeaker;
+
+  /// No description provided for @audioNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Now: {device}'**
+  String audioNow(String device);
+
+  /// No description provided for @audioNoEarphones.
+  ///
+  /// In en, this message translates to:
+  /// **'No earphones connected, so this plays on the phone speaker.'**
+  String get audioNoEarphones;
+
+  /// No description provided for @audioTestSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Test output sound'**
+  String get audioTestSound;
+
+  /// No description provided for @audioTestPlayedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Played on {device}'**
+  String audioTestPlayedOn(String device);
+
+  /// No description provided for @audioCompatibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Bluetooth microphone and playback routing vary by headset and Android version. Anuvaad shows the route Android actually uses.'**
+  String get audioCompatibility;
+
+  /// No description provided for @settingsAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get settingsAudio;
+
+  /// No description provided for @settingsAudioDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio devices'**
+  String get settingsAudioDevices;
+
+  /// No description provided for @settingsAudioDevicesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Where translations play'**
+  String get settingsAudioDevicesSubtitle;
 }
 
 class _AppLocalizationsDelegate

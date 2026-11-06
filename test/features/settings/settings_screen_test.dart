@@ -44,4 +44,14 @@ void main() {
     expect(find.text('About Anuvaad'), findsOneWidget);
     expect(find.text('Powered by REA Intelligence'), findsOneWidget);
   });
+
+  testWidgets('Settings has an Audio devices row that opens the screen', (tester) async {
+    await pumpAnuvaadApp(tester, prefs: {'onboarding_complete': true});
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    expect(find.text('Where translations play'), findsOneWidget);
+    await tester.tap(find.text('Audio devices'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('audio-devices-screen')), findsOneWidget);
+  });
 }

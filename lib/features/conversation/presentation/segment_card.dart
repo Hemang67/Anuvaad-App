@@ -2,18 +2,28 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/anuvaad_colors.dart';
 import '../../../l10n/app_localizations.dart';
+import '../application/output_router.dart';
 import '../domain/segment.dart';
 import '../domain/translation.dart';
 
 /// One utterance: who spoke, what was heard (live, then final) and its translation.
 class SegmentCard extends StatelessWidget {
-  const SegmentCard({super.key, required this.segment, required this.languageName, required this.onRetry});
+  const SegmentCard({
+    super.key,
+    required this.segment,
+    required this.languageName,
+    required this.onRetry,
+    required this.onReplay,
+    required this.onInstallVoice,
+  });
 
   final Segment segment;
 
   /// Display name for a registry code, e.g. 'Hindi'.
   final String Function(String code) languageName;
   final VoidCallback onRetry;
+  final VoidCallback onReplay;
+  final VoidCallback onInstallVoice;
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +68,54 @@ class SegmentCard extends StatelessWidget {
     );
   }
 
+  /// The spoken half: Playing…, or the device it played on with Replay, or the missing-voice line.
+  List<Widget> _speech(AppLocalizations l10n, AnuvaadColors tokens) {
+    final muted = TextStyle(color: tokens.muted, fontSize: 13);
+    switch (segment.speech) {
+      case SpeechStatus.preparing:
+        return const [];
+      case SpeechStatus.playing:
+        return [
+          const SizedBox(height: 8),
+          Row(children: [
+            Icon(Icons.volume_up, size: 16, color: tokens.blue),
+            const SizedBox(width: 6),
+            Text(l10n.conversationPlaying, style: muted),
+          ]),
+        ];
+      case SpeechStatus.noVoice:
+        return [
+          const SizedBox(height: 8),
+          Text(l10n.conversationNoVoice(languageName(segment.targetLanguage)), style: muted),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: onInstallVoice,
+              icon: const Icon(Icons.download_outlined),
+              label: Text(l10n.conversationInstallVoice),
+            ),
+          ),
+        ];
+      case SpeechStatus.none || SpeechStatus.played || SpeechStatus.failed:
+        final output = segment.output;
+        return [
+          const SizedBox(height: 4),
+          Row(children: [
+            if (output != null)
+              Expanded(child: Text(l10n.conversationOutput(outputLabel(output, l10n)), style: muted))
+            else
+              const Spacer(),
+            TextButton.icon(
+              key: Key('replay-${segment.id}'),
+              onPressed: onReplay,
+              icon: const Icon(Icons.play_arrow),
+              label: Text(l10n.conversationReplay),
+            ),
+          ]),
+        ];
+    }
+  }
+
   List<Widget> _outcome(BuildContext context, AppLocalizations l10n, AnuvaadColors tokens, TextTheme textTheme) {
     switch (segment.status) {
       case SegmentStatus.translating:
@@ -66,6 +124,7 @@ class SegmentCard extends StatelessWidget {
         final translation = segment.translation!;
         return [
           Text(translation.text, style: textTheme.titleMedium?.copyWith(color: tokens.ink, fontWeight: FontWeight.w600)),
+          ..._speech(l10n, tokens),
           if (translation.provenance == TranslationProvenance.offline) ...[
             const SizedBox(height: 8),
             Container(
