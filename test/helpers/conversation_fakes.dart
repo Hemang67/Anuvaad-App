@@ -1,7 +1,10 @@
 import 'dart:async';
 
+import 'package:anuvaad/core/permissions/microphone_permission.dart';
 import 'package:anuvaad/features/conversation/data/offline_models.dart';
+import 'package:anuvaad/features/conversation/domain/speech_recognition.dart';
 import 'package:anuvaad/features/conversation/domain/translation.dart';
+import 'package:anuvaad/features/language_settings/application/language_preferences_controller.dart';
 
 /// In-memory ML Kit model store. [downloaded] holds BCP codes ('en', 'hi', 'gu').
 class FakeOfflineModelStore implements OfflineModelStore {
@@ -66,4 +69,68 @@ class FakeTranslator implements TranslatorPort {
       provider: provider,
     );
   }
+}
+
+/// Speech recognizer double: tests push events with [emit].
+class FakeSpeechRecognizer implements SpeechRecognizerPort {
+  final _events = StreamController<RecognitionEvent>.broadcast();
+
+  bool available = true;
+  final List<String> started = [];
+  int stops = 0;
+  int cancels = 0;
+
+  void emit(RecognitionEvent event) => _events.add(event);
+
+  @override
+  Stream<RecognitionEvent> get events => _events.stream;
+
+  @override
+  Future<bool> isAvailable() async => available;
+
+  @override
+  Future<void> start(String locale) async => started.add(locale);
+
+  @override
+  Future<void> stop() async => stops++;
+
+  @override
+  Future<void> cancel() async => cancels++;
+}
+
+class FakeMicrophonePermission implements MicrophonePermission {
+  FakeMicrophonePermission({this.current = MicPermission.granted, this.onRequest = MicPermission.granted});
+
+  MicPermission current;
+
+  /// What the next request returns (and becomes the status when granted).
+  MicPermission onRequest;
+  int requests = 0;
+  int settingsOpened = 0;
+
+  @override
+  Future<MicPermission> status() async => current;
+
+  @override
+  Future<MicPermission> request() async {
+    requests++;
+    if (onRequest == MicPermission.granted) current = MicPermission.granted;
+    return onRequest;
+  }
+
+  @override
+  Future<bool> openSettings() async {
+    settingsOpened++;
+    return true;
+  }
+}
+
+/// Language preferences without the registry or storage.
+class FixedLanguagePreferences extends LanguagePreferencesController {
+  FixedLanguagePreferences(this.initial);
+
+  final LanguagePreferences initial;
+
+  @override
+  LanguagePreferences build() => initial;
 }
