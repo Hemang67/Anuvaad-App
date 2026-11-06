@@ -4,6 +4,13 @@ Release notes for Anuvaad. Each release needs an entry in exactly this format (s
 the heading `## X.Y.Z (BUILD) — YYYY-MM-DD`, optional `Mandatory: yes|no` and `Min supported build: N` lines,
 then `### What's new` and/or `### Fixed` with `- ` bullets. The app shows these notes in its update popup.
 
+## 0.2.0 (2) — 2026-11-06
+Mandatory: no
+Min supported build: 1
+### What's new
+- Conversation preview: tap Listen or Speak, see live text as you talk, then its translation between English, Hindi and Gujarati.
+- Offline translation after a one-time download on Wi-Fi, clearly labelled.
+
 ## 0.1.0 (1) — 2026-11-05
 Mandatory: no
 Min supported build: 1
