@@ -30,6 +30,10 @@ void main() {
     expect(registry.coreLanguages.every((l) => l.isCore), isTrue);
   });
 
+  test('core languages offer offline translation', () {
+    expect(registry.coreLanguages.every((l) => l.capabilities.offlineTranslation), isTrue);
+  });
+
   test('Gujarati manifest has native name ગુજરાતી and short label ગુ', () {
     final gu = registry.byCode('gu-IN')!;
     expect(gu.nativeName, 'ગુજરાતી');

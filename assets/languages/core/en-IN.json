@@ -12,7 +12,7 @@
     "translationOutput": true,
     "textToSpeech": true,
     "offlineSpeechRecognition": false,
-    "offlineTranslation": false,
+    "offlineTranslation": true,
     "offlineTextToSpeech": false
   }
 }

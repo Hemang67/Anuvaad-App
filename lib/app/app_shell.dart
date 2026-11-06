@@ -1,24 +1,40 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/app_update/presentation/update_listener.dart';
+import '../features/conversation/data/offline_models.dart';
 import '../l10n/app_localizations.dart';
 import 'routes.dart';
 import 'theme/anuvaad_colors.dart';
 
 /// Bottom navigation for the main tabs: Home, Languages, Settings.
-class AppShell extends StatelessWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key, required this.location, required this.child});
 
   /// Current path, used to highlight the active tab.
   final String location;
   final Widget child;
 
+  @override
+  ConsumerState<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends ConsumerState<AppShell> {
   static const _tabs = [Routes.home, Routes.languages, Routes.settings];
 
   int get _selectedIndex {
-    final index = _tabs.lastIndexWhere((tab) => location.startsWith(tab));
+    final index = _tabs.lastIndexWhere((tab) => widget.location.startsWith(tab));
     return index < 0 ? 0 : index;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Offline translation models download in the background on Wi-Fi, once per launch.
+    unawaited(ref.read(offlineModelsProvider).ensureDownloaded());
   }
 
   @override
@@ -33,7 +49,7 @@ class AppShell extends StatelessWidget {
         if (!didPop) context.go(Routes.home);
       },
       child: Scaffold(
-        body: UpdateListener(child: child),
+        body: UpdateListener(child: widget.child),
         bottomNavigationBar: NavigationBar(
           backgroundColor: tokens.card,
           indicatorColor: tokens.soft,
