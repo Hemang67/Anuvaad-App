@@ -9,6 +9,7 @@ import 'package:anuvaad/features/conversation/domain/speech_recognition.dart';
 import 'package:anuvaad/features/conversation/domain/translation.dart';
 import 'package:anuvaad/features/conversation/domain/voice.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/app_harness.dart';
@@ -23,6 +24,7 @@ void main() {
   late FakeMicrophonePermission mic;
   late FakeAudioOutput audio;
   late FakeSpeechSynth synth;
+  late FakeScreenAwake awake;
 
   setUp(() {
     recognizer = FakeSpeechRecognizer();
@@ -31,10 +33,11 @@ void main() {
     mic = FakeMicrophonePermission();
     audio = FakeAudioOutput();
     synth = FakeSpeechSynth();
+    awake = FakeScreenAwake();
   });
 
   Future<void> openConversation(WidgetTester tester, {Map<String, Object> prefs = _prefs}) async {
-    await pumpAnuvaadApp(tester, prefs: prefs, audio: audio, synth: synth, overrides: [
+    await pumpAnuvaadApp(tester, prefs: prefs, audio: audio, synth: synth, screenAwake: awake, overrides: [
       speechRecognizerProvider.overrideWithValue(recognizer),
       microphonePermissionProvider.overrideWithValue(mic),
       translationServiceProvider.overrideWithValue(TranslationService(cloud: cloud, offline: offline)),
@@ -51,6 +54,22 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// The segment id of the last playback the app asked for.
+  String lastPlayedId() => audio.calls.lastWhere((c) => c.startsWith('play:')).split(':')[1];
+
+  /// The first call turns Listen mode on; after that, finishing the last playback lets Listen mode start the
+  /// next turn by itself.
+  Future<void> nextListenTurn(WidgetTester tester) async {
+    if (find.byKey(const Key('listen-button')).evaluate().isNotEmpty) {
+      await tester.tap(find.byKey(const Key('listen-button')));
+    } else {
+      final id = lastPlayedId();
+      audio.emit(PlaybackStarted(id, fakeSpeaker));
+      audio.emit(PlaybackCompleted(id));
+    }
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('home in-person card opens the conversation screen and Back returns home', (tester) async {
     await openConversation(tester);
     await tester.binding.handlePopRoute();
@@ -62,7 +81,7 @@ void main() {
     await openConversation(tester);
     expect(find.text('Start a conversation'), findsOneWidget);
     expect(
-      find.text('Tap Listen when the other person talks, or Speak to reply. Each translation is shown and spoken.'),
+      find.text('Tap Listen and Anuvaad keeps listening, translating and speaking each turn. Tap Speak to reply.'),
       findsOneWidget,
     );
     expect(find.text('They speak Hindi'), findsOneWidget);
@@ -94,8 +113,7 @@ void main() {
     final list = tester.getRect(find.byType(Scaffold));
     for (var i = 1; i <= 6; i++) {
       cloud.holdAll = Completer<void>();
-      await tester.tap(find.byKey(const Key('listen-button')));
-      await tester.pumpAndSettle();
+      await nextListenTurn(tester);
       await say(tester, FinalResult('वाक्य नंबर $i, थोड़ा लंबा ताकि कार्ड बड़ा हो।'));
       cloud.holdAll!.complete();
       await tester.pumpAndSettle();
@@ -105,9 +123,6 @@ void main() {
       expect(viewport.bottom, lessThanOrEqualTo(list.bottom));
     }
   });
-
-  /// The segment id of the last playback the app asked for.
-  String lastPlayedId() => audio.calls.lastWhere((c) => c.startsWith('play:')).split(':')[1];
 
   Future<String> listenAndTranslate(WidgetTester tester, String text) async {
     await tester.tap(find.byKey(const Key('listen-button')));
@@ -173,12 +188,13 @@ void main() {
         'so that the card grows when it arrives and the list must scroll to keep it visible.';
     await openConversation(tester);
     for (var i = 1; i <= 6; i++) {
-      await tester.tap(find.byKey(const Key('listen-button')));
-      await tester.pumpAndSettle();
+      await nextListenTurn(tester);
       await say(tester, FinalResult('वाक्य नंबर $i, थोड़ा लंबा ताकि कार्ड बड़ा हो।'));
     }
     final first = audio.calls.firstWhere((c) => c.startsWith('play:')).split(':')[1];
     await tester.drag(find.byType(ListView), const Offset(0, 5000));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(Key('replay-$first')));
     await tester.pumpAndSettle();
     final card = find.byKey(ValueKey('segment-$first'));
     final before = tester.getRect(card).top;
@@ -232,17 +248,29 @@ void main() {
     expect(find.text('Offline translation'), findsOneWidget);
   });
 
-  testWidgets('stop button replaces listen while active and speak is disabled', (tester) async {
+  testWidgets('Listen becomes Pause while listening, and Pause stops it', (tester) async {
     await openConversation(tester);
     await tester.tap(find.byKey(const Key('listen-button')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('listen-button')), findsNothing);
-    expect(find.byKey(const Key('stop-button')), findsOneWidget);
+    expect(find.byKey(const Key('pause-button')), findsOneWidget);
     final speak = tester.widget<ButtonStyleButton>(
       find.descendant(of: find.byKey(const Key('speak-button')), matching: find.byWidgetPredicate((w) => w is ButtonStyleButton)),
     );
-    expect(speak.onPressed, isNull);
+    expect(speak.onPressed, isNotNull, reason: 'Speak interrupts a waiting Listen turn');
 
+    await tester.tap(find.byKey(const Key('pause-button')));
+    await tester.pumpAndSettle();
+    expect(recognizer.cancels, 1);
+    expect(find.byKey(const Key('listen-button')), findsOneWidget);
+    expect(find.text('PAUSED'), findsOneWidget);
+  });
+
+  testWidgets('Speak becomes Stop during my turn, and Stop finishes it', (tester) async {
+    await openConversation(tester);
+    await tester.tap(find.byKey(const Key('speak-button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('stop-button')), findsOneWidget);
     await tester.tap(find.byKey(const Key('stop-button')));
     await tester.pumpAndSettle();
     expect(recognizer.stops, 1);
@@ -250,7 +278,7 @@ void main() {
 
   testWidgets('the Stop button stays readable (white on red) in dark mode', (tester) async {
     await openConversation(tester, prefs: {..._prefs, 'theme_mode': 'dark'});
-    await tester.tap(find.byKey(const Key('listen-button')));
+    await tester.tap(find.byKey(const Key('speak-button')));
     await tester.pumpAndSettle();
     final stop = tester.widget<ButtonStyleButton>(
       find.descendant(of: find.byKey(const Key('stop-button')), matching: find.byWidgetPredicate((w) => w is ButtonStyleButton)),
@@ -271,9 +299,7 @@ void main() {
     await tester.tap(find.widgetWithText(ChoiceChip, 'Gujarati'));
     await tester.pumpAndSettle();
     expect(find.text('They speak Gujarati'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('listen-button')));
-    await tester.pumpAndSettle();
-    expect(recognizer.started, ['gu-IN']);
+    expect(recognizer.started, ['gu-IN'], reason: 'Listen mode starts as soon as the language is known');
   });
 
   testWidgets('denied microphone offers Allow', (tester) async {
@@ -346,5 +372,133 @@ void main() {
     await say(tester, const FinalResult('आप आज कहाँ जा रहे हैं? मैं ऑफिस जा रहा हूँ, शाम छह बजे तक वापस आ जाऊँगा।'));
     expect(tester.takeException(), isNull);
     expect(find.text('OTHER PERSON · HINDI'), findsOneWidget);
+  });
+
+  testWidgets('status chip follows the session', (tester) async {
+    await openConversation(tester);
+    expect(find.text('READY TO LISTEN'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('listen-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('LISTENING'), findsOneWidget);
+    await say(tester, const FinalResult('नमस्ते'));
+    expect(find.text('TRANSLATING…'), findsOneWidget);
+    audio.emit(PlaybackStarted(lastPlayedId(), fakeSpeaker));
+    await tester.pumpAndSettle();
+    expect(find.text('SPEAKING'), findsOneWidget);
+    final chip = tester.widget<Semantics>(
+      find.ancestor(of: find.text('SPEAKING'), matching: find.byWidgetPredicate((w) => w is Semantics && w.properties.liveRegion == true)),
+    );
+    expect(chip.properties.liveRegion, isTrue);
+  });
+
+  testWidgets('the screen stays awake only while the session is active', (tester) async {
+    await openConversation(tester);
+    expect(awake.on, isFalse);
+    await tester.tap(find.byKey(const Key('listen-button')));
+    await tester.pumpAndSettle();
+    expect(awake.on, isTrue);
+    await tester.tap(find.byKey(const Key('pause-button')));
+    await tester.pumpAndSettle();
+    expect(awake.on, isFalse);
+  });
+
+  testWidgets('End shows the summary with duration and turns; Done leaves the screen', (tester) async {
+    await openConversation(tester);
+    expect(find.byKey(const Key('end-button')), findsNothing, reason: 'nothing to end yet');
+    await tester.tap(find.byKey(const Key('listen-button')));
+    await tester.pumpAndSettle();
+    await say(tester, const FinalResult('नमस्ते'));
+    await tester.tap(find.byKey(const Key('end-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('Conversation ended'), findsOneWidget);
+    expect(find.text('English ↔ Hindi'), findsOneWidget);
+    expect(find.text('1 turn'), findsOneWidget);
+    expect(audio.calls.last, 'stop');
+    expect(awake.on, isFalse);
+
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('home-screen')), findsOneWidget);
+  });
+
+  testWidgets('Copy transcript puts the transcript on the clipboard', (tester) async {
+    String? copied;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      if (call.method == 'Clipboard.setData') copied = (call.arguments as Map)['text'] as String?;
+      return null;
+    });
+    addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
+    await openConversation(tester);
+    await tester.tap(find.byKey(const Key('listen-button')));
+    await tester.pumpAndSettle();
+    await say(tester, const FinalResult('नमस्ते'));
+    await tester.tap(find.byKey(const Key('end-button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Copy transcript'));
+    await tester.pumpAndSettle();
+    expect(copied, contains('Other person (Hindi): नमस्ते'));
+    expect(copied, contains('→ English: Where are you going today?'));
+    expect(find.text('Transcript copied'), findsOneWidget);
+  });
+
+  testWidgets('an unclear card offers language chips', (tester) async {
+    recognizer.detectionSupported = true;
+    await openConversation(tester, prefs: {..._prefs, 'other_language': 'auto'});
+    await tester.tap(find.byKey(const Key('listen-button')));
+    await tester.pumpAndSettle();
+    await say(tester, const FinalResult('नमस्ते'));
+    expect(find.text('Language unclear. What did they speak?'), findsOneWidget);
+    expect(find.text('CHOOSE THE LANGUAGE'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('unclear-hi-IN')));
+    await tester.pumpAndSettle();
+    expect(find.text('Where are you going today?'), findsOneWidget);
+    expect(find.text('Language unclear. What did they speak?'), findsNothing);
+  });
+
+  testWidgets('a detected language is labelled on the card and in the header', (tester) async {
+    recognizer.detectionSupported = true;
+    await openConversation(tester, prefs: {..._prefs, 'other_language': 'auto'});
+    await tester.tap(find.byKey(const Key('listen-button')));
+    await tester.pumpAndSettle();
+    recognizer.emit(const LanguageDetected('gu-IN', LanguageConfidence.confident));
+    await say(tester, const FinalResult('તમે ક્યાં જાઓ છો?'));
+    expect(find.text('OTHER PERSON · GUJARATI · DETECTED'), findsOneWidget);
+    expect(find.text('Their language: Gujarati · Detected'), findsOneWidget);
+  });
+
+  testWidgets('Change in the header picks their language', (tester) async {
+    await openConversation(tester);
+    expect(find.text('Their language: Hindi'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('change-language')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Gujarati').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Their language: Gujarati'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('listen-button')));
+    await tester.pumpAndSettle();
+    expect(recognizer.started, ['gu-IN']);
+  });
+
+  testWidgets('a reply under review offers Edit, Play and Discard', (tester) async {
+    await openConversation(tester, prefs: {..._prefs, 'review_reply': true});
+    await tester.tap(find.byKey(const Key('speak-button')));
+    await tester.pumpAndSettle();
+    await say(tester, const FinalResult('Hello'));
+    expect(find.text('REVIEW YOUR REPLY'), findsOneWidget);
+    expect(find.text('Edit'), findsOneWidget);
+    expect(find.text('Discard'), findsOneWidget);
+    expect(audio.calls.where((c) => c.startsWith('play:')), isEmpty);
+
+    await tester.tap(find.text('Edit'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'Hello there');
+    await tester.tap(find.text('Translate again'));
+    await tester.pumpAndSettle();
+    expect(cloud.requests.last.text, 'Hello there');
+    expect(find.text('Hello there'), findsOneWidget);
+
+    await tester.tap(find.text('Play'));
+    await tester.pumpAndSettle();
+    expect(audio.calls.where((c) => c.startsWith('play:')), hasLength(1));
   });
 }

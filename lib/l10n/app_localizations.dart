@@ -805,7 +805,7 @@ abstract class AppLocalizations {
   /// No description provided for @conversationEmptyBody.
   ///
   /// In en, this message translates to:
-  /// **'Tap Listen when the other person talks, or Speak to reply. Each translation is shown and spoken.'**
+  /// **'Tap Listen and Anuvaad keeps listening, translating and speaking each turn. Tap Speak to reply.'**
   String get conversationEmptyBody;
 
   /// No description provided for @conversationChooseOtherLanguage.
@@ -1101,6 +1101,258 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Language unclear. What did they speak?'**
   String get conversationLanguageUnclear;
+
+  /// No description provided for @transcriptHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Anuvaad conversation · {date} · {minutes} min'**
+  String transcriptHeader(String date, int minutes);
+
+  /// No description provided for @transcriptYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get transcriptYou;
+
+  /// No description provided for @transcriptOtherPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'Other person'**
+  String get transcriptOtherPerson;
+
+  /// No description provided for @transcriptNotTranslated.
+  ///
+  /// In en, this message translates to:
+  /// **'Not translated'**
+  String get transcriptNotTranslated;
+
+  /// No description provided for @transcriptUnclear.
+  ///
+  /// In en, this message translates to:
+  /// **'Language unclear'**
+  String get transcriptUnclear;
+
+  /// No description provided for @statusReady.
+  ///
+  /// In en, this message translates to:
+  /// **'READY TO LISTEN'**
+  String get statusReady;
+
+  /// No description provided for @statusListening.
+  ///
+  /// In en, this message translates to:
+  /// **'LISTENING'**
+  String get statusListening;
+
+  /// No description provided for @statusRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR TURN'**
+  String get statusRecording;
+
+  /// No description provided for @statusChoosingLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'CHOOSE THE LANGUAGE'**
+  String get statusChoosingLanguage;
+
+  /// No description provided for @statusTranslating.
+  ///
+  /// In en, this message translates to:
+  /// **'TRANSLATING…'**
+  String get statusTranslating;
+
+  /// No description provided for @statusSpeaking.
+  ///
+  /// In en, this message translates to:
+  /// **'SPEAKING'**
+  String get statusSpeaking;
+
+  /// No description provided for @statusReviewing.
+  ///
+  /// In en, this message translates to:
+  /// **'REVIEW YOUR REPLY'**
+  String get statusReviewing;
+
+  /// No description provided for @statusPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'PAUSED'**
+  String get statusPaused;
+
+  /// No description provided for @statusEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'ENDED'**
+  String get statusEnded;
+
+  /// No description provided for @modeInPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'In person'**
+  String get modeInPerson;
+
+  /// No description provided for @modeMeeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting'**
+  String get modeMeeting;
+
+  /// No description provided for @headerTheirLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Their language: {language}'**
+  String headerTheirLanguage(String language);
+
+  /// No description provided for @headerTheirLanguageDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Their language: {language} · Detected'**
+  String headerTheirLanguageDetected(String language);
+
+  /// No description provided for @headerTheirLanguageAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Their language: Automatic'**
+  String get headerTheirLanguageAuto;
+
+  /// No description provided for @headerChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get headerChange;
+
+  /// No description provided for @headerChooseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Which language do they speak?'**
+  String get headerChooseTitle;
+
+  /// No description provided for @conversationPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get conversationPause;
+
+  /// No description provided for @conversationEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End conversation'**
+  String get conversationEnd;
+
+  /// No description provided for @conversationOtherLabelDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'OTHER PERSON · {language} · DETECTED'**
+  String conversationOtherLabelDetected(String language);
+
+  /// No description provided for @reviewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your reply before they hear it.'**
+  String get reviewHint;
+
+  /// No description provided for @reviewEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get reviewEdit;
+
+  /// No description provided for @reviewPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get reviewPlay;
+
+  /// No description provided for @reviewDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get reviewDiscard;
+
+  /// No description provided for @reviewEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit what you said'**
+  String get reviewEditTitle;
+
+  /// No description provided for @reviewTranslateAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate again'**
+  String get reviewTranslateAgain;
+
+  /// No description provided for @summaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation ended'**
+  String get summaryTitle;
+
+  /// No description provided for @summaryMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String summaryMinutes(int minutes);
+
+  /// No description provided for @summaryTurns.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 turn} other{{count} turns}}'**
+  String summaryTurns(int count);
+
+  /// No description provided for @summaryCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy transcript'**
+  String get summaryCopy;
+
+  /// No description provided for @summaryCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcript copied'**
+  String get summaryCopied;
+
+  /// No description provided for @summaryDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get summaryDone;
+
+  /// No description provided for @summaryOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get summaryOpen;
+
+  /// No description provided for @settingsConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation'**
+  String get settingsConversation;
+
+  /// No description provided for @settingsAutoDetect.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic language detection'**
+  String get settingsAutoDetect;
+
+  /// No description provided for @settingsAutoDetectSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Detect English, Hindi and Gujarati'**
+  String get settingsAutoDetectSubtitle;
+
+  /// No description provided for @settingsReviewReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Review my reply before playing'**
+  String get settingsReviewReply;
+
+  /// No description provided for @settingsReviewReplySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check and edit your reply before the other person hears it'**
+  String get settingsReviewReplySubtitle;
 }
 
 class _AppLocalizationsDelegate

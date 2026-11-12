@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:anuvaad/app/app.dart';
 import 'package:anuvaad/core/config/app_config.dart';
+import 'package:anuvaad/core/platform/screen_awake.dart';
 import 'package:anuvaad/core/settings/settings_providers.dart';
 import 'package:anuvaad/features/conversation/application/voice_service.dart';
 import 'package:anuvaad/features/conversation/data/android_audio.dart';
@@ -26,6 +27,7 @@ Future<SharedPreferences> pumpAnuvaadApp(
   OfflineModels? offlineModels,
   FakeAudioOutput? audio,
   FakeSpeechSynth? synth,
+  FakeScreenAwake? screenAwake,
 }) async {
   final audioFake = audio ?? FakeAudioOutput();
   final synthFake = synth ?? FakeSpeechSynth();
@@ -43,6 +45,8 @@ Future<SharedPreferences> pumpAnuvaadApp(
       // Never touch the native audio plugin in widget tests.
       audioOutputProvider.overrideWithValue(audioFake),
       speechSynthProvider.overrideWithValue(synthFake),
+      // Never touch the wakelock plugin in widget tests.
+      screenAwakeProvider.overrideWithValue(screenAwake ?? FakeScreenAwake()),
       voiceServiceProvider.overrideWith((ref) => VoiceService(synth: synthFake, cacheDir: () async => cache)),
       ...overrides,
     ],

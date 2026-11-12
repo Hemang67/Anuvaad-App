@@ -208,4 +208,20 @@ void main() {
     await h.controller.startListening();
     expect(h.state.sessionStartedAt, h.now);
   });
+
+  test('pause keeps words already heard: they are translated, not spoken', () async {
+    await h.controller.startListening();
+    final id = h.activeId;
+    h.recognizer.emit(const PartialResult('नमस्ते आप'));
+    await h.flush();
+    await h.controller.pause();
+    expect(h.recognizer.stops, 1, reason: 'stop, not cancel, so the final result arrives');
+    expect(h.recognizer.cancels, 0);
+    h.recognizer.emit(const FinalResult('नमस्ते आप कैसे हैं'));
+    await h.flush();
+    expect(h.seg(id).status, SegmentStatus.translated);
+    expect(h.seg(id).speech, SpeechStatus.none);
+    expect(h.audio.calls.where((c) => c.startsWith('play:')), isEmpty);
+    expect(h.starts, 1);
+  });
 }

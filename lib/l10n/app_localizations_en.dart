@@ -411,7 +411,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get conversationEmptyBody =>
-      'Tap Listen when the other person talks, or Speak to reply. Each translation is shown and spoken.';
+      'Tap Listen and Anuvaad keeps listening, translating and speaking each turn. Tap Speak to reply.';
 
   @override
   String get conversationChooseOtherLanguage =>
@@ -588,4 +588,149 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get conversationLanguageUnclear =>
       'Language unclear. What did they speak?';
+
+  @override
+  String transcriptHeader(String date, int minutes) {
+    return 'Anuvaad conversation · $date · $minutes min';
+  }
+
+  @override
+  String get transcriptYou => 'You';
+
+  @override
+  String get transcriptOtherPerson => 'Other person';
+
+  @override
+  String get transcriptNotTranslated => 'Not translated';
+
+  @override
+  String get transcriptUnclear => 'Language unclear';
+
+  @override
+  String get statusReady => 'READY TO LISTEN';
+
+  @override
+  String get statusListening => 'LISTENING';
+
+  @override
+  String get statusRecording => 'YOUR TURN';
+
+  @override
+  String get statusChoosingLanguage => 'CHOOSE THE LANGUAGE';
+
+  @override
+  String get statusTranslating => 'TRANSLATING…';
+
+  @override
+  String get statusSpeaking => 'SPEAKING';
+
+  @override
+  String get statusReviewing => 'REVIEW YOUR REPLY';
+
+  @override
+  String get statusPaused => 'PAUSED';
+
+  @override
+  String get statusEnded => 'ENDED';
+
+  @override
+  String get modeInPerson => 'In person';
+
+  @override
+  String get modeMeeting => 'Meeting';
+
+  @override
+  String headerTheirLanguage(String language) {
+    return 'Their language: $language';
+  }
+
+  @override
+  String headerTheirLanguageDetected(String language) {
+    return 'Their language: $language · Detected';
+  }
+
+  @override
+  String get headerTheirLanguageAuto => 'Their language: Automatic';
+
+  @override
+  String get headerChange => 'Change';
+
+  @override
+  String get headerChooseTitle => 'Which language do they speak?';
+
+  @override
+  String get conversationPause => 'Pause';
+
+  @override
+  String get conversationEnd => 'End conversation';
+
+  @override
+  String conversationOtherLabelDetected(String language) {
+    return 'OTHER PERSON · $language · DETECTED';
+  }
+
+  @override
+  String get reviewHint => 'Check your reply before they hear it.';
+
+  @override
+  String get reviewEdit => 'Edit';
+
+  @override
+  String get reviewPlay => 'Play';
+
+  @override
+  String get reviewDiscard => 'Discard';
+
+  @override
+  String get reviewEditTitle => 'Edit what you said';
+
+  @override
+  String get reviewTranslateAgain => 'Translate again';
+
+  @override
+  String get summaryTitle => 'Conversation ended';
+
+  @override
+  String summaryMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String summaryTurns(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count turns',
+      one: '1 turn',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get summaryCopy => 'Copy transcript';
+
+  @override
+  String get summaryCopied => 'Transcript copied';
+
+  @override
+  String get summaryDone => 'Done';
+
+  @override
+  String get summaryOpen => 'Summary';
+
+  @override
+  String get settingsConversation => 'Conversation';
+
+  @override
+  String get settingsAutoDetect => 'Automatic language detection';
+
+  @override
+  String get settingsAutoDetectSubtitle => 'Detect English, Hindi and Gujarati';
+
+  @override
+  String get settingsReviewReply => 'Review my reply before playing';
+
+  @override
+  String get settingsReviewReplySubtitle =>
+      'Check and edit your reply before the other person hears it';
 }

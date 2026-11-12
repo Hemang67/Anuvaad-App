@@ -9,6 +9,8 @@ import '../../../app/theme/theme_mode_controller.dart';
 import '../../../core/config/app_config.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../app_update/application/update_controller.dart';
+import '../../conversation/application/language_detection.dart';
+import '../../conversation/application/review_reply.dart';
 import 'widgets.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -67,6 +69,29 @@ class SettingsScreen extends ConsumerWidget {
                     selected: {mode},
                     showSelectedIcon: false,
                     onSelectionChanged: (selection) => ref.read(themeModeProvider.notifier).select(selection.first),
+                  ),
+                ),
+              ],
+            ),
+            SettingsSection(
+              title: l10n.settingsConversation,
+              children: [
+                SettingsRow(
+                  title: l10n.settingsAutoDetect,
+                  subtitle: l10n.settingsAutoDetectSubtitle,
+                  trailing: Switch(
+                    key: const Key('auto-detect-switch'),
+                    value: ref.watch(autoDetectProvider),
+                    onChanged: (on) => ref.read(autoDetectProvider.notifier).set(on),
+                  ),
+                ),
+                SettingsRow(
+                  title: l10n.settingsReviewReply,
+                  subtitle: l10n.settingsReviewReplySubtitle,
+                  trailing: Switch(
+                    key: const Key('review-reply-switch'),
+                    value: ref.watch(reviewReplyProvider),
+                    onChanged: (on) => ref.read(reviewReplyProvider.notifier).set(on),
                   ),
                 ),
               ],

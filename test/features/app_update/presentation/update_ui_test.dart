@@ -225,8 +225,11 @@ void main() {
           deviceAbisProvider.overrideWith((ref) async => ['arm64-v8a']),
         ];
 
+    /// Opens Settings and scrolls to the About rows (Check for updates, Release notes) at the bottom.
     Future<void> openSettings(WidgetTester tester) async {
       await tester.tap(find.widgetWithText(NavigationDestination, 'Settings'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Release notes'), 200, scrollable: find.byType(Scrollable).first);
       await tester.pumpAndSettle();
     }
 

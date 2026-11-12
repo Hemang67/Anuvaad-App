@@ -1,15 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/bootstrap.dart';
 import '../../../app/routes.dart';
 import '../../../app/theme/anuvaad_colors.dart';
+import '../../../core/platform/screen_awake.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../language_settings/application/language_preferences_controller.dart';
 import '../application/conversation_controller.dart';
 import '../application/output_router.dart';
+import '../application/session_status.dart';
 import 'segment_card.dart';
+import 'session_header.dart';
+import 'session_summary_sheet.dart';
 import 'turn_buttons.dart';
 
 /// In-person conversation (M2): live text and translations; spoken translations arrive in M3.
@@ -22,12 +29,41 @@ class ConversationScreen extends ConsumerStatefulWidget {
 
 class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   final _scroll = ScrollController();
+  late final ScreenAwake _awake;
+
+  @override
+  void initState() {
+    super.initState();
+    _awake = ref.read(screenAwakeProvider); // read now: ref can't be used once the screen is disposed
+  }
 
   @override
   void dispose() {
+    unawaited(_awake.keepOn(false));
     _scroll.dispose();
     super.dispose();
   }
+
+  /// The screen stays on while the session is doing something; paused, ended or idle lets it sleep (spec §0.4).
+  static bool _keepAwake(SessionStatus status) =>
+      status != SessionStatus.ready && status != SessionStatus.paused && status != SessionStatus.ended;
+
+  Future<void> _end(String myLanguage, String Function(String) name) async {
+    unawaited(HapticFeedback.mediumImpact());
+    await ref.read(conversationControllerProvider.notifier).endSession();
+    if (!mounted) return;
+    await _showSummary(myLanguage, name);
+  }
+
+  Future<void> _showSummary(String myLanguage, String Function(String) name) => showSessionSummary(
+        context,
+        state: ref.read(conversationControllerProvider),
+        myLanguage: myLanguage,
+        languageName: name,
+        onDone: () {
+          if (mounted) context.pop();
+        },
+      );
 
   /// What the cards show, apart from their speech lines.
   static int _contentKey(ConversationState s) => Object.hashAll([
@@ -56,12 +92,19 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     final registry = ref.watch(languageRegistryProvider);
     final prefs = ref.watch(languagePreferencesProvider);
     String name(String code) => registry.byCode(code)?.displayName ?? code;
+    final choices = [
+      for (final language in registry.coreLanguages)
+        if (language.code != prefs.myLanguage) (code: language.code, name: language.displayName),
+    ];
 
     // Keep the newest line in view whenever a card's content changes (new card, live text, "Translating…", a
     // translation — including a late one on an older card, which pushes the newest down). Notices don't scroll.
     // The newest card's speech line scrolls only when the list is already at the end, so someone replaying an
     // older card stays where they are.
     ref.listen(conversationControllerProvider.select(_contentKey), (_, _) => _scrollToEnd());
+    ref.listen(conversationControllerProvider.select((s) => _keepAwake(sessionStatus(s))), (_, awake) {
+      unawaited(_awake.keepOn(awake));
+    });
     ref.listen(conversationControllerProvider.select(_newestSpeechKey), (_, _) => _scrollToEnd(onlyIfAtEnd: true));
 
     final other = state.otherLanguageOverride ?? prefs.otherLanguage;
@@ -82,6 +125,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            SessionHeader(languageName: name, choices: choices),
             Expanded(
               child: state.segments.isEmpty
                   ? const _EmptyState()
@@ -99,6 +143,11 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                               onRetry: () => controller.retryTranslation(segment.id),
                               onReplay: () => controller.replay(segment.id),
                               onInstallVoice: () => controller.installVoice(segment.targetLanguage),
+                              unclearChoices: choices,
+                              onConfirmLanguage: (code) => controller.confirmLanguage(segment.id, code),
+                              onEditReply: (text) => controller.editReply(segment.id, text),
+                              onPlayReply: () => controller.playReply(segment.id),
+                              onDiscardReply: () => controller.discardReply(segment.id),
                             ),
                           ),
                       ],
@@ -109,18 +158,28 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                 notice: notice,
                 languageName: state.noticeLanguage == null ? null : name(state.noticeLanguage!),
                 deviceName: state.noticeOutput == null ? null : outputLabel(state.noticeOutput!, l10n),
-                choices: [
-                  for (final language in registry.coreLanguages)
-                    if (language.code != prefs.myLanguage) (code: language.code, name: language.displayName),
-                ],
+                choices: choices,
                 controller: controller,
               ),
             TurnButtons(
-              activeSpeaker: state.activeSpeaker,
+              state: state,
               listenHint: listenHint,
               speakHint: l10n.conversationSpeakHint(name(prefs.myLanguage)),
-              onStart: controller.startTurn,
+              onListen: () {
+                unawaited(HapticFeedback.lightImpact());
+                controller.startListening();
+              },
+              onPause: () {
+                unawaited(HapticFeedback.lightImpact());
+                controller.pause();
+              },
+              onSpeak: () {
+                unawaited(HapticFeedback.lightImpact());
+                controller.startSpeaking();
+              },
               onStop: controller.stopTurn,
+              onEnd: () => _end(prefs.myLanguage, name),
+              onSummary: () => _showSummary(prefs.myLanguage, name),
             ),
           ],
         ),

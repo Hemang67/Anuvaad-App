@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:anuvaad/core/platform/screen_awake.dart';
 import 'package:anuvaad/core/permissions/microphone_permission.dart';
 import 'package:anuvaad/features/conversation/data/offline_models.dart';
 import 'package:anuvaad/features/conversation/domain/audio_output.dart';
@@ -269,3 +270,16 @@ class FakeSpeechSynth implements SpeechSynthPort {
     return true;
   }
 }
+
+/// Records whether the screen was asked to stay on.
+class FakeScreenAwake implements ScreenAwake {
+  bool on = false;
+  final List<bool> calls = [];
+
+  @override
+  Future<void> keepOn(bool on) async {
+    calls.add(on);
+    this.on = on;
+  }
+}
+

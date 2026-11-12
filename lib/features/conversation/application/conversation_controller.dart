@@ -236,10 +236,18 @@ class ConversationController extends Notifier<ConversationState> {
   }
 
   /// Stops the microphone and any playback, and leaves Listen mode until Listen is tapped again.
+  /// Words already heard in a Listen turn are kept (stopped, so the final result arrives and is translated, not
+  /// spoken); an empty turn is cancelled.
   Future<void> pause() async {
     if (state.ended) return;
     state = state.copyWith(listenMode: false, paused: true);
-    await cancelTurn();
+    final active = _activeId;
+    if (active != null && state.activeSpeaker == Speaker.other && (_segment(active)?.text.trim().isNotEmpty ?? false)) {
+      _setLevel(0);
+      await _recognizer.stop();
+    } else {
+      await cancelTurn();
+    }
     await stopSpeaking();
   }
 

@@ -241,7 +241,7 @@
   },
   "conversationOfflineLabel": "Offline translation",
   "conversationEmptyTitle": "Start a conversation",
-  "conversationEmptyBody": "Tap Listen when the other person talks, or Speak to reply. Each translation is shown and spoken.",
+  "conversationEmptyBody": "Tap Listen and Anuvaad keeps listening, translating and speaking each turn. Tap Speak to reply.",
   "conversationChooseOtherLanguage": "Which language will they speak?",
   "conversationRetry": "Try again",
   "conversationAllowMic": "Allow",
@@ -346,5 +346,96 @@
       }
     }
   },
-  "conversationLanguageUnclear": "Language unclear. What did they speak?"
+  "conversationLanguageUnclear": "Language unclear. What did they speak?",
+  "transcriptHeader": "Anuvaad conversation · {date} · {minutes} min",
+  "@transcriptHeader": {
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "6 Nov 2026, 10:00"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "transcriptYou": "You",
+  "transcriptOtherPerson": "Other person",
+  "transcriptNotTranslated": "Not translated",
+  "transcriptUnclear": "Language unclear",
+  "statusReady": "READY TO LISTEN",
+  "statusListening": "LISTENING",
+  "statusRecording": "YOUR TURN",
+  "statusChoosingLanguage": "CHOOSE THE LANGUAGE",
+  "statusTranslating": "TRANSLATING…",
+  "statusSpeaking": "SPEAKING",
+  "statusReviewing": "REVIEW YOUR REPLY",
+  "statusPaused": "PAUSED",
+  "statusEnded": "ENDED",
+  "modeInPerson": "In person",
+  "modeMeeting": "Meeting",
+  "headerTheirLanguage": "Their language: {language}",
+  "@headerTheirLanguage": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "Hindi"
+      }
+    }
+  },
+  "headerTheirLanguageDetected": "Their language: {language} · Detected",
+  "@headerTheirLanguageDetected": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "Hindi"
+      }
+    }
+  },
+  "headerTheirLanguageAuto": "Their language: Automatic",
+  "headerChange": "Change",
+  "headerChooseTitle": "Which language do they speak?",
+  "conversationPause": "Pause",
+  "conversationEnd": "End conversation",
+  "conversationOtherLabelDetected": "OTHER PERSON · {language} · DETECTED",
+  "@conversationOtherLabelDetected": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "HINDI"
+      }
+    }
+  },
+  "reviewHint": "Check your reply before they hear it.",
+  "reviewEdit": "Edit",
+  "reviewPlay": "Play",
+  "reviewDiscard": "Discard",
+  "reviewEditTitle": "Edit what you said",
+  "reviewTranslateAgain": "Translate again",
+  "summaryTitle": "Conversation ended",
+  "summaryMinutes": "{minutes} min",
+  "@summaryMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "summaryTurns": "{count, plural, =1{1 turn} other{{count} turns}}",
+  "@summaryTurns": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "summaryCopy": "Copy transcript",
+  "summaryCopied": "Transcript copied",
+  "summaryDone": "Done",
+  "summaryOpen": "Summary",
+  "settingsConversation": "Conversation",
+  "settingsAutoDetect": "Automatic language detection",
+  "settingsAutoDetectSubtitle": "Detect English, Hindi and Gujarati",
+  "settingsReviewReply": "Review my reply before playing",
+  "settingsReviewReplySubtitle": "Check and edit your reply before the other person hears it"
 }
