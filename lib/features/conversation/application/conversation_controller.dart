@@ -7,7 +7,12 @@ import 'package:uuid/uuid.dart';
 
 import '../../../app/bootstrap.dart';
 import '../../../core/permissions/microphone_permission.dart';
+import '../../../core/settings/settings_providers.dart';
+import '../../../core/settings/settings_repository.dart';
 import '../../app_update/application/update_controller.dart' show clockProvider;
+import '../../history/application/history_providers.dart';
+import '../../history/domain/history_repository.dart';
+import '../../history/domain/saved_conversation.dart';
 import '../../language_settings/application/language_preferences_controller.dart';
 import '../data/android_audio.dart';
 import '../data/android_speech_recognizer.dart';
@@ -58,6 +63,7 @@ class ConversationState {
     this.sessionEndedAt,
     this.mode = ConversationMode.inPerson,
     this.otherLanguageDetected = false,
+    this.savedToHistory = false,
   });
 
   /// In creation order (oldest first).
@@ -92,6 +98,9 @@ class ConversationState {
   /// [otherLanguageOverride] came from a confident detection, not the user's pick.
   final bool otherLanguageDetected;
 
+  /// This conversation is in History (saved at End, or with the summary's Save).
+  final bool savedToHistory;
+
   static const _keep = Object();
 
   ConversationState copyWith({
@@ -108,6 +117,7 @@ class ConversationState {
     Object? sessionEndedAt = _keep,
     ConversationMode? mode,
     bool? otherLanguageDetected,
+    bool? savedToHistory,
   }) =>
       ConversationState(
         segments: segments ?? this.segments,
@@ -124,6 +134,7 @@ class ConversationState {
         sessionEndedAt: identical(sessionEndedAt, _keep) ? this.sessionEndedAt : sessionEndedAt as DateTime?,
         mode: mode ?? this.mode,
         otherLanguageDetected: otherLanguageDetected ?? this.otherLanguageDetected,
+        savedToHistory: savedToHistory ?? this.savedToHistory,
       );
 }
 
@@ -184,12 +195,24 @@ class ConversationController extends Notifier<ConversationState> {
   final _allowedFor = <String, List<String>>{};
   final _detections = <String, ({String locale, LanguageConfidence confidence})>{};
 
+  /// History: this conversation's id (from its first turn), my language, and where it is saved.
+  String? _sessionId;
+  String? _myLanguage;
+  late HistoryRepository _history;
+  late SettingsRepository _settings;
+
+  /// The latest state, for saving when the screen closes (state can't be read once disposal starts).
+  ConversationState? _lastState;
+
   @override
   ConversationState build() {
     final recognizer = _recognizer = ref.watch(speechRecognizerProvider);
     _events = recognizer.events.listen(_onEvent);
     final audio = _audio = ref.watch(audioOutputProvider);
     final voice = _voice = ref.watch(voiceServiceProvider);
+    final history = _history = ref.watch(historyRepositoryProvider);
+    final settings = _settings = ref.watch(settingsRepositoryProvider);
+    final clock = ref.read(clockProvider);
     _audioEvents = audio.events.listen(_onAudio);
     // Backgrounding releases the microphone (spec §0.4).
     _lifecycle = AppLifecycleListener(
@@ -200,6 +223,7 @@ class ConversationController extends Notifier<ConversationState> {
     );
     // Continuous Listen: when the last turn's work (translate, voice, playback) is done, listen again.
     listenSelf((previous, next) {
+      _lastState = next;
       if (previous != null && _busy(previous) && !_busy(next)) scheduleMicrotask(_maybeRearm);
     });
     // Files from a conversation the app never finished closing (killed, swiped away) go now.
@@ -208,6 +232,12 @@ class ConversationController extends Notifier<ConversationState> {
       if (_activeId != null) unawaited(recognizer.cancel());
       _activeId = null;
       _watchdog?.cancel();
+      // Leaving without End counts as End: with history on, the conversation is kept.
+      final last = _lastState;
+      if (last != null && !last.ended && settings.saveHistory) {
+        final saved = _toSaved(last, endedAt: clock());
+        if (saved != null) unawaited(history.save(saved).catchError((Object e) => debugPrint('Could not save history: $e')));
+      }
       // Leaving the screen ends playback and deletes the synthesized files.
       unawaited(audio.stop());
       unawaited(voice.clear());
@@ -270,6 +300,58 @@ class ConversationController extends Notifier<ConversationState> {
     state = state.copyWith(listenMode: false, paused: false, ended: true, sessionEndedAt: _now());
     await cancelTurn();
     await stopSpeaking();
+    if (ref.mounted && _settings.saveHistory) await _save();
+  }
+
+  /// The summary's Save: keeps this one conversation even with history off.
+  Future<void> saveToHistory() => _save();
+
+  /// This conversation as it would be saved, or null before anything final was said.
+  SavedConversation? toSavedConversation() => _toSaved(state, endedAt: _now());
+
+  Future<void> _save() async {
+    final saved = _toSaved(state, endedAt: _now());
+    if (saved == null) return;
+    try {
+      await _history.save(saved);
+      if (ref.mounted) state = state.copyWith(savedToHistory: true);
+    } catch (error) {
+      debugPrint('Could not save history: $error');
+    }
+  }
+
+  SavedConversation? _toSaved(ConversationState s, {required DateTime endedAt}) {
+    final id = _sessionId;
+    final started = s.sessionStartedAt;
+    final my = _myLanguage;
+    if (id == null || started == null || my == null) return null;
+    final segments = [
+      for (final x in s.segments)
+        if (x.isFinal && x.text.trim().isNotEmpty)
+          SavedSegment(
+            id: x.id,
+            seq: x.seq,
+            speaker: x.speaker,
+            sourceLanguage: x.sourceLanguage,
+            targetLanguage: x.targetLanguage,
+            text: x.text,
+            translation: x.status == SegmentStatus.translated ? x.translation?.text : null,
+            provenance: x.status == SegmentStatus.translated ? x.translation?.provenance : null,
+            unclear: x.status == SegmentStatus.unclear,
+            at: x.finalAt ?? x.startedAt,
+          ),
+    ];
+    if (segments.isEmpty) return null;
+    final others = {for (final x in segments) ...[x.sourceLanguage, x.targetLanguage]}..remove(my);
+    return SavedConversation(
+      id: id,
+      startedAt: started,
+      endedAt: s.sessionEndedAt ?? endedAt,
+      myLanguage: my,
+      otherLanguages: others.toList(),
+      mode: s.mode,
+      segments: segments,
+    );
   }
 
   /// [clearNotice]: a tap clears the notice; an automatic Listen-mode turn keeps it ("Ask them to say it again",
@@ -315,6 +397,8 @@ class ConversationController extends Notifier<ConversationState> {
         startedAt: _now(),
       );
       _activeId = segment.id;
+      _sessionId ??= _uuid.v4();
+      _myLanguage ??= my;
       if (detectAmong.isNotEmpty) _allowedFor[segment.id] = detectAmong;
       state = state.copyWith(
         segments: [...state.segments, segment],
@@ -612,6 +696,8 @@ class ConversationController extends Notifier<ConversationState> {
             offlineNotReady: false,
             translatedAt: _now(),
           ));
+      // A translation that lands after End belongs in the saved copy too (it is never spoken: the session ended).
+      if (state.ended && state.savedToHistory) unawaited(_save());
       // With "Review my reply before playing" on, my reply waits for Play (or Edit, Discard).
       if (segment.speaker == Speaker.me && ref.read(reviewReplyProvider)) {
         _update(id, (s) => s.copyWith(speech: SpeechStatus.awaitingReview));

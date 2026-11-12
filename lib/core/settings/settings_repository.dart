@@ -20,6 +20,7 @@ class SettingsRepository {
   static const _outputPrefix = 'output_for_';
   static const _autoDetect = 'auto_detect';
   static const _reviewReply = 'review_reply';
+  static const _saveHistory = 'save_history';
 
   ThemeMode get themeMode => switch (_prefs.getString(_themeMode)) {
         'light' => ThemeMode.light,
@@ -78,4 +79,8 @@ class SettingsRepository {
   /// Review my reply before playing (off by default).
   bool get reviewReply => _prefs.getBool(_reviewReply) ?? false;
   Future<void> setReviewReply(bool on) => _prefs.setBool(_reviewReply, on);
+
+  /// Save conversations on this phone (off by default, spec R12).
+  bool get saveHistory => _prefs.getBool(_saveHistory) ?? false;
+  Future<void> setSaveHistory(bool on) => _prefs.setBool(_saveHistory, on);
 }
