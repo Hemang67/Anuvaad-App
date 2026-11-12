@@ -9,5 +9,6 @@ abstract final class Routes {
   static const audioDevices = '/audio-devices';
   static const history = '/history';
   static const voices = '/voices';
+  static const privacy = '/privacy';
   static String historyDetail(String id) => '/history/$id';
 }

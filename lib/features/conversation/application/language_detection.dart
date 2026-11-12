@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/settings/settings_providers.dart';
+import '../data/android_speech_recognizer.dart';
 import '../domain/speech_recognition.dart';
 
 /// Maps whatever Android reports ("hi", "hi-in", "HI_IN") to one of [allowed] by its language part, or null.
@@ -72,3 +73,8 @@ class AutoDetectController extends Notifier<bool> {
 }
 
 final autoDetectProvider = NotifierProvider<AutoDetectController, bool>(AutoDetectController.new);
+
+/// Whether this phone's recognizer can detect the spoken language at all (Android 14+).
+final detectionSupportedProvider = FutureProvider<bool>(
+  (ref) => ref.watch(speechRecognizerProvider).supportsLanguageDetection(),
+);

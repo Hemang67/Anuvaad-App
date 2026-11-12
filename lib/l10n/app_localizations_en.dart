@@ -916,4 +916,123 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsOfflineModelsSubtitle =>
       'What works without internet, per language';
+
+  @override
+  String get settingsAutoDetectUnsupported =>
+      'Needs Android 14 or later. You\'ll choose the language instead.';
+
+  @override
+  String get settingsPrivacy => 'Privacy';
+
+  @override
+  String get settingsSaveHistory => 'Save conversations';
+
+  @override
+  String get settingsSaveHistorySubtitle =>
+      'Off by default · stays on this phone';
+
+  @override
+  String get settingsRawAudio => 'Raw audio';
+
+  @override
+  String get settingsRawAudioNever => 'Never saved';
+
+  @override
+  String get settingsDeleteAll => 'Delete all conversations';
+
+  @override
+  String get settingsDeleteAllTitle => 'Delete all saved conversations?';
+
+  @override
+  String get settingsDeleteAllButton => 'Delete all';
+
+  @override
+  String get settingsDeleteAllDone => 'All saved conversations deleted';
+
+  @override
+  String get settingsKeepTitle => 'Keep saved conversations?';
+
+  @override
+  String get settingsKeepBody =>
+      'New conversations won\'t be saved. The ones already saved can stay on this phone or be deleted now.';
+
+  @override
+  String get settingsKeep => 'Keep';
+
+  @override
+  String get settingsPrivacyData => 'Privacy & data';
+
+  @override
+  String get settingsPrivacyDataSubtitle =>
+      'What leaves your phone, and what is kept';
+
+  @override
+  String get privacyLeavesTitle => 'What leaves your phone';
+
+  @override
+  String get privacyLeavesUpdates =>
+      'Update checks: the app\'s version and a random install ID go to the Anuvaad server to find out whether a newer release exists.';
+
+  @override
+  String get privacyLeavesAudio =>
+      'Microphone audio: when Android\'s speech recognizer works online, Android sends the audio to Google\'s speech service. Anuvaad doesn\'t record or upload audio itself.';
+
+  @override
+  String get privacyLeavesText =>
+      'Recognized text and the random install ID go to the Anuvaad server so they can be translated.';
+
+  @override
+  String get privacyLeavesVoices =>
+      'Translated text, when it is spoken: Android\'s speech engine usually speaks on the phone, but may use Google\'s online voices for some languages.';
+
+  @override
+  String get privacyGoesTitle => 'Where it goes';
+
+  @override
+  String get privacyGoesServer =>
+      'The Anuvaad server runs on Vercel and passes text to Cloudflare Workers AI for translation. It doesn\'t store or log the text.';
+
+  @override
+  String get privacyGoesOffline =>
+      'Offline translation runs on your phone with Google ML Kit; that text doesn\'t leave the phone.';
+
+  @override
+  String get privacyGoesReleases =>
+      'App updates and release notes come from GitHub Releases.';
+
+  @override
+  String get privacyStoredTitle => 'What is stored';
+
+  @override
+  String get privacyStoredAudio => 'Raw microphone audio is never saved.';
+
+  @override
+  String get privacyStoredVoiceFiles =>
+      'Spoken translations are temporary audio files, deleted when the conversation closes.';
+
+  @override
+  String get privacyStoredHistory =>
+      'Saved conversations stay on this phone, and only when Save conversations is on or you tap Save. They\'re never uploaded.';
+
+  @override
+  String get privacyStoredLatency =>
+      'The latency report keeps timings only, no words, on this phone.';
+
+  @override
+  String get privacyControlsTitle => 'Your controls';
+
+  @override
+  String get privacyControlsHistory =>
+      'Turn Save conversations on or off in Settings, delete one conversation in History, or delete them all in Settings.';
+
+  @override
+  String get privacyControlsMic =>
+      'Pause or End stops the microphone straight away, and leaving the app pauses the conversation.';
+
+  @override
+  String get privacyFullPage => 'Full privacy page';
+
+  @override
+  String get privacyContact =>
+      'Contact details will be added before public launch.';
 }

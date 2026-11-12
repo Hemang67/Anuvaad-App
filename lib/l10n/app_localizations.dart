@@ -1671,6 +1671,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'What works without internet, per language'**
   String get settingsOfflineModelsSubtitle;
+
+  /// No description provided for @settingsAutoDetectUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs Android 14 or later. You\'ll choose the language instead.'**
+  String get settingsAutoDetectUnsupported;
+
+  /// No description provided for @settingsPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get settingsPrivacy;
+
+  /// No description provided for @settingsSaveHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Save conversations'**
+  String get settingsSaveHistory;
+
+  /// No description provided for @settingsSaveHistorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Off by default · stays on this phone'**
+  String get settingsSaveHistorySubtitle;
+
+  /// No description provided for @settingsRawAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw audio'**
+  String get settingsRawAudio;
+
+  /// No description provided for @settingsRawAudioNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Never saved'**
+  String get settingsRawAudioNever;
+
+  /// No description provided for @settingsDeleteAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all conversations'**
+  String get settingsDeleteAll;
+
+  /// No description provided for @settingsDeleteAllTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all saved conversations?'**
+  String get settingsDeleteAllTitle;
+
+  /// No description provided for @settingsDeleteAllButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all'**
+  String get settingsDeleteAllButton;
+
+  /// No description provided for @settingsDeleteAllDone.
+  ///
+  /// In en, this message translates to:
+  /// **'All saved conversations deleted'**
+  String get settingsDeleteAllDone;
+
+  /// No description provided for @settingsKeepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep saved conversations?'**
+  String get settingsKeepTitle;
+
+  /// No description provided for @settingsKeepBody.
+  ///
+  /// In en, this message translates to:
+  /// **'New conversations won\'t be saved. The ones already saved can stay on this phone or be deleted now.'**
+  String get settingsKeepBody;
+
+  /// No description provided for @settingsKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep'**
+  String get settingsKeep;
+
+  /// No description provided for @settingsPrivacyData.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & data'**
+  String get settingsPrivacyData;
+
+  /// No description provided for @settingsPrivacyDataSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What leaves your phone, and what is kept'**
+  String get settingsPrivacyDataSubtitle;
+
+  /// No description provided for @privacyLeavesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What leaves your phone'**
+  String get privacyLeavesTitle;
+
+  /// No description provided for @privacyLeavesUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Update checks: the app\'s version and a random install ID go to the Anuvaad server to find out whether a newer release exists.'**
+  String get privacyLeavesUpdates;
+
+  /// No description provided for @privacyLeavesAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone audio: when Android\'s speech recognizer works online, Android sends the audio to Google\'s speech service. Anuvaad doesn\'t record or upload audio itself.'**
+  String get privacyLeavesAudio;
+
+  /// No description provided for @privacyLeavesText.
+  ///
+  /// In en, this message translates to:
+  /// **'Recognized text and the random install ID go to the Anuvaad server so they can be translated.'**
+  String get privacyLeavesText;
+
+  /// No description provided for @privacyLeavesVoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Translated text, when it is spoken: Android\'s speech engine usually speaks on the phone, but may use Google\'s online voices for some languages.'**
+  String get privacyLeavesVoices;
+
+  /// No description provided for @privacyGoesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Where it goes'**
+  String get privacyGoesTitle;
+
+  /// No description provided for @privacyGoesServer.
+  ///
+  /// In en, this message translates to:
+  /// **'The Anuvaad server runs on Vercel and passes text to Cloudflare Workers AI for translation. It doesn\'t store or log the text.'**
+  String get privacyGoesServer;
+
+  /// No description provided for @privacyGoesOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline translation runs on your phone with Google ML Kit; that text doesn\'t leave the phone.'**
+  String get privacyGoesOffline;
+
+  /// No description provided for @privacyGoesReleases.
+  ///
+  /// In en, this message translates to:
+  /// **'App updates and release notes come from GitHub Releases.'**
+  String get privacyGoesReleases;
+
+  /// No description provided for @privacyStoredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What is stored'**
+  String get privacyStoredTitle;
+
+  /// No description provided for @privacyStoredAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw microphone audio is never saved.'**
+  String get privacyStoredAudio;
+
+  /// No description provided for @privacyStoredVoiceFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Spoken translations are temporary audio files, deleted when the conversation closes.'**
+  String get privacyStoredVoiceFiles;
+
+  /// No description provided for @privacyStoredHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved conversations stay on this phone, and only when Save conversations is on or you tap Save. They\'re never uploaded.'**
+  String get privacyStoredHistory;
+
+  /// No description provided for @privacyStoredLatency.
+  ///
+  /// In en, this message translates to:
+  /// **'The latency report keeps timings only, no words, on this phone.'**
+  String get privacyStoredLatency;
+
+  /// No description provided for @privacyControlsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your controls'**
+  String get privacyControlsTitle;
+
+  /// No description provided for @privacyControlsHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn Save conversations on or off in Settings, delete one conversation in History, or delete them all in Settings.'**
+  String get privacyControlsHistory;
+
+  /// No description provided for @privacyControlsMic.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause or End stops the microphone straight away, and leaving the app pauses the conversation.'**
+  String get privacyControlsMic;
+
+  /// No description provided for @privacyFullPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Full privacy page'**
+  String get privacyFullPage;
+
+  /// No description provided for @privacyContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact details will be added before public launch.'**
+  String get privacyContact;
 }
 
 class _AppLocalizationsDelegate

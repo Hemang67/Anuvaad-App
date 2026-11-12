@@ -11,6 +11,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../app_update/application/update_controller.dart';
 import '../../conversation/application/language_detection.dart';
 import '../../conversation/application/review_reply.dart';
+import '../../history/application/history_providers.dart';
 import '../../voices/application/voice_preferences.dart';
 import 'widgets.dart';
 
@@ -34,6 +35,57 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
+  /// Turning saving off with conversations already saved asks whether to keep them (spec §13: delete controls).
+  Future<void> _setSaveHistory(BuildContext context, WidgetRef ref, bool on) async {
+    final l10n = AppLocalizations.of(context);
+    final notifier = ref.read(saveHistoryProvider.notifier);
+    if (on) return notifier.set(true);
+    final repository = ref.read(historyRepositoryProvider);
+    if ((await repository.list()).isEmpty || !context.mounted) return notifier.set(false);
+    final keep = await showDialog<bool>(
+      context: context,
+      builder: (dialog) => AlertDialog(
+        title: Text(l10n.settingsKeepTitle),
+        content: Text(l10n.settingsKeepBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialog).pop(true), child: Text(l10n.settingsKeep)),
+          FilledButton(onPressed: () => Navigator.of(dialog).pop(false), child: Text(l10n.settingsDeleteAllButton)),
+        ],
+      ),
+    );
+    if (keep == null) return; // dismissed: nothing changes
+    await notifier.set(false);
+    if (!keep) {
+      await repository.deleteAll();
+      invalidateHistory(ref);
+    }
+  }
+
+  Future<void> _deleteAll(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialog) => AlertDialog(
+        title: Text(l10n.settingsDeleteAllTitle),
+        content: Text(l10n.historyDeleteBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialog).pop(false),
+            child: Text(MaterialLocalizations.of(dialog).cancelButtonLabel),
+          ),
+          FilledButton(onPressed: () => Navigator.of(dialog).pop(true), child: Text(l10n.settingsDeleteAllButton)),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await ref.read(historyRepositoryProvider).deleteAll();
+    invalidateHistory(ref);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.settingsDeleteAllDone)));
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
@@ -43,6 +95,8 @@ class SettingsScreen extends ConsumerWidget {
     final config = ref.watch(appConfigProvider);
     final updatesEnabled = config.apiBaseUrl != null || config.releasesRepo != null;
     final checking = ref.watch(updateControllerProvider) is UpdateChecking;
+    // Android 14+ only; until the answer arrives the switch waits, disabled.
+    final detection = ref.watch(detectionSupportedProvider).value ?? false;
 
     return Scaffold(
       key: const Key('settings-screen'),
@@ -79,11 +133,11 @@ class SettingsScreen extends ConsumerWidget {
               children: [
                 SettingsRow(
                   title: l10n.settingsAutoDetect,
-                  subtitle: l10n.settingsAutoDetectSubtitle,
+                  subtitle: detection ? l10n.settingsAutoDetectSubtitle : l10n.settingsAutoDetectUnsupported,
                   trailing: Switch(
                     key: const Key('auto-detect-switch'),
-                    value: ref.watch(autoDetectProvider),
-                    onChanged: (on) => ref.read(autoDetectProvider.notifier).set(on),
+                    value: detection && ref.watch(autoDetectProvider),
+                    onChanged: detection ? (on) => ref.read(autoDetectProvider.notifier).set(on) : null,
                   ),
                 ),
                 SettingsRow(
@@ -125,6 +179,36 @@ class SettingsScreen extends ConsumerWidget {
                   title: l10n.settingsAudioDevices,
                   subtitle: l10n.settingsAudioDevicesSubtitle,
                   onTap: () => context.push(Routes.audioDevices),
+                ),
+              ],
+            ),
+            SettingsSection(
+              title: l10n.settingsPrivacy,
+              children: [
+                SettingsRow(
+                  title: l10n.settingsSaveHistory,
+                  subtitle: l10n.settingsSaveHistorySubtitle,
+                  trailing: Switch(
+                    key: const Key('save-history-switch'),
+                    value: ref.watch(saveHistoryProvider),
+                    onChanged: (on) => _setSaveHistory(context, ref, on),
+                  ),
+                ),
+                SettingsRow(
+                  title: l10n.settingsRawAudio,
+                  trailing: Text(l10n.settingsRawAudioNever, style: TextStyle(color: tokens.muted, fontWeight: FontWeight.w600)),
+                ),
+                SettingsRow(
+                  key: const Key('delete-all-history'),
+                  title: l10n.settingsDeleteAll,
+                  trailing: const Icon(Icons.delete_outline),
+                  onTap: () => _deleteAll(context, ref),
+                ),
+                SettingsRow(
+                  title: l10n.settingsPrivacyData,
+                  subtitle: l10n.settingsPrivacyDataSubtitle,
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push(Routes.privacy),
                 ),
               ],
             ),
