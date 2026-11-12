@@ -3,6 +3,10 @@ import 'dart:io';
 import 'package:anuvaad/app/app.dart';
 import 'package:anuvaad/core/config/app_config.dart';
 import 'package:anuvaad/core/platform/screen_awake.dart';
+import 'package:anuvaad/features/history/application/history_providers.dart';
+import 'package:anuvaad/features/history/data/file_history_repository.dart';
+import 'package:anuvaad/features/history/domain/history_repository.dart';
+import 'package:anuvaad/shared/transcript_sharer.dart';
 import 'package:anuvaad/core/settings/settings_providers.dart';
 import 'package:anuvaad/features/conversation/application/voice_service.dart';
 import 'package:anuvaad/features/conversation/data/android_audio.dart';
@@ -28,6 +32,8 @@ Future<SharedPreferences> pumpAnuvaadApp(
   FakeAudioOutput? audio,
   FakeSpeechSynth? synth,
   FakeScreenAwake? screenAwake,
+  HistoryRepository? history,
+  FakeTranscriptSharer? sharer,
 }) async {
   final audioFake = audio ?? FakeAudioOutput();
   final synthFake = synth ?? FakeSpeechSynth();
@@ -47,6 +53,9 @@ Future<SharedPreferences> pumpAnuvaadApp(
       speechSynthProvider.overrideWithValue(synthFake),
       // Never touch the wakelock plugin in widget tests.
       screenAwakeProvider.overrideWithValue(screenAwake ?? FakeScreenAwake()),
+      // Saved conversations live in a temp folder; sharing never opens Android's share sheet.
+      historyRepositoryProvider.overrideWithValue(history ?? FileHistoryRepository(() async => cache)),
+      transcriptSharerProvider.overrideWithValue(sharer ?? FakeTranscriptSharer()),
       voiceServiceProvider.overrideWith((ref) => VoiceService(synth: synthFake, cacheDir: () async => cache)),
       ...overrides,
     ],

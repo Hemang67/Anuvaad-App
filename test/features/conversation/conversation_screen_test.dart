@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:anuvaad/core/permissions/microphone_permission.dart';
 import 'package:anuvaad/features/conversation/application/translation_service.dart';
@@ -8,6 +9,7 @@ import 'package:anuvaad/features/conversation/domain/audio_output.dart';
 import 'package:anuvaad/features/conversation/domain/speech_recognition.dart';
 import 'package:anuvaad/features/conversation/domain/translation.dart';
 import 'package:anuvaad/features/conversation/domain/voice.dart';
+import 'package:anuvaad/features/history/data/file_history_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -500,5 +502,29 @@ void main() {
     await tester.tap(find.text('Play'));
     await tester.pumpAndSettle();
     expect(audio.calls.where((c) => c.startsWith('play:')), hasLength(1));
+  });
+
+  testWidgets('summary Save saves this conversation', (tester) async {
+    final root = Directory.systemTemp.createTempSync('anuvaad_summary_save');
+    addTearDown(() => root.deleteSync(recursive: true));
+    final repo = FileHistoryRepository(() async => root);
+    await pumpAnuvaadApp(tester, prefs: _prefs, audio: audio, synth: synth, screenAwake: awake, history: repo, overrides: [
+      speechRecognizerProvider.overrideWithValue(recognizer),
+      microphonePermissionProvider.overrideWithValue(mic),
+      translationServiceProvider.overrideWithValue(TranslationService(cloud: cloud, offline: offline)),
+    ]);
+    await tester.scrollUntilVisible(find.text('In-person conversation'), 200, scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.text('In-person conversation'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('listen-button')));
+    await tester.pumpAndSettle();
+    await say(tester, const FinalResult('नमस्ते'));
+    await tester.tap(find.byKey(const Key('end-button')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Save to history'));
+    await tester.pumpAndSettle();
+    expect(find.text('Saved to history'), findsOneWidget);
+    expect((await repo.list()).single.segments.single.text, 'नमस्ते');
   });
 }

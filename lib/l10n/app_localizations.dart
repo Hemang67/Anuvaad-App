@@ -1353,6 +1353,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check and edit your reply before the other person hears it'**
   String get settingsReviewReplySubtitle;
+
+  /// No description provided for @historyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get historyTitle;
+
+  /// No description provided for @historySearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search saved conversations…'**
+  String get historySearchHint;
+
+  /// No description provided for @historyOffTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving conversations is off'**
+  String get historyOffTitle;
+
+  /// No description provided for @historyOffBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn it on to keep conversations on this phone. Nothing is saved until you do.'**
+  String get historyOffBody;
+
+  /// No description provided for @historyTurnOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on in Settings'**
+  String get historyTurnOn;
+
+  /// No description provided for @historyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved conversations yet'**
+  String get historyEmpty;
+
+  /// No description provided for @historyNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations match “{query}”.'**
+  String historyNoMatch(String query);
+
+  /// No description provided for @historyMinutesChip.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} MIN'**
+  String historyMinutesChip(int minutes);
+
+  /// No description provided for @historyDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation'**
+  String get historyDetailTitle;
+
+  /// No description provided for @historyNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This conversation is no longer saved.'**
+  String get historyNotFound;
+
+  /// No description provided for @historyLineOther.
+  ///
+  /// In en, this message translates to:
+  /// **'OTHER PERSON · {language} · {time}'**
+  String historyLineOther(String language, String time);
+
+  /// No description provided for @historyLineYou.
+  ///
+  /// In en, this message translates to:
+  /// **'YOU · {language} · {time}'**
+  String historyLineYou(String language, String time);
+
+  /// No description provided for @historyCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get historyCopy;
+
+  /// No description provided for @historyShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get historyShare;
+
+  /// No description provided for @historyDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get historyDelete;
+
+  /// No description provided for @historyDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this conversation?'**
+  String get historyDeleteTitle;
+
+  /// No description provided for @historyDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s removed from this phone and can\'t be brought back.'**
+  String get historyDeleteBody;
+
+  /// No description provided for @homeRecentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent conversations'**
+  String get homeRecentTitle;
+
+  /// No description provided for @homeSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get homeSeeAll;
+
+  /// No description provided for @homeDeviceStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Translated voice: {me} · Reply: {reply}'**
+  String homeDeviceStatus(String me, String reply);
+
+  /// No description provided for @summarySave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to history'**
+  String get summarySave;
+
+  /// No description provided for @summarySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to history'**
+  String get summarySaved;
 }
 
 class _AppLocalizationsDelegate

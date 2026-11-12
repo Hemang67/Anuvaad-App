@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../features/app_update/presentation/release_notes_screen.dart';
 import '../features/audio_devices/presentation/audio_devices_screen.dart';
 import '../features/conversation/presentation/conversation_screen.dart';
+import '../features/history/presentation/conversation_detail_screen.dart';
+import '../features/history/presentation/history_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/language_settings/presentation/languages_screen.dart';
 import '../features/onboarding/application/onboarding_controller.dart';
@@ -69,6 +71,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.audioDevices,
         pageBuilder: (context, state) => _slideUp(state, const AudioDevicesScreen()),
+      ),
+      GoRoute(
+        path: Routes.history,
+        pageBuilder: (context, state) => _slideUp(state, const HistoryScreen()),
+        routes: [
+          GoRoute(
+            path: ':id',
+            pageBuilder: (context, state) => _slideUp(state, ConversationDetailScreen(id: state.pathParameters['id']!)),
+          ),
+        ],
       ),
       ShellRoute(
         builder: (context, state, child) => AppShell(location: state.uri.path, child: child),

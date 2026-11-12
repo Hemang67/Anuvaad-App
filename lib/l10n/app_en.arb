@@ -437,5 +437,78 @@
   "settingsAutoDetect": "Automatic language detection",
   "settingsAutoDetectSubtitle": "Detect English, Hindi and Gujarati",
   "settingsReviewReply": "Review my reply before playing",
-  "settingsReviewReplySubtitle": "Check and edit your reply before the other person hears it"
+  "settingsReviewReplySubtitle": "Check and edit your reply before the other person hears it",
+  "historyTitle": "History",
+  "historySearchHint": "Search saved conversations…",
+  "historyOffTitle": "Saving conversations is off",
+  "historyOffBody": "Turn it on to keep conversations on this phone. Nothing is saved until you do.",
+  "historyTurnOn": "Turn on in Settings",
+  "historyEmpty": "No saved conversations yet",
+  "historyNoMatch": "No conversations match “{query}”.",
+  "@historyNoMatch": {
+    "placeholders": {
+      "query": {
+        "type": "String",
+        "example": "station"
+      }
+    }
+  },
+  "historyMinutesChip": "{minutes} MIN",
+  "@historyMinutesChip": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "historyDetailTitle": "Conversation",
+  "historyNotFound": "This conversation is no longer saved.",
+  "historyLineOther": "OTHER PERSON · {language} · {time}",
+  "@historyLineOther": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "HINDI"
+      },
+      "time": {
+        "type": "String",
+        "example": "09:00:05"
+      }
+    }
+  },
+  "historyLineYou": "YOU · {language} · {time}",
+  "@historyLineYou": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "ENGLISH"
+      },
+      "time": {
+        "type": "String",
+        "example": "09:00:20"
+      }
+    }
+  },
+  "historyCopy": "Copy",
+  "historyShare": "Share",
+  "historyDelete": "Delete",
+  "historyDeleteTitle": "Delete this conversation?",
+  "historyDeleteBody": "It's removed from this phone and can't be brought back.",
+  "homeRecentTitle": "Recent conversations",
+  "homeSeeAll": "See all",
+  "homeDeviceStatus": "Translated voice: {me} · Reply: {reply}",
+  "@homeDeviceStatus": {
+    "placeholders": {
+      "me": {
+        "type": "String",
+        "example": "Galaxy Buds"
+      },
+      "reply": {
+        "type": "String",
+        "example": "Phone speaker"
+      }
+    }
+  },
+  "summarySave": "Save to history",
+  "summarySaved": "Saved to history"
 }

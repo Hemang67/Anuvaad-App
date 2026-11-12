@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/anuvaad_colors.dart';
 import '../../../l10n/app_localizations.dart';
@@ -46,6 +47,33 @@ Future<void> showSessionSummary(
                 ],
               ),
               const SizedBox(height: 16),
+              if (lines.isNotEmpty)
+                Consumer(
+                  builder: (context, ref, _) {
+                    final saved = ref.watch(conversationControllerProvider.select((s) => s.savedToHistory));
+                    if (saved) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.check_circle, color: tokens.green, size: 20),
+                            const SizedBox(width: 6),
+                            Text(l10n.summarySaved, style: TextStyle(color: tokens.ink, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                      );
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: FilledButton.tonalIcon(
+                        onPressed: () => ref.read(conversationControllerProvider.notifier).saveToHistory(),
+                        icon: const Icon(Icons.bookmark_add_outlined),
+                        label: Text(l10n.summarySave),
+                      ),
+                    );
+                  },
+                ),
               OutlinedButton.icon(
                 onPressed: lines.isEmpty
                     ? null

@@ -15,6 +15,24 @@ final historyListProvider = FutureProvider.autoDispose<List<SavedConversation>>(
   (ref) => ref.watch(historyRepositoryProvider).list(),
 );
 
+/// Conversations matching a search ('' lists all), newest first.
+final historySearchProvider = FutureProvider.autoDispose.family<List<SavedConversation>, String>(
+  (ref, query) => ref.watch(historyRepositoryProvider).search(query),
+);
+
+/// One saved conversation, or null once deleted.
+final savedConversationProvider = FutureProvider.autoDispose.family<SavedConversation?, String>(
+  (ref, id) => ref.watch(historyRepositoryProvider).get(id),
+);
+
+/// After saving or deleting: every list and detail reads the files again.
+void invalidateHistory(WidgetRef ref) {
+  ref
+    ..invalidate(historyListProvider)
+    ..invalidate(historySearchProvider)
+    ..invalidate(savedConversationProvider);
+}
+
 /// "Save conversations" in Settings: off by default; on means every ended conversation is kept on the phone.
 class SaveHistoryController extends Notifier<bool> {
   @override

@@ -9,6 +9,10 @@ import '../../../app/theme/anuvaad_theme.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/utils/join_list.dart';
 import '../../../shared/widgets/brand_logo.dart';
+import '../../conversation/application/output_router.dart';
+import '../../conversation/domain/audio_output.dart';
+import '../../history/application/history_providers.dart';
+import '../../history/presentation/conversation_tile.dart';
 import '../../language_settings/application/language_preferences_controller.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -94,12 +98,25 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             ),
+            const _DeviceStatus(),
+            const _RecentConversations(),
             const SizedBox(height: 22),
             _SectionRow(title: l10n.homeQuickAccessTitle, subtitle: l10n.homeQuickAccessSubtitle),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
+              runSpacing: 8,
               children: [
+                ActionChip(
+                  avatar: const Icon(Icons.headphones_outlined, size: 18),
+                  label: Text(l10n.audioDevicesTitle),
+                  onPressed: () => context.push(Routes.audioDevices),
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.history, size: 18),
+                  label: Text(l10n.historyTitle),
+                  onPressed: () => context.push(Routes.history),
+                ),
                 ActionChip(
                   avatar: const Icon(Icons.settings_outlined, size: 18),
                   label: Text(l10n.navSettings),
@@ -244,3 +261,83 @@ class _ModeCard extends StatelessWidget {
     );
   }
 }
+
+/// Where each voice will play right now (spec §5-03 device status); tap for Audio devices.
+class _DeviceStatus extends ConsumerWidget {
+  const _DeviceStatus();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final tokens = Theme.of(context).extension<AnuvaadColors>()!;
+    final outputs = ref.watch(connectedOutputsProvider).value ?? const <AudioOutput>[];
+    if (outputs.isEmpty) return const SizedBox.shrink();
+    final preferences = ref.watch(outputPreferencesProvider);
+    final forMe = resolveOutput(OutputRole.forMe, preferences[OutputRole.forMe]!, outputs);
+    final forOther = resolveOutput(OutputRole.forOther, preferences[OutputRole.forOther]!, outputs);
+    if (forMe == null || forOther == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.push(Routes.audioDevices),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Icon(Icons.headphones, color: tokens.blue),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.homeDeviceStatus(outputLabel(forMe, l10n), outputLabel(forOther, l10n)),
+                    style: TextStyle(color: tokens.ink),
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: tokens.muted),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The last three saved conversations, when history is on (spec §5-03 recent sessions).
+class _RecentConversations extends ConsumerWidget {
+  const _RecentConversations();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    if (!ref.watch(saveHistoryProvider)) return const SizedBox.shrink();
+    final recent = ref.watch(historyListProvider).value ?? const [];
+    if (recent.isEmpty) return const SizedBox.shrink();
+    final registry = ref.watch(languageRegistryProvider);
+    String name(String code) => registry.byCode(code)?.displayName ?? code;
+    return Padding(
+      padding: const EdgeInsets.only(top: 22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(child: _SectionRow(title: l10n.homeRecentTitle, subtitle: '')),
+              TextButton(onPressed: () => context.push(Routes.history), child: Text(l10n.homeSeeAll)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          for (final c in recent.take(3))
+            ConversationTile(
+              key: Key('recent-${c.id}'),
+              conversation: c,
+              languageName: name,
+              onTap: () => context.push(Routes.historyDetail(c.id)),
+            ),
+        ],
+      ),
+    );
+  }
+}
+

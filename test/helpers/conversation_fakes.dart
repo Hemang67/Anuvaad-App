@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:anuvaad/core/platform/screen_awake.dart';
+import 'package:anuvaad/shared/transcript_sharer.dart';
 import 'package:anuvaad/core/permissions/microphone_permission.dart';
 import 'package:anuvaad/features/conversation/data/offline_models.dart';
 import 'package:anuvaad/features/conversation/domain/audio_output.dart';
@@ -283,3 +284,10 @@ class FakeScreenAwake implements ScreenAwake {
   }
 }
 
+/// Records what would have been handed to Android's share sheet.
+class FakeTranscriptSharer implements TranscriptSharer {
+  final List<({String text, String fileName})> shared = [];
+
+  @override
+  Future<void> shareText(String text, {required String fileName}) async => shared.add((text: text, fileName: fileName));
+}

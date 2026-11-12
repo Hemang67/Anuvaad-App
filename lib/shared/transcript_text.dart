@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:intl/intl.dart';
 
 import '../features/conversation/domain/segment.dart';
+import '../features/history/domain/saved_conversation.dart';
 import '../l10n/app_localizations.dart';
 
 /// One finished line of a conversation, from a live segment or a saved one.
@@ -26,6 +27,20 @@ class TranscriptLine {
 
   /// When it was said (the final result's time).
   final DateTime at;
+
+  /// The lines of a saved conversation.
+  static List<TranscriptLine> fromSaved(List<SavedSegment> segments) => [
+        for (final s in segments)
+          TranscriptLine(
+            speaker: s.speaker,
+            sourceLanguage: s.sourceLanguage,
+            targetLanguage: s.targetLanguage,
+            text: s.text,
+            translation: s.translation,
+            unclear: s.unclear,
+            at: s.at,
+          ),
+      ];
 
   /// The finished lines of a live conversation, in order; cards still listening are left out.
   static List<TranscriptLine> fromSegments(List<Segment> segments) => [

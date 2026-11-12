@@ -7,4 +7,6 @@ abstract final class Routes {
   static const releaseNotes = '/settings/release-notes';
   static const conversation = '/conversation';
   static const audioDevices = '/audio-devices';
+  static const history = '/history';
+  static String historyDetail(String id) => '/history/$id';
 }

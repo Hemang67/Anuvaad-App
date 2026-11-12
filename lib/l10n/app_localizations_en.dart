@@ -733,4 +733,82 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsReviewReplySubtitle =>
       'Check and edit your reply before the other person hears it';
+
+  @override
+  String get historyTitle => 'History';
+
+  @override
+  String get historySearchHint => 'Search saved conversations…';
+
+  @override
+  String get historyOffTitle => 'Saving conversations is off';
+
+  @override
+  String get historyOffBody =>
+      'Turn it on to keep conversations on this phone. Nothing is saved until you do.';
+
+  @override
+  String get historyTurnOn => 'Turn on in Settings';
+
+  @override
+  String get historyEmpty => 'No saved conversations yet';
+
+  @override
+  String historyNoMatch(String query) {
+    return 'No conversations match “$query”.';
+  }
+
+  @override
+  String historyMinutesChip(int minutes) {
+    return '$minutes MIN';
+  }
+
+  @override
+  String get historyDetailTitle => 'Conversation';
+
+  @override
+  String get historyNotFound => 'This conversation is no longer saved.';
+
+  @override
+  String historyLineOther(String language, String time) {
+    return 'OTHER PERSON · $language · $time';
+  }
+
+  @override
+  String historyLineYou(String language, String time) {
+    return 'YOU · $language · $time';
+  }
+
+  @override
+  String get historyCopy => 'Copy';
+
+  @override
+  String get historyShare => 'Share';
+
+  @override
+  String get historyDelete => 'Delete';
+
+  @override
+  String get historyDeleteTitle => 'Delete this conversation?';
+
+  @override
+  String get historyDeleteBody =>
+      'It\'s removed from this phone and can\'t be brought back.';
+
+  @override
+  String get homeRecentTitle => 'Recent conversations';
+
+  @override
+  String get homeSeeAll => 'See all';
+
+  @override
+  String homeDeviceStatus(String me, String reply) {
+    return 'Translated voice: $me · Reply: $reply';
+  }
+
+  @override
+  String get summarySave => 'Save to history';
+
+  @override
+  String get summarySaved => 'Saved to history';
 }
