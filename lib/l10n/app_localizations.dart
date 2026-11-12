@@ -1089,6 +1089,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Paused for a call or alarm. Tap Listen to continue.'**
   String get noticePausedForInterruption;
+
+  /// No description provided for @noticeAskToRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it: {language}. Ask them to say it again.'**
+  String noticeAskToRepeat(String language);
+
+  /// No description provided for @conversationLanguageUnclear.
+  ///
+  /// In en, this message translates to:
+  /// **'Language unclear. What did they speak?'**
+  String get conversationLanguageUnclear;
 }
 
 class _AppLocalizationsDelegate

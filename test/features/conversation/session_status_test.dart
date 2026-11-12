@@ -35,6 +35,11 @@ void main() {
     expect(sessionStatus(const ConversationState(activeSpeaker: Speaker.me, paused: true)), SessionStatus.recording);
   });
 
+  test('a card waiting for its language is choosing the language', () {
+    final s = ConversationState(segments: [_seg(status: SegmentStatus.unclear, speech: SpeechStatus.none), _seg(speech: SpeechStatus.playing)]);
+    expect(sessionStatus(s), SessionStatus.choosingLanguage);
+  });
+
   test('a reply waiting for review is reviewing', () {
     final s = ConversationState(segments: [_seg(speech: SpeechStatus.awaitingReview), _seg(speech: SpeechStatus.playing)]);
     expect(sessionStatus(s), SessionStatus.reviewing);

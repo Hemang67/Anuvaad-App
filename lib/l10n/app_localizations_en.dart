@@ -579,4 +579,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get noticePausedForInterruption =>
       'Paused for a call or alarm. Tap Listen to continue.';
+
+  @override
+  String noticeAskToRepeat(String language) {
+    return 'Got it: $language. Ask them to say it again.';
+  }
+
+  @override
+  String get conversationLanguageUnclear =>
+      'Language unclear. What did they speak?';
 }

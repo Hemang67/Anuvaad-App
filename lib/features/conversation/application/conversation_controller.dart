@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../app/bootstrap.dart';
 import '../../../core/permissions/microphone_permission.dart';
 import '../../app_update/application/update_controller.dart' show clockProvider;
 import '../../language_settings/application/language_preferences_controller.dart';
@@ -16,6 +17,7 @@ import '../domain/segment.dart';
 import '../domain/speech_recognition.dart';
 import '../domain/translation.dart';
 import '../domain/voice.dart';
+import 'language_detection.dart';
 import 'mic_level.dart';
 import 'output_router.dart';
 import 'translation_service.dart';
@@ -37,6 +39,7 @@ enum ConversationNotice {
   playbackFailed,
   pausedForSilence,
   pausedForInterruption,
+  askToRepeat,
 }
 
 class ConversationState {
@@ -53,6 +56,7 @@ class ConversationState {
     this.sessionStartedAt,
     this.sessionEndedAt,
     this.mode = ConversationMode.inPerson,
+    this.otherLanguageDetected = false,
   });
 
   /// In creation order (oldest first).
@@ -84,6 +88,9 @@ class ConversationState {
   final DateTime? sessionEndedAt;
   final ConversationMode mode;
 
+  /// [otherLanguageOverride] came from a confident detection, not the user's pick.
+  final bool otherLanguageDetected;
+
   static const _keep = Object();
 
   ConversationState copyWith({
@@ -99,6 +106,7 @@ class ConversationState {
     Object? sessionStartedAt = _keep,
     Object? sessionEndedAt = _keep,
     ConversationMode? mode,
+    bool? otherLanguageDetected,
   }) =>
       ConversationState(
         segments: segments ?? this.segments,
@@ -114,6 +122,7 @@ class ConversationState {
         sessionStartedAt: identical(sessionStartedAt, _keep) ? this.sessionStartedAt : sessionStartedAt as DateTime?,
         sessionEndedAt: identical(sessionEndedAt, _keep) ? this.sessionEndedAt : sessionEndedAt as DateTime?,
         mode: mode ?? this.mode,
+        otherLanguageDetected: otherLanguageDetected ?? this.otherLanguageDetected,
       );
 }
 
@@ -166,6 +175,13 @@ class ConversationController extends Notifier<ConversationState> {
   DateTime? _silenceSince;
 
   static const _silencePause = Duration(minutes: 1);
+
+  /// Asked once: whether this phone's recognizer can detect the spoken language.
+  bool? _supportsDetection;
+
+  /// Per Listen turn in Automatic mode: the languages it may detect, and the latest detection.
+  final _allowedFor = <String, List<String>>{};
+  final _detections = <String, ({String locale, LanguageConfidence confidence})>{};
 
   @override
   ConversationState build() {
@@ -247,20 +263,24 @@ class ConversationController extends Notifier<ConversationState> {
     await stopSpeaking();
   }
 
-  Future<void> startTurn(Speaker speaker) async {
+  /// [clearNotice]: a tap clears the notice; an automatic Listen-mode turn keeps it ("Ask them to say it again",
+  /// "Earphones disconnected" stay readable).
+  Future<void> startTurn(Speaker speaker, {bool clearNotice = true}) async {
     if (_activeId != null || _starting || state.ended) return;
-    final my = ref.read(languagePreferencesProvider).myLanguage;
-    final other = _otherLanguage();
-    if (other == null) {
-      state = state.copyWith(notice: ConversationNotice.chooseOtherLanguage, noticeLanguage: null);
-      return;
-    }
-    final source = speaker == Speaker.other ? other : my;
-    final target = speaker == Speaker.other ? my : other;
-
     _starting = true;
     try {
-      state = state.copyWith(notice: null, noticeLanguage: null);
+      final my = ref.read(languagePreferencesProvider).myLanguage;
+      final detectAmong = speaker == Speaker.other ? await _detectAmong(my) : const <String>[];
+      if (!ref.mounted) return;
+      // Automatic: the stable language if there is one, else the first candidate while the recognizer detects.
+      final other = _otherLanguage() ?? (detectAmong.isEmpty ? null : detectAmong.first);
+      if (other == null) {
+        state = state.copyWith(notice: ConversationNotice.chooseOtherLanguage, noticeLanguage: null);
+        return;
+      }
+      final source = speaker == Speaker.other ? other : my;
+      final target = speaker == Speaker.other ? my : other;
+      if (clearNotice) state = state.copyWith(notice: null, noticeLanguage: null);
       // The microphone never opens over a translation that is playing (R29).
       await stopSpeaking();
       if (!ref.mounted) return;
@@ -286,13 +306,14 @@ class ConversationController extends Notifier<ConversationState> {
         startedAt: _now(),
       );
       _activeId = segment.id;
+      if (detectAmong.isNotEmpty) _allowedFor[segment.id] = detectAmong;
       state = state.copyWith(
         segments: [...state.segments, segment],
         activeSpeaker: speaker,
         sessionStartedAt: state.sessionStartedAt ?? segment.startedAt,
       );
       try {
-        await _recognizer.start(source);
+        await _recognizer.start(source, detectAmong: detectAmong);
       } catch (error) {
         debugPrint('Speech recognizer failed to start: $error');
         _leaveListenMode();
@@ -300,6 +321,32 @@ class ConversationController extends Notifier<ConversationState> {
       }
     } finally {
       _starting = false;
+    }
+  }
+
+  /// In Automatic mode with detection on and supported: the core languages that aren't mine; otherwise none.
+  Future<List<String>> _detectAmong(String my) async {
+    if (ref.read(languagePreferencesProvider).otherLanguage != autoDetect || !ref.read(autoDetectProvider)) return const [];
+    final supported = _supportsDetection ??= await _recognizer.supportsLanguageDetection();
+    if (!supported || !ref.mounted) return const [];
+    return [for (final l in ref.read(languageRegistryProvider).coreLanguages) if (l.code != my) l.code];
+  }
+
+  /// The user's answer to "Language unclear": the same language translates the card; another one drops it
+  /// (its text was heard in the wrong language) and asks them to say it again.
+  void confirmLanguage(String segmentId, String code) {
+    final segment = _segment(segmentId);
+    if (segment == null || segment.status != SegmentStatus.unclear) return;
+    state = state.copyWith(otherLanguageOverride: code, otherLanguageDetected: false);
+    if (code == segment.sourceLanguage) {
+      _update(segmentId, (s) => s.copyWith(status: SegmentStatus.translating));
+      unawaited(_translate(segmentId));
+    } else {
+      state = state.copyWith(
+        segments: [for (final s in state.segments) if (s.id != segmentId) s],
+        notice: ConversationNotice.askToRepeat,
+        noticeLanguage: code,
+      );
     }
   }
 
@@ -324,7 +371,7 @@ class ConversationController extends Notifier<ConversationState> {
 
   void chooseOtherLanguage(String code) {
     if (code == ref.read(languagePreferencesProvider).myLanguage) return;
-    state = state.copyWith(otherLanguageOverride: code, notice: null, noticeLanguage: null);
+    state = state.copyWith(otherLanguageOverride: code, otherLanguageDetected: false, notice: null, noticeLanguage: null);
     scheduleMicrotask(_maybeRearm); // Listen mode was waiting for this choice
   }
 
@@ -420,7 +467,9 @@ class ConversationController extends Notifier<ConversationState> {
         }
       case SoundLevel(:final level):
         _setLevel(level);
-      case RecognitionReady() || EndOfSpeech() || SpeechStarted() || LanguageDetected():
+      case LanguageDetected(:final locale, :final confidence):
+        _detections[id] = (locale: locale, confidence: confidence);
+      case RecognitionReady() || EndOfSpeech() || SpeechStarted():
         break;
     }
   }
@@ -456,14 +505,49 @@ class ConversationController extends Notifier<ConversationState> {
     _activeId = null;
     _silenceSince = _now();
     _setLevel(0);
+    final allowed = _allowedFor.remove(id) ?? const <String>[];
+    final detection = _detections.remove(id);
+    final segment = _segment(id);
+    var status = SegmentStatus.translating;
+    String? source;
+    var detected = false;
+    if (segment != null && segment.speaker == Speaker.other && allowed.isNotEmpty) {
+      final outcome = decideSourceLanguage(
+        recognizedIn: segment.sourceLanguage,
+        stable: state.otherLanguageOverride,
+        detection: detection,
+        allowed: allowed,
+        wordCount: text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length,
+      );
+      switch (outcome) {
+        case UseLanguage(:final code, detected: final isDetected):
+          source = code;
+          detected = isDetected;
+          state = state.copyWith(
+            otherLanguageOverride: code,
+            otherLanguageDetected: isDetected || (state.otherLanguageDetected && code == state.otherLanguageOverride),
+          );
+        case Unclear():
+          status = SegmentStatus.unclear; // never translated with a guessed source (§9.4)
+      }
+    }
     state = state.copyWith(
       segments: [
         for (final s in state.segments)
-          s.id == id ? s.copyWith(text: text, isFinal: true, status: SegmentStatus.translating, finalAt: _now()) : s,
+          s.id == id
+              ? s.copyWith(
+                  text: text,
+                  isFinal: true,
+                  status: status,
+                  finalAt: _now(),
+                  sourceLanguage: source,
+                  detected: detected,
+                )
+              : s,
       ],
       activeSpeaker: null,
     );
-    unawaited(_translate(id));
+    if (status == SegmentStatus.translating) unawaited(_translate(id));
   }
 
   /// Removes an unfinished card. A null [notice] keeps whatever notice is showing.
@@ -484,11 +568,12 @@ class ConversationController extends Notifier<ConversationState> {
   }
 
   /// Work that must finish before the microphone may open again: a turn, a translation, a voice, a playback,
-  /// a reply under review.
+  /// a reply under review, a card waiting for its language.
   static bool _busy(ConversationState s) =>
       s.activeSpeaker != null ||
       s.segments.any((x) =>
           x.status == SegmentStatus.translating ||
+          x.status == SegmentStatus.unclear ||
           x.speech == SpeechStatus.preparing ||
           x.speech == SpeechStatus.playing ||
           x.speech == SpeechStatus.awaitingReview);
@@ -497,7 +582,7 @@ class ConversationController extends Notifier<ConversationState> {
   void _maybeRearm() {
     if (!ref.mounted || !state.listenMode || state.paused || state.ended || !_foreground) return;
     if (_holdRearm > 0 || _activeId != null || _starting || _playing != null || _busy(state)) return;
-    unawaited(startTurn(Speaker.other));
+    unawaited(startTurn(Speaker.other, clearNotice: false));
   }
 
   Future<void> _translate(String id) async {

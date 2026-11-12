@@ -18,6 +18,7 @@ class SettingsRepository {
   static const _pendingUpdate = 'pending_update';
   static const _lastUpdateCheck = 'last_update_check';
   static const _outputPrefix = 'output_for_';
+  static const _autoDetect = 'auto_detect';
 
   ThemeMode get themeMode => switch (_prefs.getString(_themeMode)) {
         'light' => ThemeMode.light,
@@ -68,4 +69,8 @@ class SettingsRepository {
   Future<void> setOutputPreference(String role, String value) => _prefs.setString('$_outputPrefix${_roleKey(role)}', value);
 
   static String _roleKey(String role) => role == 'forMe' ? 'me' : 'other';
+
+  /// Automatic language detection (on by default).
+  bool get autoDetect => _prefs.getBool(_autoDetect) ?? true;
+  Future<void> setAutoDetect(bool on) => _prefs.setBool(_autoDetect, on);
 }

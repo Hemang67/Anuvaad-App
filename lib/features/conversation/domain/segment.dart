@@ -7,7 +7,8 @@ enum Speaker { other, me }
 /// Face to face, or a meeting played on a speaker in the room (Listen only).
 enum ConversationMode { inPerson, meeting }
 
-enum SegmentStatus { listening, translating, translated, failed }
+/// [unclear]: final text whose language isn't certain; it waits for the user to pick before translating.
+enum SegmentStatus { listening, translating, translated, failed, unclear }
 
 /// The spoken half of a translated segment.
 /// [awaitingReview]: a reply held for the user to check before it plays ("Review my reply before playing").
@@ -31,6 +32,7 @@ class Segment {
     this.translatedAt,
     this.speech = SpeechStatus.none,
     this.output,
+    this.detected = false,
   });
 
   final String id;
@@ -58,7 +60,12 @@ class Segment {
   /// The device Android actually played the translation on (never the requested one).
   final AudioOutput? output;
 
+  /// The source language came from the recognizer's confident detection (shown as "Detected").
+  final bool detected;
+
   Segment copyWith({
+    String? sourceLanguage,
+    bool? detected,
     String? text,
     bool? isFinal,
     Translation? translation,
@@ -73,7 +80,7 @@ class Segment {
         id: id,
         seq: seq,
         speaker: speaker,
-        sourceLanguage: sourceLanguage,
+        sourceLanguage: sourceLanguage ?? this.sourceLanguage,
         targetLanguage: targetLanguage,
         startedAt: startedAt,
         text: text ?? this.text,
@@ -85,5 +92,6 @@ class Segment {
         translatedAt: translatedAt ?? this.translatedAt,
         speech: speech ?? this.speech,
         output: output ?? this.output,
+        detected: detected ?? this.detected,
       );
 }

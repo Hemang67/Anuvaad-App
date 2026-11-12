@@ -82,5 +82,6 @@ void main() {
     await h.flush();
     expect(h.state.listenMode, isTrue);
     expect(h.starts, 2);
+    expect(h.state.notice, ConversationNotice.earphonesDisconnected, reason: 'listening again keeps the notice');
   });
 }

@@ -166,6 +166,8 @@ class SegmentCard extends StatelessWidget {
             child: TextButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: Text(l10n.conversationRetry)),
           ),
         ];
+      case SegmentStatus.unclear:
+        return [Text(l10n.conversationLanguageUnclear, style: TextStyle(color: tokens.muted))];
       case SegmentStatus.listening:
         return const [];
     }

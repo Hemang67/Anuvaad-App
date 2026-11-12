@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:anuvaad/app/bootstrap.dart';
 import 'package:anuvaad/core/permissions/microphone_permission.dart';
 import 'package:anuvaad/core/settings/settings_providers.dart';
 import 'package:anuvaad/features/app_update/application/update_controller.dart' show clockProvider;
@@ -14,6 +15,8 @@ import 'package:anuvaad/features/conversation/domain/segment.dart';
 import 'package:anuvaad/features/conversation/domain/speech_recognition.dart';
 import 'package:anuvaad/features/conversation/domain/translation.dart';
 import 'package:anuvaad/features/language_settings/application/language_preferences_controller.dart';
+import 'package:anuvaad/services/language_registry/language_registry.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
@@ -32,6 +35,7 @@ class ConversationHarness {
   late FakeSpeechSynth synth;
   late Directory cache;
   late SharedPreferences prefs;
+  late LanguageRegistry registry;
   late ProviderContainer container;
   ProviderSubscription<ConversationState>? _keepAlive;
 
@@ -54,6 +58,7 @@ class ConversationHarness {
     other = 'hi-IN';
     SharedPreferences.setMockInitialValues(initialPrefs);
     prefs = await SharedPreferences.getInstance();
+    registry = await AssetLanguageRegistry.load(rootBundle);
     audio = FakeAudioOutput(connected: [fakeSpeaker]);
     synth = FakeSpeechSynth();
     cache = Directory.systemTemp.createTempSync('anuvaad_session_test');
@@ -80,6 +85,7 @@ class ConversationHarness {
       voiceServiceProvider.overrideWith((ref) => VoiceService(synth: synth, cacheDir: () async => cache)),
       sharedPreferencesProvider.overrideWithValue(prefs),
       playbackWatchdogProvider.overrideWithValue(watchdog),
+      languageRegistryProvider.overrideWithValue(registry),
       ...overrides,
     ]);
     _keepAlive = c.listen(conversationControllerProvider, (_, _) {});

@@ -196,6 +196,7 @@ class _NoticeBanner extends StatelessWidget {
       ConversationNotice.playbackFailed => l10n.noticePlaybackFailed,
       ConversationNotice.pausedForSilence => l10n.noticePausedForSilence,
       ConversationNotice.pausedForInterruption => l10n.noticePausedForInterruption,
+      ConversationNotice.askToRepeat => l10n.noticeAskToRepeat(languageName ?? ''),
     };
     final action = switch (notice) {
       ConversationNotice.micDenied => TextButton(onPressed: controller.allowMicrophone, child: Text(l10n.conversationAllowMic)),
