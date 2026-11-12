@@ -547,5 +547,29 @@
       }
     }
   },
-  "voicesTestFailed": "Couldn't play the test sentence."
+  "voicesTestFailed": "Couldn't play the test sentence.",
+  "languageSpeechReady": "Speech input · Ready",
+  "languageSpeechMissing": "Speech input · Not available on this phone",
+  "languageModelReady": "Offline translation · Downloaded",
+  "languageModelMissing": "Offline translation · Not downloaded",
+  "languageVoiceReady": "Voice · Installed",
+  "languageVoiceDownload": "Voice · Needs download",
+  "languageVoiceMissing": "Voice · Not available",
+  "languagesDownload": "Download",
+  "languagesDownloadTitle": "Download offline translation?",
+  "languagesDownloadBody": "{language} for translating without internet. About 30 MB.",
+  "@languagesDownloadBody": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "Hindi"
+      }
+    }
+  },
+  "languagesWifiOnly": "Wi-Fi only",
+  "languagesAnyNetwork": "Use mobile data too",
+  "languagesDownloadFailed": "Couldn't download. Check your connection and try again.",
+  "settingsLanguagesSection": "Languages",
+  "settingsOfflineModels": "Offline models",
+  "settingsOfflineModelsSubtitle": "What works without internet, per language"
 }

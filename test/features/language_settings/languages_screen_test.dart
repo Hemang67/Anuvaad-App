@@ -1,8 +1,17 @@
+import 'package:anuvaad/core/config/app_config.dart';
+import 'package:anuvaad/core/network/dio_provider.dart';
+import 'package:anuvaad/features/conversation/data/android_speech_recognizer.dart';
+import 'package:anuvaad/features/conversation/data/offline_models.dart';
+import 'package:anuvaad/features/conversation/domain/voice.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/app_harness.dart';
+import '../../helpers/conversation_fakes.dart';
 
 const _myField = Key('my-language-field');
 const _otherField = Key('other-language-field');
@@ -82,13 +91,105 @@ void main() {
     expect(find.text('Marathi language pack is planned for a future release.'), findsOneWidget);
   });
 
-  testWidgets('core rows show the capability line built from the manifest', (tester) async {
-    await _openLanguages(tester);
-    for (final row in ['English · English', 'Hindi · हिन्दी', 'Gujarati · ગુજરાતી']) {
-      final card = find.widgetWithText(Card, row);
-      await _scrollTo(tester, card);
-      expect(find.descendant(of: card, matching: find.text('Speech input · Translation · Voice output')), findsOneWidget, reason: row);
-      expect(find.descendant(of: card, matching: find.text('CORE')), findsOneWidget, reason: row);
+  group('language status', () {
+    late _OffWifiStore store;
+    late FakeSpeechSynth synth;
+
+    setUp(() {
+      store = _OffWifiStore();
+      synth = FakeSpeechSynth()..availabilityByLocale['gu-IN'] = VoiceAvailability.needsDownload;
+    });
+
+    Future<void> open(WidgetTester tester, {AppConfig? config, List<Override> overrides = const []}) async {
+      await pumpAnuvaadApp(
+        tester,
+        prefs: {'onboarding_complete': true},
+        offlineModels: OfflineModels(store),
+        synth: synth,
+        config: config ?? const AppConfig(apiBaseUrl: null, releasesRepo: null),
+        overrides: [speechRecognizerProvider.overrideWithValue(FakeSpeechRecognizer()), ...overrides],
+      );
+      await tester.tap(find.text('Languages'));
+      await tester.pumpAndSettle();
     }
+
+    Finder inCard(String row, Finder finder) => find.descendant(of: find.widgetWithText(Card, row), matching: finder);
+
+    testWidgets('status reflects model, voice and recognizer', (tester) async {
+      await open(tester);
+      await scrollIntoView(tester, find.text('Voice · Installed').first);
+      expect(inCard('English · English', find.text('Offline translation · Downloaded')), findsOneWidget);
+      expect(inCard('English · English', find.text('Speech input · Ready')), findsOneWidget);
+      expect(inCard('English · English', find.text('Voice · Installed')), findsOneWidget);
+      await scrollIntoView(tester, find.text('Offline translation · Not downloaded').first);
+      expect(inCard('Hindi · हिन्दी', find.text('Offline translation · Not downloaded')), findsOneWidget);
+      await scrollIntoView(tester, find.text('Voice · Needs download'));
+      expect(inCard('Gujarati · ગુજરાતી', find.text('Voice · Needs download')), findsOneWidget);
+      expect(inCard('Gujarati · ગુજરાતી', find.text('CORE')), findsOneWidget);
+    });
+
+    testWidgets('Download fetches the model and refreshes the row', (tester) async {
+      await open(tester);
+      await _scrollTo(tester, find.byKey(const Key('download-model-hi-IN')));
+      await tester.ensureVisible(find.byKey(const Key('download-model-hi-IN')));
+      await tester.tap(find.byKey(const Key('download-model-hi-IN')));
+      await tester.pumpAndSettle();
+      expect(find.text('Download offline translation?'), findsOneWidget);
+      await tester.tap(find.text('Use mobile data too'));
+      await tester.pumpAndSettle();
+      expect(store.downloads, [(code: 'hi', wifiOnly: false)]);
+      expect(inCard('Hindi · हिन्दी', find.text('Offline translation · Downloaded')), findsOneWidget);
+    });
+
+    testWidgets('Install voice opens the installer', (tester) async {
+      await open(tester);
+      await _scrollTo(tester, find.byKey(const Key('install-voice-gu-IN')));
+      await tester.ensureVisible(find.byKey(const Key('install-voice-gu-IN')));
+      await tester.tap(find.byKey(const Key('install-voice-gu-IN')));
+      await tester.pumpAndSettle();
+      expect(synth.installsOpened, 1);
+    });
+
+    testWidgets('future languages come from the backend catalogue', (tester) async {
+      final dio = Dio();
+      DioAdapter(dio: dio).onGet(
+        'https://anuvaad.example/api/v1/languages',
+        (server) => server.reply(200, {
+          'languages': [
+            {'code': 'ml-IN', 'name': 'Malayalam', 'nativeName': 'മലയാളം', 'installation': 'not_released', 'input': false, 'output': false},
+          ],
+        }),
+      );
+      await open(
+        tester,
+        config: AppConfig.parse(apiBaseUrl: 'https://anuvaad.example', releasesRepo: ''),
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      await _scrollTo(tester, find.text('Malayalam'));
+      expect(find.text('Malayalam'), findsOneWidget);
+      expect(find.text('Marathi'), findsNothing);
+    });
+
+    testWidgets('or the bundled list when the backend fails', (tester) async {
+      final dio = Dio();
+      DioAdapter(dio: dio).onGet('https://anuvaad.example/api/v1/languages', (server) => server.reply(500, {'error': 'down'}));
+      await open(
+        tester,
+        config: AppConfig.parse(apiBaseUrl: 'https://anuvaad.example', releasesRepo: ''),
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      await _scrollTo(tester, find.text('Marathi'));
+      expect(find.text('Marathi'), findsOneWidget);
+    });
   });
 }
+
+/// A phone off Wi-Fi: the background Wi-Fi-only download gets nowhere; a download allowed on mobile data works.
+class _OffWifiStore extends FakeOfflineModelStore {
+  _OffWifiStore() : super(downloaded: {'en'});
+
+  @override
+  Future<bool> download(String bcpCode, {required bool wifiOnly}) async =>
+      wifiOnly ? false : super.download(bcpCode, wifiOnly: wifiOnly);
+}
+

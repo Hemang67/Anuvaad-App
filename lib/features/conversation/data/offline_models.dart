@@ -46,6 +46,18 @@ class OfflineModels {
     }
   }
 
+  /// The Languages screen's Download: one language now, on Wi-Fi only or any connection. Never throws.
+  Future<bool> downloadNow(String languageCode, {required bool wifiOnly}) async {
+    final code = mlKitCodes[languageCode];
+    if (code == null) return false;
+    try {
+      return await _store.download(code, wifiOnly: wifiOnly);
+    } catch (error) {
+      debugPrint('Offline model download failed for $code: $error');
+      return false;
+    }
+  }
+
   /// Downloads missing models one at a time, Wi-Fi only. Never throws: offline translation is a fallback.
   /// Safe to call often (launch, resume, Try again): overlapping calls share one pass.
   Future<void> ensureDownloaded() => _inFlight ??= _downloadMissing().whenComplete(() => _inFlight = null);

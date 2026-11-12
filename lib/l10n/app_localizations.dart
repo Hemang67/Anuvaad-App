@@ -1575,6 +1575,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t play the test sentence.'**
   String get voicesTestFailed;
+
+  /// No description provided for @languageSpeechReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech input · Ready'**
+  String get languageSpeechReady;
+
+  /// No description provided for @languageSpeechMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech input · Not available on this phone'**
+  String get languageSpeechMissing;
+
+  /// No description provided for @languageModelReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline translation · Downloaded'**
+  String get languageModelReady;
+
+  /// No description provided for @languageModelMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline translation · Not downloaded'**
+  String get languageModelMissing;
+
+  /// No description provided for @languageVoiceReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice · Installed'**
+  String get languageVoiceReady;
+
+  /// No description provided for @languageVoiceDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice · Needs download'**
+  String get languageVoiceDownload;
+
+  /// No description provided for @languageVoiceMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice · Not available'**
+  String get languageVoiceMissing;
+
+  /// No description provided for @languagesDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get languagesDownload;
+
+  /// No description provided for @languagesDownloadTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download offline translation?'**
+  String get languagesDownloadTitle;
+
+  /// No description provided for @languagesDownloadBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{language} for translating without internet. About 30 MB.'**
+  String languagesDownloadBody(String language);
+
+  /// No description provided for @languagesWifiOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Wi-Fi only'**
+  String get languagesWifiOnly;
+
+  /// No description provided for @languagesAnyNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Use mobile data too'**
+  String get languagesAnyNetwork;
+
+  /// No description provided for @languagesDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t download. Check your connection and try again.'**
+  String get languagesDownloadFailed;
+
+  /// No description provided for @settingsLanguagesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get settingsLanguagesSection;
+
+  /// No description provided for @settingsOfflineModels.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline models'**
+  String get settingsOfflineModels;
+
+  /// No description provided for @settingsOfflineModelsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What works without internet, per language'**
+  String get settingsOfflineModelsSubtitle;
 }
 
 class _AppLocalizationsDelegate

@@ -129,6 +129,17 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
             SettingsSection(
+              title: l10n.settingsLanguagesSection,
+              children: [
+                SettingsRow(
+                  title: l10n.settingsOfflineModels,
+                  subtitle: l10n.settingsOfflineModelsSubtitle,
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.go(Routes.languages),
+                ),
+              ],
+            ),
+            SettingsSection(
               title: l10n.settingsAbout,
               children: [
                 SettingsRow(

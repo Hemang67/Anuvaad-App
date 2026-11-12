@@ -5,6 +5,10 @@ import '../../../app/bootstrap.dart';
 import '../../../app/theme/anuvaad_colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/language_registry/language.dart';
+import '../../conversation/data/android_audio.dart';
+import '../../conversation/data/offline_models.dart';
+import '../../conversation/domain/voice.dart';
+import '../application/language_status.dart';
 import '../application/language_preferences_controller.dart';
 
 class LanguagesScreen extends ConsumerStatefulWidget {
@@ -16,6 +20,20 @@ class LanguagesScreen extends ConsumerStatefulWidget {
 
 class _LanguagesScreenState extends ConsumerState<LanguagesScreen> {
   late LanguagePreferences _draft = ref.read(languagePreferencesProvider);
+  AppLifecycleListener? _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    // Back from Android's voice settings: read every status again.
+    _lifecycle = AppLifecycleListener(onResume: () => ref.invalidate(languageStatusProvider));
+  }
+
+  @override
+  void dispose() {
+    _lifecycle?.dispose();
+    super.dispose();
+  }
 
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context);
@@ -79,7 +97,8 @@ class _LanguagesScreenState extends ConsumerState<LanguagesScreen> {
             for (final language in core)
               _LanguageRow(
                 language: language,
-                detail: _capabilityLine(l10n, language.capabilities),
+                detail: '',
+                status: _CoreStatus(language: language),
                 trailing: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(color: tokens.soft, borderRadius: BorderRadius.circular(12)),
@@ -89,7 +108,7 @@ class _LanguagesScreenState extends ConsumerState<LanguagesScreen> {
             const SizedBox(height: 18),
             _SectionRow(title: l10n.languagesMoreTitle, subtitle: l10n.languagesMoreSubtitle),
             const SizedBox(height: 10),
-            for (final language in registry.plannedLanguages)
+            for (final language in ref.watch(plannedLanguagesProvider).value ?? registry.plannedLanguages)
               _LanguageRow(
                 language: language,
                 title: language.displayName,
@@ -115,11 +134,6 @@ class _LanguagesScreenState extends ConsumerState<LanguagesScreen> {
     );
   }
 
-  String _capabilityLine(AppLocalizations l10n, LanguageCapabilities c) => [
-        if (c.speechRecognition) l10n.capabilitySpeechInput,
-        if (c.translationInput && c.translationOutput) l10n.capabilityTranslation,
-        if (c.textToSpeech) l10n.capabilityVoiceOutput,
-      ].join(' · ');
 }
 
 class _LanguageField extends StatelessWidget {
@@ -184,11 +198,14 @@ class _SectionRow extends StatelessWidget {
 }
 
 class _LanguageRow extends StatelessWidget {
-  const _LanguageRow({required this.language, required this.detail, required this.trailing, this.title});
+  const _LanguageRow({required this.language, required this.detail, required this.trailing, this.title, this.status});
   final Language language;
   final String? title;
   final String detail;
   final Widget trailing;
+
+  /// Core languages: what works on this phone, under the name.
+  final Widget? status;
 
   @override
   Widget build(BuildContext context) {
@@ -213,8 +230,11 @@ class _LanguageRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title ?? language.nameFirstLabel, style: TextStyle(fontWeight: FontWeight.w700, color: tokens.ink)),
-                    const SizedBox(height: 2),
-                    Text(detail, style: TextStyle(color: tokens.muted, fontSize: 12)),
+                    if (detail.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(detail, style: TextStyle(color: tokens.muted, fontSize: 12)),
+                    ],
+                    ?status,
                   ],
                 ),
               ),
@@ -226,3 +246,106 @@ class _LanguageRow extends StatelessWidget {
     );
   }
 }
+
+enum _Network { wifiOnly, any }
+
+/// Speech input, offline translation and voice for one core language, with Download and Install voice.
+class _CoreStatus extends ConsumerStatefulWidget {
+  const _CoreStatus({required this.language});
+
+  final Language language;
+
+  @override
+  ConsumerState<_CoreStatus> createState() => _CoreStatusState();
+}
+
+class _CoreStatusState extends ConsumerState<_CoreStatus> {
+  bool _downloading = false;
+
+  Future<void> _download() async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final network = await showDialog<_Network>(
+      context: context,
+      builder: (dialog) => AlertDialog(
+        title: Text(l10n.languagesDownloadTitle),
+        content: Text(l10n.languagesDownloadBody(widget.language.displayName)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialog).pop(),
+            child: Text(MaterialLocalizations.of(dialog).cancelButtonLabel),
+          ),
+          TextButton(onPressed: () => Navigator.of(dialog).pop(_Network.any), child: Text(l10n.languagesAnyNetwork)),
+          FilledButton(onPressed: () => Navigator.of(dialog).pop(_Network.wifiOnly), child: Text(l10n.languagesWifiOnly)),
+        ],
+      ),
+    );
+    if (network == null || !mounted) return;
+    setState(() => _downloading = true);
+    final ok = await ref.read(offlineModelsProvider).downloadNow(widget.language.code, wifiOnly: network == _Network.wifiOnly);
+    if (!mounted) return;
+    setState(() => _downloading = false);
+    ref.invalidate(languageStatusProvider(widget.language.code));
+    if (!ok) messenger.showSnackBar(SnackBar(content: Text(l10n.languagesDownloadFailed)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final tokens = Theme.of(context).extension<AnuvaadColors>()!;
+    final code = widget.language.code;
+    final status = ref.watch(languageStatusProvider(code)).value;
+    if (status == null) return const SizedBox(height: 4);
+
+    Widget line(bool ok, String text, [Widget? action]) => Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Row(
+            children: [
+              Icon(ok ? Icons.check_circle : Icons.info_outline, size: 16, color: ok ? tokens.green : tokens.muted),
+              const SizedBox(width: 6),
+              Expanded(child: Text(text, style: TextStyle(color: tokens.muted, fontSize: 12))),
+              ?action,
+            ],
+          ),
+        );
+
+    final compact = TextButton.styleFrom(visualDensity: VisualDensity.compact, padding: const EdgeInsets.symmetric(horizontal: 8));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        line(status.speechInput, status.speechInput ? l10n.languageSpeechReady : l10n.languageSpeechMissing),
+        line(
+          status.offlineModel,
+          status.offlineModel ? l10n.languageModelReady : l10n.languageModelMissing,
+          status.offlineModel
+              ? null
+              : _downloading
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                  : TextButton(
+                      key: Key('download-model-$code'),
+                      style: compact,
+                      onPressed: _download,
+                      child: Text(l10n.languagesDownload),
+                    ),
+        ),
+        line(
+          status.voice == VoiceAvailability.available,
+          switch (status.voice) {
+            VoiceAvailability.available => l10n.languageVoiceReady,
+            VoiceAvailability.needsDownload => l10n.languageVoiceDownload,
+            VoiceAvailability.unsupported => l10n.languageVoiceMissing,
+          },
+          status.voice == VoiceAvailability.available
+              ? null
+              : TextButton(
+                  key: Key('install-voice-$code'),
+                  style: compact,
+                  onPressed: () => ref.read(speechSynthProvider).openVoiceInstall(code),
+                  child: Text(l10n.conversationInstallVoice),
+                ),
+        ),
+      ],
+    );
+  }
+}
+

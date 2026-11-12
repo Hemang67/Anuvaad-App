@@ -863,4 +863,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voicesTestFailed => 'Couldn\'t play the test sentence.';
+
+  @override
+  String get languageSpeechReady => 'Speech input · Ready';
+
+  @override
+  String get languageSpeechMissing =>
+      'Speech input · Not available on this phone';
+
+  @override
+  String get languageModelReady => 'Offline translation · Downloaded';
+
+  @override
+  String get languageModelMissing => 'Offline translation · Not downloaded';
+
+  @override
+  String get languageVoiceReady => 'Voice · Installed';
+
+  @override
+  String get languageVoiceDownload => 'Voice · Needs download';
+
+  @override
+  String get languageVoiceMissing => 'Voice · Not available';
+
+  @override
+  String get languagesDownload => 'Download';
+
+  @override
+  String get languagesDownloadTitle => 'Download offline translation?';
+
+  @override
+  String languagesDownloadBody(String language) {
+    return '$language for translating without internet. About 30 MB.';
+  }
+
+  @override
+  String get languagesWifiOnly => 'Wi-Fi only';
+
+  @override
+  String get languagesAnyNetwork => 'Use mobile data too';
+
+  @override
+  String get languagesDownloadFailed =>
+      'Couldn\'t download. Check your connection and try again.';
+
+  @override
+  String get settingsLanguagesSection => 'Languages';
+
+  @override
+  String get settingsOfflineModels => 'Offline models';
+
+  @override
+  String get settingsOfflineModelsSubtitle =>
+      'What works without internet, per language';
 }

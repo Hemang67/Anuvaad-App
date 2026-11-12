@@ -64,6 +64,16 @@ class AssetLanguageRegistry implements LanguageRegistry {
   }
 }
 
+/// The languages a catalogue (bundled `catalog.json` or `GET /api/v1/languages`) lists as not released yet.
+List<Language> parsePlannedLanguages(Object? json, {String source = 'catalogue'}) {
+  if (json is! Map<String, Object?>) throw FormatException('Invalid language catalogue: $source');
+  final entries = json['languages'];
+  if (entries is! List) throw FormatException('Invalid language catalogue: $source (languages)');
+  return [for (final entry in entries) _parseCatalogEntry(entry, source)]
+      .where((l) => l.installation == LanguageInstallation.notReleased)
+      .toList(growable: false);
+}
+
 /// The user's language on first run, from the device locale.
 String defaultMyLanguage(Locale deviceLocale) => switch (deviceLocale.languageCode) {
       'gu' => 'gu-IN',
