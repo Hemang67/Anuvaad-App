@@ -575,4 +575,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get noticePausedForSilence =>
       'Listening paused after a minute of silence. Tap Listen to continue.';
+
+  @override
+  String get noticePausedForInterruption =>
+      'Paused for a call or alarm. Tap Listen to continue.';
 }

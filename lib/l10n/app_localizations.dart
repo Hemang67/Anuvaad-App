@@ -1083,6 +1083,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Listening paused after a minute of silence. Tap Listen to continue.'**
   String get noticePausedForSilence;
+
+  /// No description provided for @noticePausedForInterruption.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused for a call or alarm. Tap Listen to continue.'**
+  String get noticePausedForInterruption;
 }
 
 class _AppLocalizationsDelegate

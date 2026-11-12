@@ -106,10 +106,15 @@ class FakeSpeechRecognizer implements SpeechRecognizerPort {
   @override
   Future<bool> supportsLanguageDetection() async => detectionSupported;
 
+  /// When set, every start is answered with this error straight away (a broken or busy recognizer).
+  RecognitionErrorCode? failOnStart;
+
   @override
   Future<void> start(String locale, {List<String> detectAmong = const []}) async {
     started.add(locale);
     startDetectAmong = detectAmong;
+    final fail = failOnStart;
+    if (fail != null) scheduleMicrotask(() => emit(RecognitionError(fail)));
     sharedLog?.add('start:$locale');
   }
 

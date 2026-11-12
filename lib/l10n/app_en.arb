@@ -335,5 +335,6 @@
   "settingsAudio": "Audio",
   "settingsAudioDevices": "Audio devices",
   "settingsAudioDevicesSubtitle": "Where translations play",
-  "noticePausedForSilence": "Listening paused after a minute of silence. Tap Listen to continue."
+  "noticePausedForSilence": "Listening paused after a minute of silence. Tap Listen to continue.",
+  "noticePausedForInterruption": "Paused for a call or alarm. Tap Listen to continue."
 }

@@ -36,6 +36,7 @@ enum ConversationNotice {
   speakerUnavailable,
   playbackFailed,
   pausedForSilence,
+  pausedForInterruption,
 }
 
 class ConversationState {
@@ -405,8 +406,12 @@ class ConversationController extends Notifier<ConversationState> {
         _silence(id);
       case RecognitionError(:final code):
         final partial = _segment(id)?.text.trim() ?? '';
+        // In Listen mode an error would only repeat on the next turn: pause, say why, and let Listen resume.
+        final wasListening = state.listenMode;
+        _leaveListenMode();
         if (partial.isNotEmpty) {
           _finalize(id, partial); // keep what was heard before the error
+          if (wasListening) state = state.copyWith(notice: _noticeFor(code), noticeLanguage: null);
         } else {
           final language = code == RecognitionErrorCode.languageUnsupported || code == RecognitionErrorCode.languageUnavailable
               ? _segment(id)?.sourceLanguage
@@ -684,9 +689,17 @@ class ConversationController extends Notifier<ConversationState> {
         if (playing.role == OutputRole.forOther && missedSpeaker) {
           state = state.copyWith(notice: ConversationNotice.speakerUnavailable, noticeLanguage: null, noticeOutput: routed);
         }
-      case PlaybackCompleted(:final playbackId) || PlaybackFocusLost(:final playbackId):
+      case PlaybackCompleted(:final playbackId):
         if (_playing?.id != playbackId) return;
         _clearPlaying();
+        _update(playbackId, (s) => s.copyWith(speech: SpeechStatus.played));
+      case PlaybackFocusLost(:final playbackId):
+        if (_playing?.id != playbackId) return;
+        _clearPlaying();
+        // A call or alarm took the audio: the session pauses (spec R30) instead of listening over it.
+        if (state.listenMode) {
+          state = state.copyWith(listenMode: false, paused: true, notice: ConversationNotice.pausedForInterruption);
+        }
         _update(playbackId, (s) => s.copyWith(speech: SpeechStatus.played));
       case PlaybackFailed(:final playbackId):
         if (_playing?.id != playbackId) return;
