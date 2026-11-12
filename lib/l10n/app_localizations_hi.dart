@@ -132,7 +132,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get homeMeetingTitle => 'ऑनलाइन मीटिंग';
 
   @override
-  String get homeMeetingSubtitle => 'केवल समर्थित ऑडियो स्रोत';
+  String get homeMeetingSubtitle => 'पास में स्पीकर पर चल रही मीटिंग';
 
   @override
   String get homeComingSoon => 'आने वाले अपडेट में';
@@ -1101,4 +1101,36 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get latencyStagePlayback => 'चलना शुरू';
+
+  @override
+  String get meetingTitle => 'मीटिंग मोड';
+
+  @override
+  String get meetingExplain =>
+      'Android ऐप्स को Zoom, Meet, Teams या WhatsApp का ऑडियो कैप्चर नहीं करने देता। मीटिंग को लैपटॉप या स्पीकरफ़ोन पर चलाएँ और अपना फ़ोन उसके पास रखें। Anuvaad फ़ोन के माइक्रोफ़ोन से सुनता है और अनुवाद आपके ईयरफ़ोन में चलाता है।';
+
+  @override
+  String get meetingLanguage => 'मीटिंग की भाषा';
+
+  @override
+  String get meetingTestMic => 'माइक्रोफ़ोन जाँचें';
+
+  @override
+  String get meetingTestListening => 'कुछ सेकंड सुन रहे हैं…';
+
+  @override
+  String meetingHeard(String text) {
+    return 'हमने सुना: $text';
+  }
+
+  @override
+  String get meetingHeardNothing =>
+      'हमें कुछ सुनाई नहीं दिया। पास आएँ या मीटिंग की आवाज़ बढ़ाएँ।';
+
+  @override
+  String get meetingConsent =>
+      'मीटिंग के सभी लोगों को पता है कि अनुवादक इस्तेमाल हो रहा है।';
+
+  @override
+  String get meetingStart => 'सुनना शुरू करें';
 }

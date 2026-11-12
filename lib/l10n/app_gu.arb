@@ -37,7 +37,7 @@
   "homeInPersonTitle": "રૂબરૂ વાતચીત",
   "homeInPersonSubtitle": "સામસામે સહજ રીતે વાત કરો",
   "homeMeetingTitle": "ઓનલાઇન મીટિંગ",
-  "homeMeetingSubtitle": "માત્ર સપોર્ટેડ ઑડિયો સ્રોત",
+  "homeMeetingSubtitle": "તમારી પાસે સ્પીકર પર ચાલતી મીટિંગ",
   "homeComingSoon": "આગામી અપડેટમાં",
   "homeMyLanguage": "મારી ભાષા",
   "homeChange": "બદલો",
@@ -315,5 +315,14 @@
   "latencyStageFinal": "બોલવાનું પૂરું → અંતિમ લખાણ",
   "latencyStageTranslation": "અનુવાદ",
   "latencyStageVoice": "અવાજની તૈયારી",
-  "latencyStagePlayback": "વાગવાની શરૂઆત"
+  "latencyStagePlayback": "વાગવાની શરૂઆત",
+  "meetingTitle": "મીટિંગ મોડ",
+  "meetingExplain": "Android ઍપ્સને Zoom, Meet, Teams અથવા WhatsApp નો ઑડિયો કૅપ્ચર કરવા દેતું નથી. મીટિંગ લેપટોપ અથવા સ્પીકરફોન પર વગાડો અને તમારો ફોન તેની પાસે રાખો. Anuvaad ફોનના માઇક્રોફોનથી સાંભળે છે અને અનુવાદ તમારા ઇયરફોનમાં વગાડે છે.",
+  "meetingLanguage": "મીટિંગની ભાષા",
+  "meetingTestMic": "માઇક્રોફોન તપાસો",
+  "meetingTestListening": "થોડી સેકન્ડ સાંભળી રહ્યા છીએ…",
+  "meetingHeard": "અમે સાંભળ્યું: {text}",
+  "meetingHeardNothing": "અમને કંઈ સંભળાયું નહીં. નજીક આવો અથવા મીટિંગનો અવાજ વધારો.",
+  "meetingConsent": "મીટિંગના બધા લોકોને ખબર છે કે અનુવાદક વપરાય છે.",
+  "meetingStart": "સાંભળવાનું શરૂ કરો"
 }

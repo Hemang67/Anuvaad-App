@@ -10,6 +10,7 @@ import '../features/history/presentation/conversation_detail_screen.dart';
 import '../features/history/presentation/history_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/language_settings/presentation/languages_screen.dart';
+import '../features/meeting/presentation/meeting_setup_screen.dart';
 import '../features/onboarding/application/onboarding_controller.dart';
 import '../features/onboarding/presentation/onboarding_screen.dart';
 import '../features/privacy/presentation/privacy_screen.dart';
@@ -69,7 +70,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.onboarding, pageBuilder: (context, state) => _fade(state, const OnboardingScreen())),
       GoRoute(
         path: Routes.conversation,
-        pageBuilder: (context, state) => _slideUp(state, const ConversationScreen()),
+        pageBuilder: (context, state) => _slideUp(
+          state,
+          ConversationScreen(
+            meeting: state.uri.queryParameters['mode'] == 'meeting',
+            meetingLanguage: state.uri.queryParameters['language'],
+          ),
+        ),
       ),
       GoRoute(
         path: Routes.audioDevices,
@@ -78,6 +85,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.voices, pageBuilder: (context, state) => _slideUp(state, const VoicesScreen())),
       GoRoute(path: Routes.privacy, pageBuilder: (context, state) => _slideUp(state, const PrivacyScreen())),
       GoRoute(path: Routes.latency, pageBuilder: (context, state) => _slideUp(state, const LatencyScreen())),
+      GoRoute(path: Routes.meeting, pageBuilder: (context, state) => _slideUp(state, const MeetingSetupScreen())),
       GoRoute(
         path: Routes.history,
         pageBuilder: (context, state) => _slideUp(state, const HistoryScreen()),

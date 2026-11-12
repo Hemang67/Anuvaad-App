@@ -56,7 +56,7 @@
   "homeInPersonTitle": "In-person conversation",
   "homeInPersonSubtitle": "Talk naturally face-to-face",
   "homeMeetingTitle": "Online meeting",
-  "homeMeetingSubtitle": "Supported audio sources only",
+  "homeMeetingSubtitle": "A meeting played on a speaker near you",
   "homeComingSoon": "Coming in an update",
   "homeMyLanguage": "MY LANGUAGE",
   "homeChange": "Change",
@@ -648,5 +648,22 @@
   "latencyStageFinal": "End of speech → final text",
   "latencyStageTranslation": "Translation",
   "latencyStageVoice": "Voice preparation",
-  "latencyStagePlayback": "Playback start"
+  "latencyStagePlayback": "Playback start",
+  "meetingTitle": "Meeting mode",
+  "meetingExplain": "Android doesn't let apps capture audio from Zoom, Meet, Teams or WhatsApp. Play the meeting on a laptop or speakerphone and keep your phone near it. Anuvaad listens through the phone's microphone and plays the translation in your earphones.",
+  "meetingLanguage": "Meeting language",
+  "meetingTestMic": "Test microphone",
+  "meetingTestListening": "Listening for a few seconds…",
+  "meetingHeard": "We heard: {text}",
+  "meetingHeardNothing": "We didn't hear anything. Move closer or turn the meeting volume up.",
+  "meetingConsent": "Everyone in the meeting knows a translator is being used.",
+  "meetingStart": "Start listening",
+  "@meetingHeard": {
+    "placeholders": {
+      "text": {
+        "type": "String",
+        "example": "Good morning, everyone"
+      }
+    }
+  }
 }

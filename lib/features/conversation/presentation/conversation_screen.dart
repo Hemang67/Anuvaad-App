@@ -21,7 +21,11 @@ import 'turn_buttons.dart';
 
 /// In-person conversation (M2): live text and translations; spoken translations arrive in M3.
 class ConversationScreen extends ConsumerStatefulWidget {
-  const ConversationScreen({super.key});
+  const ConversationScreen({super.key, this.meeting = false, this.meetingLanguage});
+
+  /// Opened from Meeting setup: Listen only, starting straight away.
+  final bool meeting;
+  final String? meetingLanguage;
 
   @override
   ConsumerState<ConversationScreen> createState() => _ConversationScreenState();
@@ -35,6 +39,11 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   void initState() {
     super.initState();
     _awake = ref.read(screenAwakeProvider); // read now: ref can't be used once the screen is disposed
+    if (widget.meeting) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) ref.read(conversationControllerProvider.notifier).startMeeting(widget.meetingLanguage);
+      });
+    }
   }
 
   @override
@@ -113,7 +122,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     return Scaffold(
       key: const Key('conversation-screen'),
       appBar: AppBar(
-        title: Text(l10n.conversationTitle),
+        title: Text(widget.meeting ? l10n.meetingTitle : l10n.conversationTitle),
         actions: [
           IconButton(
             tooltip: l10n.audioDevicesTitle,

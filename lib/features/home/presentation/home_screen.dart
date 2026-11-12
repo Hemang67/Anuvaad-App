@@ -69,7 +69,7 @@ class HomeScreen extends ConsumerWidget {
               icon: Icons.video_call_outlined,
               title: l10n.homeMeetingTitle,
               subtitle: l10n.homeMeetingSubtitle,
-              chip: l10n.homeComingSoon,
+              onTap: () => context.push(Routes.meeting),
             ),
             const SizedBox(height: 14),
             Card(
@@ -201,13 +201,12 @@ class _SectionRow extends StatelessWidget {
   }
 }
 
-/// A conversation mode. Without [onTap] it is disabled and shows an honest [chip].
+/// A conversation mode; without [onTap] it is shown disabled.
 class _ModeCard extends StatelessWidget {
-  const _ModeCard({required this.icon, required this.title, required this.subtitle, this.chip, this.primary = false, this.onTap});
+  const _ModeCard({required this.icon, required this.title, required this.subtitle, this.primary = false, this.onTap});
   final IconData icon;
   final String title;
   final String subtitle;
-  final String? chip;
   final bool primary;
   final VoidCallback? onTap;
 
@@ -241,14 +240,6 @@ class _ModeCard extends StatelessWidget {
                       Text(title, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: tokens.ink)),
                       const SizedBox(height: 2),
                       Text(subtitle, style: TextStyle(color: tokens.muted)),
-                      if (chip case final chip?) ...[
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: tokens.soft, borderRadius: BorderRadius.circular(12)),
-                          child: Text(chip, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: tokens.blue)),
-                        ),
-                      ],
                     ],
                   ),
                 ),

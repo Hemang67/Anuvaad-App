@@ -37,7 +37,7 @@
   "homeInPersonTitle": "आमने-सामने बातचीत",
   "homeInPersonSubtitle": "सामने बैठकर सहज बात करें",
   "homeMeetingTitle": "ऑनलाइन मीटिंग",
-  "homeMeetingSubtitle": "केवल समर्थित ऑडियो स्रोत",
+  "homeMeetingSubtitle": "पास में स्पीकर पर चल रही मीटिंग",
   "homeComingSoon": "आने वाले अपडेट में",
   "homeMyLanguage": "मेरी भाषा",
   "homeChange": "बदलें",
@@ -315,5 +315,14 @@
   "latencyStageFinal": "बोलना ख़त्म → अंतिम टेक्स्ट",
   "latencyStageTranslation": "अनुवाद",
   "latencyStageVoice": "आवाज़ की तैयारी",
-  "latencyStagePlayback": "चलना शुरू"
+  "latencyStagePlayback": "चलना शुरू",
+  "meetingTitle": "मीटिंग मोड",
+  "meetingExplain": "Android ऐप्स को Zoom, Meet, Teams या WhatsApp का ऑडियो कैप्चर नहीं करने देता। मीटिंग को लैपटॉप या स्पीकरफ़ोन पर चलाएँ और अपना फ़ोन उसके पास रखें। Anuvaad फ़ोन के माइक्रोफ़ोन से सुनता है और अनुवाद आपके ईयरफ़ोन में चलाता है।",
+  "meetingLanguage": "मीटिंग की भाषा",
+  "meetingTestMic": "माइक्रोफ़ोन जाँचें",
+  "meetingTestListening": "कुछ सेकंड सुन रहे हैं…",
+  "meetingHeard": "हमने सुना: {text}",
+  "meetingHeardNothing": "हमें कुछ सुनाई नहीं दिया। पास आएँ या मीटिंग की आवाज़ बढ़ाएँ।",
+  "meetingConsent": "मीटिंग के सभी लोगों को पता है कि अनुवादक इस्तेमाल हो रहा है।",
+  "meetingStart": "सुनना शुरू करें"
 }

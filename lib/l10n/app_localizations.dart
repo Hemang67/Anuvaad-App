@@ -325,7 +325,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeMeetingSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Supported audio sources only'**
+  /// **'A meeting played on a speaker near you'**
   String get homeMeetingSubtitle;
 
   /// No description provided for @homeComingSoon.
@@ -1995,6 +1995,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Playback start'**
   String get latencyStagePlayback;
+
+  /// No description provided for @meetingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting mode'**
+  String get meetingTitle;
+
+  /// No description provided for @meetingExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Android doesn\'t let apps capture audio from Zoom, Meet, Teams or WhatsApp. Play the meeting on a laptop or speakerphone and keep your phone near it. Anuvaad listens through the phone\'s microphone and plays the translation in your earphones.'**
+  String get meetingExplain;
+
+  /// No description provided for @meetingLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting language'**
+  String get meetingLanguage;
+
+  /// No description provided for @meetingTestMic.
+  ///
+  /// In en, this message translates to:
+  /// **'Test microphone'**
+  String get meetingTestMic;
+
+  /// No description provided for @meetingTestListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening for a few seconds…'**
+  String get meetingTestListening;
+
+  /// No description provided for @meetingHeard.
+  ///
+  /// In en, this message translates to:
+  /// **'We heard: {text}'**
+  String meetingHeard(String text);
+
+  /// No description provided for @meetingHeardNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'We didn\'t hear anything. Move closer or turn the meeting volume up.'**
+  String get meetingHeardNothing;
+
+  /// No description provided for @meetingConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone in the meeting knows a translator is being used.'**
+  String get meetingConsent;
+
+  /// No description provided for @meetingStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start listening'**
+  String get meetingStart;
 }
 
 class _AppLocalizationsDelegate

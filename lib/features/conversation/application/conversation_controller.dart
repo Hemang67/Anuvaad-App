@@ -272,6 +272,18 @@ class ConversationController extends Notifier<ConversationState> {
     await startTurn(Speaker.other);
   }
 
+  /// Meeting mode (spec §3.2, R25): a meeting played on a speaker in the room. Listen only, in [language] (null keeps
+  /// the usual rules: the Languages setting, or Automatic).
+  Future<void> startMeeting(String? language) async {
+    if (state.ended) return;
+    state = state.copyWith(
+      mode: ConversationMode.meeting,
+      otherLanguageOverride: language ?? state.otherLanguageOverride,
+      otherLanguageDetected: false,
+    );
+    await startListening();
+  }
+
   /// Stops the microphone and any playback, and leaves Listen mode until Listen is tapped again.
   /// Words already heard in a Listen turn are kept (stopped, so the final result arrives and is translated, not
   /// spoken); an empty turn is cancelled.

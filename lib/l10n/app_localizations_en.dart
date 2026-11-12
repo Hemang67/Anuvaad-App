@@ -131,7 +131,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeMeetingTitle => 'Online meeting';
 
   @override
-  String get homeMeetingSubtitle => 'Supported audio sources only';
+  String get homeMeetingSubtitle => 'A meeting played on a speaker near you';
 
   @override
   String get homeComingSoon => 'Coming in an update';
@@ -1099,4 +1099,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get latencyStagePlayback => 'Playback start';
+
+  @override
+  String get meetingTitle => 'Meeting mode';
+
+  @override
+  String get meetingExplain =>
+      'Android doesn\'t let apps capture audio from Zoom, Meet, Teams or WhatsApp. Play the meeting on a laptop or speakerphone and keep your phone near it. Anuvaad listens through the phone\'s microphone and plays the translation in your earphones.';
+
+  @override
+  String get meetingLanguage => 'Meeting language';
+
+  @override
+  String get meetingTestMic => 'Test microphone';
+
+  @override
+  String get meetingTestListening => 'Listening for a few seconds…';
+
+  @override
+  String meetingHeard(String text) {
+    return 'We heard: $text';
+  }
+
+  @override
+  String get meetingHeardNothing =>
+      'We didn\'t hear anything. Move closer or turn the meeting volume up.';
+
+  @override
+  String get meetingConsent =>
+      'Everyone in the meeting knows a translator is being used.';
+
+  @override
+  String get meetingStart => 'Start listening';
 }

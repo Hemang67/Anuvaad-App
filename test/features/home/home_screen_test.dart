@@ -24,11 +24,11 @@ void main() {
     }
   });
 
-  testWidgets('online meeting is still marked coming in an update; in-person opens', (tester) async {
+  testWidgets('both mode cards open: in person and online meeting', (tester) async {
     await pumpAnuvaadApp(tester, prefs: _onboarded);
-    expect(find.text('Coming in an update'), findsOneWidget);
+    expect(find.text('Coming in an update'), findsNothing);
     final meeting = tester.widget<InkWell>(find.ancestor(of: find.text('Online meeting'), matching: find.byType(InkWell)).first);
-    expect(meeting.onTap, isNull);
+    expect(meeting.onTap, isNotNull);
     final inPerson = tester.widget<InkWell>(find.ancestor(of: find.text('In-person conversation'), matching: find.byType(InkWell)).first);
     expect(inPerson.onTap, isNotNull);
   });
@@ -61,10 +61,8 @@ void main() {
     expect(find.byKey(const Key('settings-screen')), findsOneWidget);
   });
 
-  testWidgets('mode card chip sits under the subtitle so the title keeps the full width', (tester) async {
+  testWidgets('the meeting card says what kind of meeting works', (tester) async {
     await pumpAnuvaadApp(tester, prefs: _onboarded);
-    final subtitle = tester.getRect(find.text('Supported audio sources only'));
-    final chip = tester.getRect(find.text('Coming in an update'));
-    expect(chip.top, greaterThanOrEqualTo(subtitle.bottom));
+    expect(find.text('A meeting played on a speaker near you'), findsOneWidget);
   });
 }
