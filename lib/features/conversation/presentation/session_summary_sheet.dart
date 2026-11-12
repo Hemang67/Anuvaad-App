@@ -59,7 +59,7 @@ Future<void> showSessionSummary(
                           children: [
                             Icon(Icons.check_circle, color: tokens.green, size: 20),
                             const SizedBox(width: 6),
-                            Text(l10n.summarySaved, style: TextStyle(color: tokens.ink, fontWeight: FontWeight.w600)),
+                            Flexible(child: Text(l10n.summarySaved, style: TextStyle(color: tokens.ink, fontWeight: FontWeight.w600))),
                           ],
                         ),
                       );

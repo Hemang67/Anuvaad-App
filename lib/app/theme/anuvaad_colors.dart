@@ -29,9 +29,11 @@ class AnuvaadColors extends ThemeExtension<AnuvaadColors> {
     bg: Color(0xFFF5F8FF),
     card: Color(0xFFFFFFFF),
     ink: Color(0xFF102746),
-    muted: Color(0xFF6D7D91),
+    // Prototype #6D7D91 was 3.96:1 on the background; darkened to meet WCAG AA 4.5:1 (spec R48).
+    muted: Color(0xFF5C6B7E),
     line: Color(0xFFE3EAF3),
-    blue: Color(0xFF1678ED),
+    // Prototype #1678ED was 4.25:1 with white; darkened a little to meet WCAG AA 4.5:1 for links and button labels.
+    blue: Color(0xFF1269D3),
     cyan: Color(0xFF28B8E9),
     soft: Color(0xFFEAF4FF),
     green: Color(0xFF13A879),

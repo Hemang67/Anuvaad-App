@@ -191,11 +191,13 @@ class _SectionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<AnuvaadColors>()!;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.end,
+      spacing: 8,
       children: [
-        Expanded(child: Text(title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: tokens.ink))),
-        Text(subtitle, style: TextStyle(color: tokens.muted, fontSize: 12)),
+        Text(title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: tokens.ink)),
+        if (subtitle.isNotEmpty) Text(subtitle, style: TextStyle(color: tokens.muted, fontSize: 12)),
       ],
     );
   }

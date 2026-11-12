@@ -1128,4 +1128,19 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get meetingStart => 'સાંભળવાનું શરૂ કરો';
+
+  @override
+  String a11yOtherSaid(String language, String text) {
+    return 'સામેની વ્યક્તિ, $language: $text';
+  }
+
+  @override
+  String a11yYouSaid(String language, String text) {
+    return 'તમે, $language: $text';
+  }
+
+  @override
+  String a11yTranslation(String text) {
+    return 'અનુવાદ: $text';
+  }
 }

@@ -18,10 +18,13 @@ class SettingsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          // Side by side when they fit; the subtitle wraps under the title at large text sizes.
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.end,
+            spacing: 8,
             children: [
-              Expanded(child: Text(title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: tokens.ink))),
+              Text(title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: tokens.ink)),
               if (subtitle != null) Text(subtitle!, style: TextStyle(color: tokens.muted, fontSize: 12)),
             ],
           ),

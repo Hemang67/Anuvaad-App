@@ -1133,4 +1133,19 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get meetingStart => 'सुनना शुरू करें';
+
+  @override
+  String a11yOtherSaid(String language, String text) {
+    return 'सामने वाला व्यक्ति, $language: $text';
+  }
+
+  @override
+  String a11yYouSaid(String language, String text) {
+    return 'आप, $language: $text';
+  }
+
+  @override
+  String a11yTranslation(String text) {
+    return 'अनुवाद: $text';
+  }
 }

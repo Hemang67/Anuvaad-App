@@ -2049,6 +2049,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start listening'**
   String get meetingStart;
+
+  /// No description provided for @a11yOtherSaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Other person, {language}: {text}'**
+  String a11yOtherSaid(String language, String text);
+
+  /// No description provided for @a11yYouSaid.
+  ///
+  /// In en, this message translates to:
+  /// **'You, {language}: {text}'**
+  String a11yYouSaid(String language, String text);
+
+  /// No description provided for @a11yTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation: {text}'**
+  String a11yTranslation(String text);
 }
 
 class _AppLocalizationsDelegate

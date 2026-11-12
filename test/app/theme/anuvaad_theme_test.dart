@@ -8,7 +8,8 @@ void main() {
     final t = buildAnuvaadTheme(Brightness.light);
     expect(t.brightness, Brightness.light);
     expect(t.scaffoldBackgroundColor, const Color(0xFFF5F8FF));
-    expect(t.colorScheme.primary, const Color(0xFF1678ED));
+    // The prototype's #1678ED, darkened to meet WCAG AA with white text (spec R48, test/a11y/contrast_test.dart).
+    expect(t.colorScheme.primary, const Color(0xFF1269D3));
     expect(t.colorScheme.surface, const Color(0xFFFFFFFF));
     expect(t.colorScheme.onSurface, const Color(0xFF102746));
     expect(t.extension<AnuvaadColors>(), same(AnuvaadColors.light));
@@ -43,6 +44,6 @@ void main() {
   test('selected segments use the brand soft colour, not a seed-derived tint', () {
     final style = buildAnuvaadTheme(Brightness.light).segmentedButtonTheme.style!;
     expect(style.backgroundColor!.resolve({WidgetState.selected}), const Color(0xFFEAF4FF));
-    expect(style.foregroundColor!.resolve({WidgetState.selected}), const Color(0xFF1678ED));
+    expect(style.foregroundColor!.resolve({WidgetState.selected}), const Color(0xFF1269D3));
   });
 }

@@ -527,4 +527,15 @@ void main() {
     expect(find.text('Saved to history'), findsOneWidget);
     expect((await repo.list()).single.segments.single.text, 'नमस्ते');
   });
+
+  testWidgets('a card reads as one sentence to screen readers', (tester) async {
+    await openConversation(tester);
+    await tester.tap(find.byKey(const Key('listen-button')));
+    await tester.pumpAndSettle();
+    await say(tester, const FinalResult('आप कहाँ जा रहे हैं?'));
+    expect(
+      tester.getSemantics(find.text('OTHER PERSON · HINDI')).label,
+      'Other person, Hindi: आप कहाँ जा रहे हैं?. Translation: Where are you going today?',
+    );
+  });
 }

@@ -56,12 +56,12 @@ void main() {
   });
 
   test('a playback that never reports completion stops blocking listening after 30 seconds', () async {
-    h.watchdog = const Duration(milliseconds: 20);
+    h.watchdog = const Duration(milliseconds: 300); // short for the test, but not so short it fires mid-setup
     h.rebuild();
     await h.controller.startListening();
     final id = await h.say('नमस्ते');
     expect(h.starts, 1);
-    await Future<void>.delayed(const Duration(milliseconds: 60));
+    await Future<void>.delayed(const Duration(milliseconds: 450));
     await h.flush();
     expect(h.seg(id).speech, SpeechStatus.played);
     expect(h.starts, 2);

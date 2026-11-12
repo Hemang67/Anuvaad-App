@@ -40,10 +40,12 @@ class SessionHeader extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
             children: [
               _StatusChip(status: status),
-              const Spacer(),
               Text(
                 state.mode == ConversationMode.meeting ? l10n.modeMeeting : l10n.modeInPerson,
                 style: TextStyle(color: tokens.muted, fontSize: 12, fontWeight: FontWeight.w600),
@@ -137,7 +139,9 @@ class _StatusChip extends StatelessWidget {
           children: [
             Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
             const SizedBox(width: 6),
-            Text(label, style: TextStyle(fontSize: 11, letterSpacing: 1.1, fontWeight: FontWeight.w800, color: tokens.ink)),
+            Flexible(
+              child: Text(label, style: TextStyle(fontSize: 11, letterSpacing: 1.1, fontWeight: FontWeight.w800, color: tokens.ink)),
+            ),
           ],
         ),
       ),

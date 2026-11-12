@@ -324,5 +324,8 @@
   "meetingHeard": "हमने सुना: {text}",
   "meetingHeardNothing": "हमें कुछ सुनाई नहीं दिया। पास आएँ या मीटिंग की आवाज़ बढ़ाएँ।",
   "meetingConsent": "मीटिंग के सभी लोगों को पता है कि अनुवादक इस्तेमाल हो रहा है।",
-  "meetingStart": "सुनना शुरू करें"
+  "meetingStart": "सुनना शुरू करें",
+  "a11yOtherSaid": "सामने वाला व्यक्ति, {language}: {text}",
+  "a11yYouSaid": "आप, {language}: {text}",
+  "a11yTranslation": "अनुवाद: {text}"
 }

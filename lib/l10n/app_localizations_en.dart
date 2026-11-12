@@ -1131,4 +1131,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get meetingStart => 'Start listening';
+
+  @override
+  String a11yOtherSaid(String language, String text) {
+    return 'Other person, $language: $text';
+  }
+
+  @override
+  String a11yYouSaid(String language, String text) {
+    return 'You, $language: $text';
+  }
+
+  @override
+  String a11yTranslation(String text) {
+    return 'Translation: $text';
+  }
 }

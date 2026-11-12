@@ -59,7 +59,10 @@ class SegmentCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                Semantics(
+                  label: _spoken(l10n),
+                  excludeSemantics: true,
+                  child: Text(
                   mine
                       ? l10n.conversationYouLabel(language)
                       : segment.detected
@@ -67,12 +70,15 @@ class SegmentCard extends StatelessWidget {
                           : l10n.conversationOtherLabel(language),
                   style: textTheme.labelSmall?.copyWith(color: tokens.muted, fontWeight: FontWeight.w700, letterSpacing: 1.1),
                 ),
+                ),
                 const SizedBox(height: 6),
-                Text(
+                ExcludeSemantics(
+                  child: Text(
                   heard,
                   style: segment.isFinal
                       ? textTheme.bodyLarge?.copyWith(color: tokens.ink)
                       : textTheme.bodyLarge?.copyWith(color: tokens.muted, fontStyle: FontStyle.italic),
+                ),
                 ),
                 if (segment.status != SegmentStatus.listening) ...[
                   Divider(height: 20, color: tokens.line),
@@ -87,6 +93,15 @@ class SegmentCard extends StatelessWidget {
   }
 
   /// The spoken half: Playing…, or the device it played on with Replay, or the missing-voice line.
+  /// "Other person, Hindi: …. Translation: …" — read once instead of three separate pieces of text.
+  String _spoken(AppLocalizations l10n) {
+    final language = languageName(segment.sourceLanguage);
+    final text = segment.text.isEmpty ? l10n.conversationListening : segment.text;
+    final who = segment.speaker == Speaker.me ? l10n.a11yYouSaid(language, text) : l10n.a11yOtherSaid(language, text);
+    final translation = segment.status == SegmentStatus.translated ? segment.translation?.text : null;
+    return translation == null ? who : '$who. ${l10n.a11yTranslation(translation)}';
+  }
+
   Future<void> _edit(BuildContext context) async {
     final l10n = AppLocalizations.of(context);
     final text = await showDialog<String>(
@@ -170,18 +185,23 @@ class SegmentCard extends StatelessWidget {
         final output = segment.output;
         return [
           const SizedBox(height: 4),
-          Row(children: [
-            if (output != null)
-              Expanded(child: Text(l10n.conversationOutput(outputLabel(output, l10n)), style: muted))
-            else
-              const Spacer(),
-            TextButton.icon(
-              key: Key('replay-${segment.id}'),
-              onPressed: onReplay,
-              icon: const Icon(Icons.play_arrow),
-              label: Text(l10n.conversationReplay),
+          // The output line and Replay share a line when they fit; Replay wraps under it at large text sizes.
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
+              alignment: output == null ? WrapAlignment.end : WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                if (output != null) Text(l10n.conversationOutput(outputLabel(output, l10n)), style: muted),
+                TextButton.icon(
+                  key: Key('replay-${segment.id}'),
+                  onPressed: onReplay,
+                  icon: const Icon(Icons.play_arrow),
+                  label: Text(l10n.conversationReplay),
+                ),
+              ],
             ),
-          ]),
+          ),
         ];
     }
   }
@@ -193,7 +213,9 @@ class SegmentCard extends StatelessWidget {
       case SegmentStatus.translated:
         final translation = segment.translation!;
         return [
-          Text(translation.text, style: textTheme.titleMedium?.copyWith(color: tokens.ink, fontWeight: FontWeight.w600)),
+          ExcludeSemantics(
+            child: Text(translation.text, style: textTheme.titleMedium?.copyWith(color: tokens.ink, fontWeight: FontWeight.w600)),
+          ),
           ..._speech(context, l10n, tokens),
           if (translation.provenance == TranslationProvenance.offline) ...[
             const SizedBox(height: 8),

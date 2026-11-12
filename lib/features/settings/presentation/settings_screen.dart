@@ -127,12 +127,13 @@ class SettingsScreen extends ConsumerWidget {
                     onSelectionChanged: (selection) => ref.read(themeModeProvider.notifier).select(selection.first),
                   ),
                 ),
-                SettingsRow(
-                  title: l10n.settingsAppLanguage,
-                  trailing: DropdownButton<String>(
+                SettingsRow(title: l10n.settingsAppLanguage),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: DropdownButton<String>(
                     key: const Key('app-language'),
+                    isExpanded: true,
                     value: ref.watch(appLanguageProvider),
-                    underline: const SizedBox.shrink(),
                     items: [
                       DropdownMenuItem(value: 'system', child: Text(l10n.appLanguageSystem)),
                       for (final code in appLanguages) DropdownMenuItem(value: code, child: Text(appLanguageNames[code]!)),
@@ -210,10 +211,8 @@ class SettingsScreen extends ConsumerWidget {
                     onChanged: (on) => _setSaveHistory(context, ref, on),
                   ),
                 ),
-                SettingsRow(
-                  title: l10n.settingsRawAudio,
-                  trailing: Text(l10n.settingsRawAudioNever, style: TextStyle(color: tokens.muted, fontWeight: FontWeight.w600)),
-                ),
+                // A fact, not a switch: the subtitle wraps at large text sizes, a trailing label couldn't.
+                SettingsRow(title: l10n.settingsRawAudio, subtitle: l10n.settingsRawAudioNever),
                 SettingsRow(
                   key: const Key('delete-all-history'),
                   title: l10n.settingsDeleteAll,

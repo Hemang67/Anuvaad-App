@@ -665,5 +665,35 @@
         "example": "Good morning, everyone"
       }
     }
+  },
+  "a11yOtherSaid": "Other person, {language}: {text}",
+  "@a11yOtherSaid": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      },
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yYouSaid": "You, {language}: {text}",
+  "@a11yYouSaid": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      },
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yTranslation": "Translation: {text}",
+  "@a11yTranslation": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
   }
 }
