@@ -1041,4 +1041,62 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appLanguageSystem => 'Phone\'s language';
+
+  @override
+  String get settingsDiagnostics => 'Diagnostics';
+
+  @override
+  String get settingsLatency => 'Latency report';
+
+  @override
+  String get settingsLatencySubtitle =>
+      'How long each step takes, no words recorded';
+
+  @override
+  String get latencyTitle => 'Latency report';
+
+  @override
+  String get latencyNote => 'No words are recorded, only timings.';
+
+  @override
+  String get latencyTarget =>
+      'Target: end of speech → first audio under 3 s (p95)';
+
+  @override
+  String get latencyEmpty =>
+      'No timings yet. Have a conversation, then come back.';
+
+  @override
+  String get latencyExport => 'Export CSV';
+
+  @override
+  String get latencyClear => 'Clear';
+
+  @override
+  String latencyPair(String source, String target) {
+    return '$source → $target';
+  }
+
+  @override
+  String latencyStats(String median, String p95) {
+    return 'median $median s · p95 $p95 s';
+  }
+
+  @override
+  String get latencyStageTotal => 'End of speech → first audio';
+
+  @override
+  String get latencyStageFirstWords => 'Speech start → first words';
+
+  @override
+  String get latencyStageFinal => 'End of speech → final text';
+
+  @override
+  String get latencyStageTranslation => 'Translation';
+
+  @override
+  String get latencyStageVoice => 'Voice preparation';
+
+  @override
+  String get latencyStagePlayback => 'Playback start';
 }

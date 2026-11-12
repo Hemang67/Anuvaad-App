@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../features/app_update/presentation/release_notes_screen.dart';
 import '../features/audio_devices/presentation/audio_devices_screen.dart';
 import '../features/conversation/presentation/conversation_screen.dart';
+import '../features/diagnostics/presentation/latency_screen.dart';
 import '../features/history/presentation/conversation_detail_screen.dart';
 import '../features/history/presentation/history_screen.dart';
 import '../features/home/presentation/home_screen.dart';
@@ -76,6 +77,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: Routes.voices, pageBuilder: (context, state) => _slideUp(state, const VoicesScreen())),
       GoRoute(path: Routes.privacy, pageBuilder: (context, state) => _slideUp(state, const PrivacyScreen())),
+      GoRoute(path: Routes.latency, pageBuilder: (context, state) => _slideUp(state, const LatencyScreen())),
       GoRoute(
         path: Routes.history,
         pageBuilder: (context, state) => _slideUp(state, const HistoryScreen()),

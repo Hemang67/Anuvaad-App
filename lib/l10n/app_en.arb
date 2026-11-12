@@ -607,5 +607,46 @@
   "privacyFullPage": "Full privacy page",
   "privacyContact": "Contact details will be added before public launch.",
   "settingsAppLanguage": "App language",
-  "appLanguageSystem": "Phone's language"
+  "appLanguageSystem": "Phone's language",
+  "settingsDiagnostics": "Diagnostics",
+  "settingsLatency": "Latency report",
+  "settingsLatencySubtitle": "How long each step takes, no words recorded",
+  "latencyTitle": "Latency report",
+  "latencyNote": "No words are recorded, only timings.",
+  "latencyTarget": "Target: end of speech → first audio under 3 s (p95)",
+  "latencyEmpty": "No timings yet. Have a conversation, then come back.",
+  "latencyExport": "Export CSV",
+  "latencyClear": "Clear",
+  "latencyPair": "{source} → {target}",
+  "@latencyPair": {
+    "placeholders": {
+      "source": {
+        "type": "String",
+        "example": "Hindi"
+      },
+      "target": {
+        "type": "String",
+        "example": "English"
+      }
+    }
+  },
+  "latencyStats": "median {median} s · p95 {p95} s",
+  "@latencyStats": {
+    "placeholders": {
+      "median": {
+        "type": "String",
+        "example": "1.8"
+      },
+      "p95": {
+        "type": "String",
+        "example": "2.6"
+      }
+    }
+  },
+  "latencyStageTotal": "End of speech → first audio",
+  "latencyStageFirstWords": "Speech start → first words",
+  "latencyStageFinal": "End of speech → final text",
+  "latencyStageTranslation": "Translation",
+  "latencyStageVoice": "Voice preparation",
+  "latencyStagePlayback": "Playback start"
 }

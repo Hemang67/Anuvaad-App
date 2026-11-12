@@ -10,5 +10,6 @@ abstract final class Routes {
   static const history = '/history';
   static const voices = '/voices';
   static const privacy = '/privacy';
+  static const latency = '/latency';
   static String historyDetail(String id) => '/history/$id';
 }

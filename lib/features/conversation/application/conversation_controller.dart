@@ -10,6 +10,8 @@ import '../../../core/permissions/microphone_permission.dart';
 import '../../../core/settings/settings_providers.dart';
 import '../../../core/settings/settings_repository.dart';
 import '../../app_update/application/update_controller.dart' show clockProvider;
+import '../../diagnostics/data/latency_log.dart';
+import '../../diagnostics/domain/latency_sample.dart';
 import '../../history/application/history_providers.dart';
 import '../../history/domain/history_repository.dart';
 import '../../history/domain/saved_conversation.dart';
@@ -204,6 +206,10 @@ class ConversationController extends Notifier<ConversationState> {
   /// The latest state, for saving when the screen closes (state can't be read once disposal starts).
   ConversationState? _lastState;
 
+  /// Latency: one sample per segment, when its pipeline ends.
+  late LatencyLog _latency;
+  final _measured = <String>{};
+
   @override
   ConversationState build() {
     final recognizer = _recognizer = ref.watch(speechRecognizerProvider);
@@ -212,6 +218,7 @@ class ConversationController extends Notifier<ConversationState> {
     final voice = _voice = ref.watch(voiceServiceProvider);
     final history = _history = ref.watch(historyRepositoryProvider);
     final settings = _settings = ref.watch(settingsRepositoryProvider);
+    _latency = ref.watch(latencyLogProvider);
     final clock = ref.read(clockProvider);
     _audioEvents = audio.events.listen(_onAudio);
     // Backgrounding releases the microphone (spec §0.4).
@@ -536,7 +543,7 @@ class ConversationController extends Notifier<ConversationState> {
     if (id == null || !ref.mounted) return; // late events after stop/cancel, or a duplicate final
     switch (event) {
       case PartialResult(:final text):
-        _update(id, (s) => s.copyWith(text: text));
+        _update(id, (s) => s.copyWith(text: text, firstPartialAt: s.firstPartialAt ?? _now()));
       case FinalResult(:final text) when text.trim().isNotEmpty:
         _finalize(id, text.trim());
       case FinalResult():
@@ -562,7 +569,11 @@ class ConversationController extends Notifier<ConversationState> {
         _setLevel(level);
       case LanguageDetected(:final locale, :final confidence):
         _detections[id] = (locale: locale, confidence: confidence);
-      case RecognitionReady() || EndOfSpeech() || SpeechStarted():
+      case SpeechStarted():
+        _update(id, (s) => s.copyWith(speechStartAt: s.speechStartAt ?? _now()));
+      case EndOfSpeech():
+        _update(id, (s) => s.copyWith(speechEndAt: _now()));
+      case RecognitionReady():
         break;
     }
   }
@@ -706,9 +717,11 @@ class ConversationController extends Notifier<ConversationState> {
       unawaited(_speak(id, auto: true));
     } on TranslationUnavailable catch (e) {
       if (ref.mounted) _update(id, (s) => s.copyWith(status: SegmentStatus.failed, offlineNotReady: e.offlineNotReady));
+      if (ref.mounted) _measure(id);
     } catch (error) {
       debugPrint('Translation failed: $error');
       if (ref.mounted) _update(id, (s) => s.copyWith(status: SegmentStatus.failed));
+      if (ref.mounted) _measure(id);
     }
   }
 
@@ -778,7 +791,10 @@ class ConversationController extends Notifier<ConversationState> {
     final segment = _segment(id);
     final translation = segment?.translation;
     if (segment == null || translation == null) return;
-    if (auto && !_mayAutoPlay(segment)) return; // stays SpeechStatus.none; Replay plays it
+    if (auto && !_mayAutoPlay(segment)) {
+      _measure(id);
+      return; // stays SpeechStatus.none; Replay plays it
+    }
     if (!_foreground || (!auto && (_activeId != null || _starting))) return;
     if (auto) _lastSpokenSeq = segment.seq;
     final generation = _speechGen;
@@ -791,7 +807,10 @@ class ConversationController extends Notifier<ConversationState> {
           ? cached
           : await _voice.synthesize(segmentId: id, text: translation.text, language: segment.targetLanguage);
     } on VoiceMissing {
-      if (ref.mounted) _update(id, (s) => s.copyWith(speech: SpeechStatus.noVoice));
+      if (ref.mounted) {
+        _update(id, (s) => s.copyWith(speech: SpeechStatus.noVoice));
+        _measure(id);
+      }
       return;
     } catch (error) {
       debugPrint('Speech synthesis failed: $error');
@@ -803,9 +822,11 @@ class ConversationController extends Notifier<ConversationState> {
       return;
     }
     _paths[id] = path;
+    _update(id, (s) => s.copyWith(synthesizedAt: s.synthesizedAt ?? _now()));
     // The user may have started a turn, or left the app, while the voice was being prepared.
     if (!_mayStillPlay(generation)) {
       _update(id, (s) => s.copyWith(speech: SpeechStatus.none));
+      _measure(id);
       return;
     }
 
@@ -865,8 +886,18 @@ class ConversationController extends Notifier<ConversationState> {
     }
   }
 
+  /// Records the segment's stage timings once, when its pipeline is over (played, or never will be).
+  void _measure(String id, {OutputKind? output}) {
+    final segment = _segment(id);
+    if (segment == null || !_measured.add(id)) return;
+    unawaited(_latency
+        .record(LatencySample.fromSegment(segment, at: _now(), output: output))
+        .catchError((Object e) => debugPrint('Could not record latency: $e')));
+  }
+
   void _speechFailed(String id) {
     _update(id, (s) => s.copyWith(speech: SpeechStatus.failed));
+    _measure(id);
     state = state.copyWith(notice: ConversationNotice.playbackFailed, noticeLanguage: null, noticeOutput: null);
   }
 
@@ -889,7 +920,12 @@ class ConversationController extends Notifier<ConversationState> {
         if (playing == null || playing.id != playbackId) return; // a late event for an interrupted playback
         // A second report means Android moved a playback under way (earphones disconnected): the card follows.
         final moved = _segment(playbackId)?.speech == SpeechStatus.playing;
-        _update(playbackId, (s) => s.copyWith(speech: SpeechStatus.playing, output: routed));
+        _update(playbackId, (s) => s.copyWith(
+              speech: SpeechStatus.playing,
+              output: routed,
+              playbackStartedAt: s.playbackStartedAt ?? _now(),
+            ));
+        if (!moved) _measure(playbackId, output: routed.kind);
         // A move off the earphones keeps the flag, so the device-list change still shows the notice.
         if (playing.role == OutputRole.forMe && (!moved || routed.isEarphones)) _forMeOnEarphones = routed.isEarphones;
         final missedSpeaker = playing.target == OutputKind.speaker && routed.kind != OutputKind.speaker;

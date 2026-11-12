@@ -1038,4 +1038,62 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get appLanguageSystem => 'ફોનની ભાષા';
+
+  @override
+  String get settingsDiagnostics => 'ડાયગ્નોસ્ટિક્સ';
+
+  @override
+  String get settingsLatency => 'લેટન્સી રિપોર્ટ';
+
+  @override
+  String get settingsLatencySubtitle =>
+      'દરેક પગલામાં કેટલો સમય લાગે છે, કોઈ શબ્દ નોંધાતો નથી';
+
+  @override
+  String get latencyTitle => 'લેટન્સી રિપોર્ટ';
+
+  @override
+  String get latencyNote => 'કોઈ શબ્દ નોંધાતો નથી, માત્ર સમય.';
+
+  @override
+  String get latencyTarget =>
+      'લક્ષ્ય: બોલવાનું પૂરું થવાથી પહેલા અવાજ સુધી 3 s થી ઓછું (p95)';
+
+  @override
+  String get latencyEmpty =>
+      'હજુ કોઈ સમય નોંધાયો નથી. એક વાતચીત કરો, પછી પાછા આવો.';
+
+  @override
+  String get latencyExport => 'CSV નિકાસ કરો';
+
+  @override
+  String get latencyClear => 'સાફ કરો';
+
+  @override
+  String latencyPair(String source, String target) {
+    return '$source → $target';
+  }
+
+  @override
+  String latencyStats(String median, String p95) {
+    return 'મધ્યક $median s · p95 $p95 s';
+  }
+
+  @override
+  String get latencyStageTotal => 'બોલવાનું પૂરું → પહેલો અવાજ';
+
+  @override
+  String get latencyStageFirstWords => 'બોલવાનું શરૂ → પહેલા શબ્દો';
+
+  @override
+  String get latencyStageFinal => 'બોલવાનું પૂરું → અંતિમ લખાણ';
+
+  @override
+  String get latencyStageTranslation => 'અનુવાદ';
+
+  @override
+  String get latencyStageVoice => 'અવાજની તૈયારી';
+
+  @override
+  String get latencyStagePlayback => 'વાગવાની શરૂઆત';
 }

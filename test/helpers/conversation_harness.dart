@@ -15,6 +15,7 @@ import 'package:anuvaad/features/conversation/domain/segment.dart';
 import 'package:anuvaad/features/conversation/domain/speech_recognition.dart';
 import 'package:anuvaad/features/conversation/domain/translation.dart';
 import 'package:anuvaad/features/history/application/history_providers.dart';
+import 'package:anuvaad/features/diagnostics/data/latency_log.dart';
 import 'package:anuvaad/features/history/data/file_history_repository.dart';
 import 'package:anuvaad/features/language_settings/application/language_preferences_controller.dart';
 import 'package:anuvaad/services/language_registry/language_registry.dart';
@@ -39,6 +40,9 @@ class ConversationHarness {
 
   /// Saved conversations, in [cache]/history.
   late FileHistoryRepository history;
+
+  /// Latency samples, in [cache]/latency.jsonl.
+  late LatencyLog latency;
   late SharedPreferences prefs;
   late LanguageRegistry registry;
   late ProviderContainer container;
@@ -68,6 +72,7 @@ class ConversationHarness {
     synth = FakeSpeechSynth();
     cache = Directory.systemTemp.createTempSync('anuvaad_session_test');
     history = FileHistoryRepository(() async => cache);
+    latency = LatencyLog(() async => cache);
     recognizer = FakeSpeechRecognizer();
     cloud = FakeTranslator(reply: (r) => 'EN:${r.text}');
     offline = FakeTranslator(provenance: TranslationProvenance.offline, provider: 'mlkit');
@@ -93,6 +98,7 @@ class ConversationHarness {
       playbackWatchdogProvider.overrideWithValue(watchdog),
       languageRegistryProvider.overrideWithValue(registry),
       historyRepositoryProvider.overrideWithValue(history),
+      latencyLogProvider.overrideWithValue(latency),
       ...overrides,
     ]);
     _keepAlive = c.listen(conversationControllerProvider, (_, _) {});

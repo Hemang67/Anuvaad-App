@@ -33,6 +33,11 @@ class Segment {
     this.speech = SpeechStatus.none,
     this.output,
     this.detected = false,
+    this.speechStartAt,
+    this.speechEndAt,
+    this.firstPartialAt,
+    this.synthesizedAt,
+    this.playbackStartedAt,
   });
 
   final String id;
@@ -55,6 +60,13 @@ class Segment {
   final DateTime? finalAt;
   final DateTime? translatedAt;
 
+  /// More stage timestamps for the latency report (spec §14.2): never summed, each stage measured on its own.
+  final DateTime? speechStartAt;
+  final DateTime? speechEndAt;
+  final DateTime? firstPartialAt;
+  final DateTime? synthesizedAt;
+  final DateTime? playbackStartedAt;
+
   final SpeechStatus speech;
 
   /// The device Android actually played the translation on (never the requested one).
@@ -66,6 +78,11 @@ class Segment {
   Segment copyWith({
     String? sourceLanguage,
     bool? detected,
+    DateTime? speechStartAt,
+    DateTime? speechEndAt,
+    DateTime? firstPartialAt,
+    DateTime? synthesizedAt,
+    DateTime? playbackStartedAt,
     String? text,
     bool? isFinal,
     Translation? translation,
@@ -93,5 +110,10 @@ class Segment {
         speech: speech ?? this.speech,
         output: output ?? this.output,
         detected: detected ?? this.detected,
+        speechStartAt: speechStartAt ?? this.speechStartAt,
+        speechEndAt: speechEndAt ?? this.speechEndAt,
+        firstPartialAt: firstPartialAt ?? this.firstPartialAt,
+        synthesizedAt: synthesizedAt ?? this.synthesizedAt,
+        playbackStartedAt: playbackStartedAt ?? this.playbackStartedAt,
       );
 }

@@ -240,6 +240,17 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
             SettingsSection(
+              title: l10n.settingsDiagnostics,
+              children: [
+                SettingsRow(
+                  title: l10n.settingsLatency,
+                  subtitle: l10n.settingsLatencySubtitle,
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push(Routes.latency),
+                ),
+              ],
+            ),
+            SettingsSection(
               title: l10n.settingsAbout,
               children: [
                 SettingsRow(

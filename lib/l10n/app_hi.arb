@@ -298,5 +298,22 @@
   "privacyFullPage": "पूरा गोपनीयता पेज",
   "privacyContact": "संपर्क जानकारी सार्वजनिक लॉन्च से पहले जोड़ी जाएगी।",
   "settingsAppLanguage": "ऐप की भाषा",
-  "appLanguageSystem": "फ़ोन की भाषा"
+  "appLanguageSystem": "फ़ोन की भाषा",
+  "settingsDiagnostics": "डायग्नॉस्टिक्स",
+  "settingsLatency": "लेटेंसी रिपोर्ट",
+  "settingsLatencySubtitle": "हर चरण में कितना समय लगता है, कोई शब्द दर्ज नहीं",
+  "latencyTitle": "लेटेंसी रिपोर्ट",
+  "latencyNote": "कोई शब्द दर्ज नहीं होता, सिर्फ़ समय।",
+  "latencyTarget": "लक्ष्य: बोलना ख़त्म होने से पहली आवाज़ तक 3 s से कम (p95)",
+  "latencyEmpty": "अभी कोई समय दर्ज नहीं। एक बातचीत करें, फिर वापस आएँ।",
+  "latencyExport": "CSV निर्यात करें",
+  "latencyClear": "साफ़ करें",
+  "latencyPair": "{source} → {target}",
+  "latencyStats": "मध्यमान {median} s · p95 {p95} s",
+  "latencyStageTotal": "बोलना ख़त्म → पहली आवाज़",
+  "latencyStageFirstWords": "बोलना शुरू → पहले शब्द",
+  "latencyStageFinal": "बोलना ख़त्म → अंतिम टेक्स्ट",
+  "latencyStageTranslation": "अनुवाद",
+  "latencyStageVoice": "आवाज़ की तैयारी",
+  "latencyStagePlayback": "चलना शुरू"
 }

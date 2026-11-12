@@ -298,5 +298,22 @@
   "privacyFullPage": "સંપૂર્ણ ગોપનીયતા પેજ",
   "privacyContact": "સંપર્ક માહિતી જાહેર લૉન્ચ પહેલાં ઉમેરાશે.",
   "settingsAppLanguage": "ઍપની ભાષા",
-  "appLanguageSystem": "ફોનની ભાષા"
+  "appLanguageSystem": "ફોનની ભાષા",
+  "settingsDiagnostics": "ડાયગ્નોસ્ટિક્સ",
+  "settingsLatency": "લેટન્સી રિપોર્ટ",
+  "settingsLatencySubtitle": "દરેક પગલામાં કેટલો સમય લાગે છે, કોઈ શબ્દ નોંધાતો નથી",
+  "latencyTitle": "લેટન્સી રિપોર્ટ",
+  "latencyNote": "કોઈ શબ્દ નોંધાતો નથી, માત્ર સમય.",
+  "latencyTarget": "લક્ષ્ય: બોલવાનું પૂરું થવાથી પહેલા અવાજ સુધી 3 s થી ઓછું (p95)",
+  "latencyEmpty": "હજુ કોઈ સમય નોંધાયો નથી. એક વાતચીત કરો, પછી પાછા આવો.",
+  "latencyExport": "CSV નિકાસ કરો",
+  "latencyClear": "સાફ કરો",
+  "latencyPair": "{source} → {target}",
+  "latencyStats": "મધ્યક {median} s · p95 {p95} s",
+  "latencyStageTotal": "બોલવાનું પૂરું → પહેલો અવાજ",
+  "latencyStageFirstWords": "બોલવાનું શરૂ → પહેલા શબ્દો",
+  "latencyStageFinal": "બોલવાનું પૂરું → અંતિમ લખાણ",
+  "latencyStageTranslation": "અનુવાદ",
+  "latencyStageVoice": "અવાજની તૈયારી",
+  "latencyStagePlayback": "વાગવાની શરૂઆત"
 }

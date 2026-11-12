@@ -1893,6 +1893,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Phone\'s language'**
   String get appLanguageSystem;
+
+  /// No description provided for @settingsDiagnostics.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostics'**
+  String get settingsDiagnostics;
+
+  /// No description provided for @settingsLatency.
+  ///
+  /// In en, this message translates to:
+  /// **'Latency report'**
+  String get settingsLatency;
+
+  /// No description provided for @settingsLatencySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How long each step takes, no words recorded'**
+  String get settingsLatencySubtitle;
+
+  /// No description provided for @latencyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Latency report'**
+  String get latencyTitle;
+
+  /// No description provided for @latencyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'No words are recorded, only timings.'**
+  String get latencyNote;
+
+  /// No description provided for @latencyTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Target: end of speech → first audio under 3 s (p95)'**
+  String get latencyTarget;
+
+  /// No description provided for @latencyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No timings yet. Have a conversation, then come back.'**
+  String get latencyEmpty;
+
+  /// No description provided for @latencyExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export CSV'**
+  String get latencyExport;
+
+  /// No description provided for @latencyClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get latencyClear;
+
+  /// No description provided for @latencyPair.
+  ///
+  /// In en, this message translates to:
+  /// **'{source} → {target}'**
+  String latencyPair(String source, String target);
+
+  /// No description provided for @latencyStats.
+  ///
+  /// In en, this message translates to:
+  /// **'median {median} s · p95 {p95} s'**
+  String latencyStats(String median, String p95);
+
+  /// No description provided for @latencyStageTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'End of speech → first audio'**
+  String get latencyStageTotal;
+
+  /// No description provided for @latencyStageFirstWords.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech start → first words'**
+  String get latencyStageFirstWords;
+
+  /// No description provided for @latencyStageFinal.
+  ///
+  /// In en, this message translates to:
+  /// **'End of speech → final text'**
+  String get latencyStageFinal;
+
+  /// No description provided for @latencyStageTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation'**
+  String get latencyStageTranslation;
+
+  /// No description provided for @latencyStageVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice preparation'**
+  String get latencyStageVoice;
+
+  /// No description provided for @latencyStagePlayback.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback start'**
+  String get latencyStagePlayback;
 }
 
 class _AppLocalizationsDelegate

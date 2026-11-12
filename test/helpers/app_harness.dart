@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:anuvaad/app/app.dart';
 import 'package:anuvaad/core/config/app_config.dart';
 import 'package:anuvaad/core/platform/screen_awake.dart';
+import 'package:anuvaad/features/diagnostics/data/latency_log.dart';
+import 'package:anuvaad/features/diagnostics/presentation/latency_screen.dart';
 import 'package:anuvaad/features/history/application/history_providers.dart';
 import 'package:anuvaad/features/history/data/file_history_repository.dart';
 import 'package:anuvaad/features/history/domain/history_repository.dart';
@@ -35,6 +37,7 @@ Future<SharedPreferences> pumpAnuvaadApp(
   FakeScreenAwake? screenAwake,
   HistoryRepository? history,
   FakeTranscriptSharer? sharer,
+  LatencyLog? latency,
 }) async {
   final audioFake = audio ?? FakeAudioOutput();
   final synthFake = synth ?? FakeSpeechSynth();
@@ -57,6 +60,9 @@ Future<SharedPreferences> pumpAnuvaadApp(
       // Saved conversations live in a temp folder; sharing never opens Android's share sheet.
       historyRepositoryProvider.overrideWithValue(history ?? FileHistoryRepository(() async => cache)),
       transcriptSharerProvider.overrideWithValue(sharer ?? FakeTranscriptSharer()),
+      latencyLogProvider.overrideWithValue(latency ?? LatencyLog(() async => cache)),
+      // The device-info plugin never answers in widget tests.
+      deviceDescriptionProvider.overrideWith((ref) async => (model: 'Test phone', android: '15')),
       voiceServiceProvider.overrideWith((ref) => VoiceService(synth: synthFake, cacheDir: () async => cache)),
       ...overrides,
     ],
