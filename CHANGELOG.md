@@ -4,6 +4,17 @@ Release notes for Anuvaad. Each release needs an entry in exactly this format (s
 the heading `## X.Y.Z (BUILD) — YYYY-MM-DD`, optional `Mandatory: yes|no` and `Min supported build: N` lines,
 then `### What's new` and/or `### Fixed` with `- ` bullets. The app shows these notes in its update popup.
 
+## 0.4.0 (4) — 2026-11-13
+Mandatory: no
+Min supported build: 1
+### What's new
+- Hands-free conversations: Listen keeps listening and takes turns by itself, with Pause and End.
+- Automatic language detection on Android 14 and later, which asks when it isn't sure.
+- Check and edit your reply before it plays (optional).
+- Save conversations on your phone (off by default), then search, copy, share or delete them.
+- Choose a voice and speech speed, see each language's real status, and use the app in Hindi or Gujarati.
+- Meeting mode for meetings played on a speaker, and a latency report.
+
 ## 0.3.0 (3) — 2026-11-06
 Mandatory: no
 Min supported build: 1
