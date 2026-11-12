@@ -571,4 +571,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAudioDevicesSubtitle => 'Where translations play';
+
+  @override
+  String get noticePausedForSilence =>
+      'Listening paused after a minute of silence. Tap Listen to continue.';
 }

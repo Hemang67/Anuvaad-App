@@ -16,6 +16,7 @@ import '../domain/segment.dart';
 import '../domain/speech_recognition.dart';
 import '../domain/translation.dart';
 import '../domain/voice.dart';
+import 'mic_level.dart';
 import 'output_router.dart';
 import 'translation_service.dart';
 import 'voice_service.dart';
@@ -34,6 +35,7 @@ enum ConversationNotice {
   earphonesDisconnected,
   speakerUnavailable,
   playbackFailed,
+  pausedForSilence,
 }
 
 class ConversationState {
@@ -44,6 +46,12 @@ class ConversationState {
     this.noticeLanguage,
     this.noticeOutput,
     this.otherLanguageOverride,
+    this.listenMode = false,
+    this.paused = false,
+    this.ended = false,
+    this.sessionStartedAt,
+    this.sessionEndedAt,
+    this.mode = ConversationMode.inPerson,
   });
 
   /// In creation order (oldest first).
@@ -62,6 +70,19 @@ class ConversationState {
   /// The other person's language picked on this screen when Settings says Automatic.
   final String? otherLanguageOverride;
 
+  /// Continuous Listen is on: a new Listen turn starts each time the last one has been translated and played.
+  final bool listenMode;
+
+  /// Stopped by Pause, the app going to the background, silence or an error; Listen resumes.
+  final bool paused;
+
+  /// End was tapped: nothing listens or plays any more.
+  final bool ended;
+
+  final DateTime? sessionStartedAt;
+  final DateTime? sessionEndedAt;
+  final ConversationMode mode;
+
   static const _keep = Object();
 
   ConversationState copyWith({
@@ -71,6 +92,12 @@ class ConversationState {
     Object? noticeLanguage = _keep,
     Object? noticeOutput = _keep,
     Object? otherLanguageOverride = _keep,
+    bool? listenMode,
+    bool? paused,
+    bool? ended,
+    Object? sessionStartedAt = _keep,
+    Object? sessionEndedAt = _keep,
+    ConversationMode? mode,
   }) =>
       ConversationState(
         segments: segments ?? this.segments,
@@ -80,6 +107,12 @@ class ConversationState {
         noticeOutput: identical(noticeOutput, _keep) ? this.noticeOutput : noticeOutput as AudioOutput?,
         otherLanguageOverride:
             identical(otherLanguageOverride, _keep) ? this.otherLanguageOverride : otherLanguageOverride as String?,
+        listenMode: listenMode ?? this.listenMode,
+        paused: paused ?? this.paused,
+        ended: ended ?? this.ended,
+        sessionStartedAt: identical(sessionStartedAt, _keep) ? this.sessionStartedAt : sessionStartedAt as DateTime?,
+        sessionEndedAt: identical(sessionEndedAt, _keep) ? this.sessionEndedAt : sessionEndedAt as DateTime?,
+        mode: mode ?? this.mode,
       );
 }
 
@@ -122,6 +155,17 @@ class ConversationController extends Notifier<ConversationState> {
   /// Whether the last translation for you played in earphones (to notice them disconnecting).
   bool _forMeOnEarphones = false;
 
+  /// Ends a playback that never reports back, so it can't block listening for ever.
+  Timer? _watchdog;
+
+  /// Above zero while Speak or Replay hands the microphone over: the waiting Listen turn must not come back.
+  int _holdRearm = 0;
+
+  /// When speech was last heard in Listen mode; a minute of silence after it pauses the session.
+  DateTime? _silenceSince;
+
+  static const _silencePause = Duration(minutes: 1);
+
   @override
   ConversationState build() {
     final recognizer = _recognizer = ref.watch(speechRecognizerProvider);
@@ -136,11 +180,16 @@ class ConversationController extends Notifier<ConversationState> {
       onShow: _onForeground,
       onResume: _onForeground,
     );
+    // Continuous Listen: when the last turn's work (translate, voice, playback) is done, listen again.
+    listenSelf((previous, next) {
+      if (previous != null && _busy(previous) && !_busy(next)) scheduleMicrotask(_maybeRearm);
+    });
     // Files from a conversation the app never finished closing (killed, swiped away) go now.
     unawaited(voice.sweep().catchError((Object error) => debugPrint('Could not clear old voice files: $error')));
     ref.onDispose(() {
       if (_activeId != null) unawaited(recognizer.cancel());
       _activeId = null;
+      _watchdog?.cancel();
       // Leaving the screen ends playback and deletes the synthesized files.
       unawaited(audio.stop());
       unawaited(voice.clear());
@@ -159,8 +208,46 @@ class ConversationController extends Notifier<ConversationState> {
     return other == autoDetect ? null : other;
   }
 
+  /// Starts continuous listening: Listen turns follow each other until Pause, End, silence or an error.
+  /// Tapping it stops any translation that is playing, as a single Listen did.
+  Future<void> startListening() async {
+    if (state.ended) return;
+    _silenceSince = _now();
+    state = state.copyWith(listenMode: true, paused: false);
+    await startTurn(Speaker.other);
+  }
+
+  /// Stops the microphone and any playback, and leaves Listen mode until Listen is tapped again.
+  Future<void> pause() async {
+    if (state.ended) return;
+    state = state.copyWith(listenMode: false, paused: true);
+    await cancelTurn();
+    await stopSpeaking();
+  }
+
+  /// One reply turn. A Listen turn still waiting for the other person makes way; Listen mode resumes after the
+  /// reply has played.
+  Future<void> startSpeaking() async {
+    if (state.ended || state.mode == ConversationMode.meeting) return;
+    _holdRearm++;
+    try {
+      if (state.activeSpeaker == Speaker.other) await cancelTurn();
+      await startTurn(Speaker.me);
+    } finally {
+      _holdRearm--;
+    }
+  }
+
+  /// Ends the conversation: the microphone and playback stop, and nothing starts again.
+  Future<void> endSession() async {
+    if (state.ended) return;
+    state = state.copyWith(listenMode: false, paused: false, ended: true, sessionEndedAt: _now());
+    await cancelTurn();
+    await stopSpeaking();
+  }
+
   Future<void> startTurn(Speaker speaker) async {
-    if (_activeId != null || _starting) return;
+    if (_activeId != null || _starting || state.ended) return;
     final my = ref.read(languagePreferencesProvider).myLanguage;
     final other = _otherLanguage();
     if (other == null) {
@@ -175,9 +262,17 @@ class ConversationController extends Notifier<ConversationState> {
       state = state.copyWith(notice: null, noticeLanguage: null);
       // The microphone never opens over a translation that is playing (R29).
       await stopSpeaking();
-      if (!ref.mounted || !await _ensureMicrophone() || !ref.mounted) return;
+      if (!ref.mounted) return;
+      if (!await _ensureMicrophone()) {
+        if (ref.mounted) _leaveListenMode(); // never ask again and again for the microphone
+        return;
+      }
+      if (!ref.mounted) return;
       if (!await _recognizer.isAvailable()) {
-        if (ref.mounted) state = state.copyWith(notice: ConversationNotice.recognizerUnavailable);
+        if (ref.mounted) {
+          state = state.copyWith(notice: ConversationNotice.recognizerUnavailable);
+          _leaveListenMode();
+        }
         return;
       }
       if (!ref.mounted) return;
@@ -190,11 +285,16 @@ class ConversationController extends Notifier<ConversationState> {
         startedAt: _now(),
       );
       _activeId = segment.id;
-      state = state.copyWith(segments: [...state.segments, segment], activeSpeaker: speaker);
+      state = state.copyWith(
+        segments: [...state.segments, segment],
+        activeSpeaker: speaker,
+        sessionStartedAt: state.sessionStartedAt ?? segment.startedAt,
+      );
       try {
         await _recognizer.start(source);
       } catch (error) {
         debugPrint('Speech recognizer failed to start: $error');
+        _leaveListenMode();
         _drop(segment.id, ConversationNotice.generic);
       }
     } finally {
@@ -213,6 +313,7 @@ class ConversationController extends Notifier<ConversationState> {
     final id = _activeId;
     if (id == null) return;
     _activeId = null;
+    _setLevel(0);
     state = state.copyWith(
       segments: [for (final s in state.segments) if (s.id != id || s.isFinal) s],
       activeSpeaker: null,
@@ -223,6 +324,7 @@ class ConversationController extends Notifier<ConversationState> {
   void chooseOtherLanguage(String code) {
     if (code == ref.read(languagePreferencesProvider).myLanguage) return;
     state = state.copyWith(otherLanguageOverride: code, notice: null, noticeLanguage: null);
+    scheduleMicrotask(_maybeRearm); // Listen mode was waiting for this choice
   }
 
   Future<void> retryTranslation(String segmentId) async {
@@ -277,8 +379,13 @@ class ConversationController extends Notifier<ConversationState> {
 
   void _onBackground() {
     _foreground = false;
-    unawaited(cancelTurn());
-    unawaited(stopSpeaking());
+    // A running session pauses (Listen resumes it); otherwise just release the microphone and stop playback.
+    if (!state.ended && (state.listenMode || _activeId != null || _playing != null)) {
+      unawaited(pause());
+    } else {
+      unawaited(cancelTurn());
+      unawaited(stopSpeaking());
+    }
   }
 
   void _onForeground() => _foreground = true;
@@ -292,7 +399,10 @@ class ConversationController extends Notifier<ConversationState> {
       case FinalResult(:final text) when text.trim().isNotEmpty:
         _finalize(id, text.trim());
       case FinalResult():
-        _drop(id, ConversationNotice.noSpeech);
+        _silence(id);
+      case RecognitionError(code: RecognitionErrorCode.noMatch || RecognitionErrorCode.speechTimeout)
+          when (_segment(id)?.text.trim() ?? '').isEmpty:
+        _silence(id);
       case RecognitionError(:final code):
         final partial = _segment(id)?.text.trim() ?? '';
         if (partial.isNotEmpty) {
@@ -303,7 +413,9 @@ class ConversationController extends Notifier<ConversationState> {
               : null;
           _drop(id, _noticeFor(code), language: language);
         }
-      case RecognitionReady() || EndOfSpeech() || SpeechStarted() || SoundLevel() || LanguageDetected():
+      case SoundLevel(:final level):
+        _setLevel(level);
+      case RecognitionReady() || EndOfSpeech() || SpeechStarted() || LanguageDetected():
         break;
     }
   }
@@ -319,8 +431,26 @@ class ConversationController extends Notifier<ConversationState> {
         RecognitionErrorCode.audio || RecognitionErrorCode.client || RecognitionErrorCode.unknown => ConversationNotice.generic,
       };
 
+  /// Nothing was heard. Outside Listen mode that's a notice; in Listen mode the empty card goes quietly and
+  /// listening resumes, until a minute has passed without speech.
+  void _silence(String id) {
+    if (!state.listenMode) {
+      _drop(id, ConversationNotice.noSpeech);
+      return;
+    }
+    final since = _silenceSince ?? _now();
+    if (_now().difference(since) >= _silencePause) {
+      _leaveListenMode();
+      _drop(id, ConversationNotice.pausedForSilence);
+    } else {
+      _drop(id, null);
+    }
+  }
+
   void _finalize(String id, String text) {
     _activeId = null;
+    _silenceSince = _now();
+    _setLevel(0);
     state = state.copyWith(
       segments: [
         for (final s in state.segments)
@@ -331,14 +461,38 @@ class ConversationController extends Notifier<ConversationState> {
     unawaited(_translate(id));
   }
 
-  void _drop(String id, ConversationNotice notice, {String? language}) {
+  /// Removes an unfinished card. A null [notice] keeps whatever notice is showing.
+  void _drop(String id, ConversationNotice? notice, {String? language}) {
     _activeId = null;
-    state = state.copyWith(
-      segments: [for (final s in state.segments) if (s.id != id) s],
-      activeSpeaker: null,
-      notice: notice,
-      noticeLanguage: language,
-    );
+    _setLevel(0);
+    final segments = [for (final s in state.segments) if (s.id != id) s];
+    state = notice == null
+        ? state.copyWith(segments: segments, activeSpeaker: null)
+        : state.copyWith(segments: segments, activeSpeaker: null, notice: notice, noticeLanguage: language);
+  }
+
+  void _setLevel(double level) => ref.read(micLevelProvider.notifier).set(level);
+
+  /// Listen mode stops (it would only fail again); Listen resumes it.
+  void _leaveListenMode() {
+    if (state.listenMode) state = state.copyWith(listenMode: false, paused: true);
+  }
+
+  /// Work that must finish before the microphone may open again: a turn, a translation, a voice, a playback,
+  /// a reply under review.
+  static bool _busy(ConversationState s) =>
+      s.activeSpeaker != null ||
+      s.segments.any((x) =>
+          x.status == SegmentStatus.translating ||
+          x.speech == SpeechStatus.preparing ||
+          x.speech == SpeechStatus.playing ||
+          x.speech == SpeechStatus.awaitingReview);
+
+  /// Starts the next Listen turn when Listen mode is on and nothing else is going on (R29: never over playback).
+  void _maybeRearm() {
+    if (!ref.mounted || !state.listenMode || state.paused || state.ended || !_foreground) return;
+    if (_holdRearm > 0 || _activeId != null || _starting || _playing != null || _busy(state)) return;
+    unawaited(startTurn(Speaker.other));
   }
 
   Future<void> _translate(String id) async {
@@ -372,14 +526,26 @@ class ConversationController extends Notifier<ConversationState> {
   Future<void> replay(String segmentId) async {
     final segment = _segment(segmentId);
     if (segment == null || segment.translation == null || segment.speech == SpeechStatus.preparing) return;
-    await _speak(segmentId, auto: false);
+    _holdRearm++;
+    try {
+      // In Listen mode a turn is usually waiting; if nobody has started talking, it makes way for the replay.
+      final active = _activeId;
+      if (active != null) {
+        if (state.activeSpeaker != Speaker.other || (_segment(active)?.text.isNotEmpty ?? false)) return;
+        await cancelTurn();
+      }
+      await _speak(segmentId, auto: false);
+    } finally {
+      _holdRearm--;
+      scheduleMicrotask(_maybeRearm);
+    }
   }
 
   /// Stops any translation that is playing; returns once Android has stopped it.
   Future<void> stopSpeaking() async {
     _speechGen++;
     final playing = _playing;
-    _playing = null;
+    _clearPlaying();
     await _audio.stop();
     if (playing != null && ref.mounted) _update(playing.id, (s) => s.copyWith(speech: SpeechStatus.played));
   }
@@ -390,7 +556,8 @@ class ConversationController extends Notifier<ConversationState> {
   OutputRole _roleOf(Segment segment) => segment.speaker == Speaker.other ? OutputRole.forMe : OutputRole.forOther;
 
   /// Whether an automatic playback may start now: never over an open microphone or a newer segment's speech.
-  bool _mayAutoPlay(Segment segment) => _activeId == null && !_starting && segment.seq >= _lastSpokenSeq;
+  bool _mayAutoPlay(Segment segment) =>
+      _activeId == null && !_starting && !state.paused && !state.ended && segment.seq >= _lastSpokenSeq;
 
   /// Checked again just before playing: nothing was stopped meanwhile (a turn, Home), and the microphone is closed.
   bool _mayStillPlay(int generation) => generation == _speechGen && _foreground && _activeId == null && !_starting;
@@ -451,13 +618,31 @@ class ConversationController extends Notifier<ConversationState> {
     _playing = (id: id, role: role, target: target?.kind);
     try {
       await _audio.play(path: path, deviceId: target?.id, playbackId: id);
+      if (ref.mounted && _playing?.id == id) _startWatchdog(id);
     } catch (error) {
       debugPrint('Playback failed to start: $error');
       if (ref.mounted && _playing?.id == id) {
-        _playing = null;
+        _clearPlaying();
         _speechFailed(id);
       }
     }
+  }
+
+  /// If Android never reports the end of a playback, treat it as finished after a while (Listen mode waits for it).
+  void _startWatchdog(String id) {
+    _watchdog?.cancel();
+    _watchdog = Timer(ref.read(playbackWatchdogProvider), () {
+      if (!ref.mounted || _playing?.id != id) return;
+      debugPrint('Playback $id never reported completion');
+      _clearPlaying();
+      _update(id, (s) => s.copyWith(speech: SpeechStatus.played));
+    });
+  }
+
+  void _clearPlaying() {
+    _playing = null;
+    _watchdog?.cancel();
+    _watchdog = null;
   }
 
   static void _deleteQuietly(String path) {
@@ -501,11 +686,11 @@ class ConversationController extends Notifier<ConversationState> {
         }
       case PlaybackCompleted(:final playbackId) || PlaybackFocusLost(:final playbackId):
         if (_playing?.id != playbackId) return;
-        _playing = null;
+        _clearPlaying();
         _update(playbackId, (s) => s.copyWith(speech: SpeechStatus.played));
       case PlaybackFailed(:final playbackId):
         if (_playing?.id != playbackId) return;
-        _playing = null;
+        _clearPlaying();
         _speechFailed(playbackId);
     }
   }
@@ -521,6 +706,9 @@ class ConversationController extends Notifier<ConversationState> {
     state = state.copyWith(segments: [for (final s in state.segments) s.id == id ? change(s) : s]);
   }
 }
+
+/// How long a playback may go without reporting back before Listen mode stops waiting for it.
+final playbackWatchdogProvider = Provider<Duration>((ref) => const Duration(seconds: 30));
 
 final conversationControllerProvider =
     NotifierProvider.autoDispose<ConversationController, ConversationState>(ConversationController.new);

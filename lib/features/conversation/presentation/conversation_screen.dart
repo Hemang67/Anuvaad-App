@@ -194,6 +194,7 @@ class _NoticeBanner extends StatelessWidget {
       ConversationNotice.earphonesDisconnected => l10n.noticeEarphonesDisconnected,
       ConversationNotice.speakerUnavailable => l10n.noticeSpeakerUnavailable(deviceName ?? ''),
       ConversationNotice.playbackFailed => l10n.noticePlaybackFailed,
+      ConversationNotice.pausedForSilence => l10n.noticePausedForSilence,
     };
     final action = switch (notice) {
       ConversationNotice.micDenied => TextButton(onPressed: controller.allowMicrophone, child: Text(l10n.conversationAllowMic)),

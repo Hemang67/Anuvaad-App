@@ -1077,6 +1077,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Where translations play'**
   String get settingsAudioDevicesSubtitle;
+
+  /// No description provided for @noticePausedForSilence.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening paused after a minute of silence. Tap Listen to continue.'**
+  String get noticePausedForSilence;
 }
 
 class _AppLocalizationsDelegate

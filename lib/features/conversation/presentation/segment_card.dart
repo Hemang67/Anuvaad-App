@@ -72,6 +72,8 @@ class SegmentCard extends StatelessWidget {
   List<Widget> _speech(AppLocalizations l10n, AnuvaadColors tokens) {
     final muted = TextStyle(color: tokens.muted, fontSize: 13);
     switch (segment.speech) {
+      case SpeechStatus.awaitingReview:
+        return const []; // the review controls come with the live screen
       case SpeechStatus.preparing:
         return const [];
       case SpeechStatus.playing:

@@ -4,10 +4,14 @@ import 'translation.dart';
 /// Who is talking: the other person (Listen) or the user (Speak).
 enum Speaker { other, me }
 
+/// Face to face, or a meeting played on a speaker in the room (Listen only).
+enum ConversationMode { inPerson, meeting }
+
 enum SegmentStatus { listening, translating, translated, failed }
 
 /// The spoken half of a translated segment.
-enum SpeechStatus { none, preparing, playing, played, failed, noVoice }
+/// [awaitingReview]: a reply held for the user to check before it plays ("Review my reply before playing").
+enum SpeechStatus { none, preparing, playing, played, failed, noVoice, awaitingReview }
 
 /// One utterance: live text while listening, then its translation. [id] is stable across updates.
 class Segment {
