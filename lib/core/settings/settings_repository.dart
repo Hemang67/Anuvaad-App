@@ -23,6 +23,7 @@ class SettingsRepository {
   static const _saveHistory = 'save_history';
   static const _speechRate = 'speech_rate';
   static const _voicePrefix = 'voice_';
+  static const _appLanguage = 'app_language';
 
   ThemeMode get themeMode => switch (_prefs.getString(_themeMode)) {
         'light' => ThemeMode.light,
@@ -95,6 +96,10 @@ class SettingsRepository {
         for (final key in _prefs.getKeys())
           if (key.startsWith(_voicePrefix) && _prefs.get(key) is String) key.substring(_voicePrefix.length): _prefs.getString(key)!,
       };
+  /// App language: 'system' (default, follows the phone), 'en', 'hi' or 'gu'.
+  String get appLanguage => _prefs.getString(_appLanguage) ?? 'system';
+  Future<void> setAppLanguage(String code) => _prefs.setString(_appLanguage, code);
+
   Future<void> setVoice(String language, String? name) =>
       name == null ? _prefs.remove('$_voicePrefix$language') : _prefs.setString('$_voicePrefix$language', name);
 }

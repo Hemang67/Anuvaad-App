@@ -605,5 +605,7 @@
   "privacyControlsHistory": "Turn Save conversations on or off in Settings, delete one conversation in History, or delete them all in Settings.",
   "privacyControlsMic": "Pause or End stops the microphone straight away, and leaving the app pauses the conversation.",
   "privacyFullPage": "Full privacy page",
-  "privacyContact": "Contact details will be added before public launch."
+  "privacyContact": "Contact details will be added before public launch.",
+  "settingsAppLanguage": "App language",
+  "appLanguageSystem": "Phone's language"
 }

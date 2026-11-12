@@ -1035,4 +1035,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get privacyContact =>
       'Contact details will be added before public launch.';
+
+  @override
+  String get settingsAppLanguage => 'App language';
+
+  @override
+  String get appLanguageSystem => 'Phone\'s language';
 }

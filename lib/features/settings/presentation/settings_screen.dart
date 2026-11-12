@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/app_language.dart';
 import '../../../app/bootstrap.dart';
 import '../../../app/routes.dart';
 import '../../../app/theme/anuvaad_colors.dart';
@@ -124,6 +125,21 @@ class SettingsScreen extends ConsumerWidget {
                     selected: {mode},
                     showSelectedIcon: false,
                     onSelectionChanged: (selection) => ref.read(themeModeProvider.notifier).select(selection.first),
+                  ),
+                ),
+                SettingsRow(
+                  title: l10n.settingsAppLanguage,
+                  trailing: DropdownButton<String>(
+                    key: const Key('app-language'),
+                    value: ref.watch(appLanguageProvider),
+                    underline: const SizedBox.shrink(),
+                    items: [
+                      DropdownMenuItem(value: 'system', child: Text(l10n.appLanguageSystem)),
+                      for (final code in appLanguages) DropdownMenuItem(value: code, child: Text(appLanguageNames[code]!)),
+                    ],
+                    onChanged: (code) {
+                      if (code != null) ref.read(appLanguageProvider.notifier).select(code);
+                    },
                   ),
                 ),
               ],
