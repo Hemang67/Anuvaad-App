@@ -63,7 +63,7 @@ void main() {
       overrides: [updateRepositoryProvider.overrideWithValue(repo)],
     );
     await _openTab(tester, 'Settings');
-    await tester.scrollUntilVisible(find.text('Release notes'), 200, scrollable: find.byType(Scrollable).first);
+    await scrollIntoView(tester, find.text('Release notes'));
     await tester.tap(find.text('Release notes'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('release-notes-screen')), findsOneWidget);

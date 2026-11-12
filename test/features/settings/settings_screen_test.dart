@@ -18,8 +18,7 @@ Future<SharedPreferences> _openSettings(WidgetTester tester, {String version = '
 }
 
 /// Settings is longer than one screen: bring [finder] into view first.
-Future<void> _scrollTo(WidgetTester tester, Finder finder) =>
-    tester.scrollUntilVisible(finder, 200, scrollable: find.byType(Scrollable).first);
+Future<void> _scrollTo(WidgetTester tester, Finder finder) => scrollIntoView(tester, finder);
 
 void main() {
   testWidgets('theme segment reflects and changes theme mode', (tester) async {

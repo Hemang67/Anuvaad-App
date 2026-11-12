@@ -11,6 +11,7 @@ import 'package:anuvaad/core/settings/settings_providers.dart';
 import 'package:anuvaad/features/conversation/application/voice_service.dart';
 import 'package:anuvaad/features/conversation/data/android_audio.dart';
 import 'package:anuvaad/features/conversation/data/offline_models.dart';
+import 'package:flutter/widgets.dart' show Scrollable;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
@@ -64,3 +65,11 @@ Future<SharedPreferences> pumpAnuvaadApp(
   await tester.pumpAndSettle();
   return shared;
 }
+
+/// Scrolls the first scrollable until [finder] is fully on screen (long screens such as Settings), so a tap lands.
+Future<void> scrollIntoView(WidgetTester tester, Finder finder) async {
+  await tester.scrollUntilVisible(finder, 200, scrollable: find.byType(Scrollable).first);
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+}
+

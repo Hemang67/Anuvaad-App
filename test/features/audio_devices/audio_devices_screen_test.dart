@@ -16,6 +16,7 @@ void main() {
     await pumpAnuvaadApp(tester, prefs: prefs, audio: audio);
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
+    await scrollIntoView(tester, find.text('Audio devices'));
     await tester.tap(find.text('Audio devices'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('audio-devices-screen')), findsOneWidget);
@@ -77,6 +78,7 @@ Future<SharedPreferences> openAudioDevicesAndReturnPrefs(WidgetTester tester, Fa
   final prefs = await pumpAnuvaadApp(tester, prefs: _onboarded, audio: audio);
   await tester.tap(find.text('Settings'));
   await tester.pumpAndSettle();
+  await scrollIntoView(tester, find.text('Audio devices'));
   await tester.tap(find.text('Audio devices'));
   await tester.pumpAndSettle();
   return prefs;

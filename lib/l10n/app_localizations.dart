@@ -1485,6 +1485,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved to history'**
   String get summarySaved;
+
+  /// No description provided for @settingsSpeechSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech speed'**
+  String get settingsSpeechSpeed;
+
+  /// No description provided for @speechRateSlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Slow'**
+  String get speechRateSlow;
+
+  /// No description provided for @speechRateNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get speechRateNormal;
+
+  /// No description provided for @speechRateFast.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast'**
+  String get speechRateFast;
+
+  /// No description provided for @settingsVoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Voices'**
+  String get settingsVoices;
+
+  /// No description provided for @settingsVoicesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a voice for each language'**
+  String get settingsVoicesSubtitle;
+
+  /// No description provided for @voicesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Voices'**
+  String get voicesTitle;
+
+  /// No description provided for @voicesIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the voice for each language. Default lets the phone choose.'**
+  String get voicesIntro;
+
+  /// No description provided for @voicesDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default voice'**
+  String get voicesDefault;
+
+  /// No description provided for @voicesDefaultSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chosen by the phone'**
+  String get voicesDefaultSubtitle;
+
+  /// No description provided for @voicesOnPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice {number} · on this phone'**
+  String voicesOnPhone(int number);
+
+  /// No description provided for @voicesOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice {number} · needs internet'**
+  String voicesOnline(int number);
+
+  /// No description provided for @voicesTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Test'**
+  String get voicesTest;
+
+  /// No description provided for @voicesMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'No {language} voice on this phone yet. Install one from Languages.'**
+  String voicesMissing(String language);
+
+  /// No description provided for @voicesTestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t play the test sentence.'**
+  String get voicesTestFailed;
 }
 
 class _AppLocalizationsDelegate

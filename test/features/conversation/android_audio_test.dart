@@ -61,7 +61,7 @@ void main() {
     final audio = AndroidAudio();
     await audio.synthesize(text: 'नमस्ते', locale: 'hi-IN', path: '/cache/tts/s1.wav');
     expect(calls.single.method, 'synthesize');
-    expect(calls.single.arguments, {'text': 'नमस्ते', 'locale': 'hi-IN', 'path': '/cache/tts/s1.wav'});
+    expect(calls.single.arguments, {'text': 'नमस्ते', 'locale': 'hi-IN', 'path': '/cache/tts/s1.wav', 'rate': 1.0});
 
     answer = (_) => throw PlatformException(code: 'voiceMissing');
     await expectLater(
@@ -128,5 +128,28 @@ void main() {
     final routed = await AndroidAudio().playTestTone(deviceId: 2);
     expect(routed, const AudioOutput(id: 2, kind: OutputKind.speaker, name: ''));
     expect(calls.single.arguments, {'deviceId': 2});
+  });
+
+  test('synthesize sends rate and voice', () async {
+    await AndroidAudio().synthesize(text: 'x', locale: 'gu-IN', path: '/p', rate: 1.25, voice: 'gu-in-x-guf-local');
+    expect(calls.single.arguments, {'text': 'x', 'locale': 'gu-IN', 'path': '/p', 'rate': 1.25, 'voice': 'gu-in-x-guf-local'});
+  });
+
+  test('voices parses the platform list, and an error is no voices', () async {
+    answer = (_) => [
+          {'name': 'hi-in-x-hia-local', 'network': false, 'installed': true},
+          {'name': 'hi-in-x-hie-network', 'network': true, 'installed': true},
+          {'name': 'broken'},
+        ];
+    final voices = await AndroidAudio().voices('hi-IN');
+    expect(calls.single.method, 'voices');
+    expect(calls.single.arguments, {'locale': 'hi-IN'});
+    expect(voices.map((v) => v.name), ['hi-in-x-hia-local', 'hi-in-x-hie-network']);
+    expect(voices.first.network, isFalse);
+    expect(voices.last.network, isTrue);
+    expect(voices.first.installed, isTrue);
+
+    answer = (_) => throw PlatformException(code: 'synthesisFailed');
+    expect(await AndroidAudio().voices('hi-IN'), isEmpty);
   });
 }

@@ -510,5 +510,42 @@
     }
   },
   "summarySave": "Save to history",
-  "summarySaved": "Saved to history"
+  "summarySaved": "Saved to history",
+  "settingsSpeechSpeed": "Speech speed",
+  "speechRateSlow": "Slow",
+  "speechRateNormal": "Normal",
+  "speechRateFast": "Fast",
+  "settingsVoices": "Voices",
+  "settingsVoicesSubtitle": "Choose a voice for each language",
+  "voicesTitle": "Voices",
+  "voicesIntro": "Choose the voice for each language. Default lets the phone choose.",
+  "voicesDefault": "Default voice",
+  "voicesDefaultSubtitle": "Chosen by the phone",
+  "voicesOnPhone": "Voice {number} · on this phone",
+  "@voicesOnPhone": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "voicesOnline": "Voice {number} · needs internet",
+  "@voicesOnline": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "voicesTest": "Test",
+  "voicesMissing": "No {language} voice on this phone yet. Install one from Languages.",
+  "@voicesMissing": {
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "Gujarati"
+      }
+    }
+  },
+  "voicesTestFailed": "Couldn't play the test sentence."
 }

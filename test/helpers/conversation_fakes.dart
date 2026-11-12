@@ -232,6 +232,10 @@ class FakeAudioOutput implements AudioOutputPort {
 /// Text-to-speech double that writes small real files, so cleanup can be checked.
 class FakeSpeechSynth implements SpeechSynthPort {
   final Map<String, VoiceAvailability> availabilityByLocale = {};
+  final Map<String, List<VoiceOption>> voicesByLocale = {};
+  final List<String> synthesizedTexts = [];
+  double? lastRate;
+  String? lastVoice;
   final List<String> synthesizedPaths = [];
   int availabilityChecks = 0;
   int installsOpened = 0;
@@ -253,8 +257,20 @@ class FakeSpeechSynth implements SpeechSynthPort {
   }
 
   @override
-  Future<void> synthesize({required String text, required String locale, required String path}) async {
+  Future<List<VoiceOption>> voices(String locale) async => voicesByLocale[locale] ?? const [];
+
+  @override
+  Future<void> synthesize({
+    required String text,
+    required String locale,
+    required String path,
+    double rate = 1.0,
+    String? voice,
+  }) async {
     sharedLog?.add('synthesize:$locale');
+    synthesizedTexts.add(text);
+    lastRate = rate;
+    lastVoice = voice;
     final gate = gates[text];
     if (gate != null) await gate.future;
     final error = synthesisError;

@@ -33,7 +33,11 @@ class AudioPlugin(private val activity: Activity, messenger: BinaryMessenger) :
                 val text = call.argument<String>("text") ?: return badArgs(result, "text")
                 val locale = call.argument<String>("locale") ?: return badArgs(result, "locale")
                 val path = call.argument<String>("path") ?: return badArgs(result, "path")
-                tts.synthesize(text, locale, path, result)
+                tts.synthesize(text, locale, path, call.argument<Double>("rate") ?: 1.0, call.argument<String>("voice"), result)
+            }
+            "voices" -> {
+                val locale = call.argument<String>("locale") ?: return badArgs(result, "locale")
+                tts.voices(locale, result)
             }
             "openVoiceInstall" -> result.success(tts.openVoiceInstall())
             "outputs" -> result.success(outputs.list())

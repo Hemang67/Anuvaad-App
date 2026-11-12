@@ -11,6 +11,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../app_update/application/update_controller.dart';
 import '../../conversation/application/language_detection.dart';
 import '../../conversation/application/review_reply.dart';
+import '../../voices/application/voice_preferences.dart';
 import 'widgets.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -93,6 +94,27 @@ class SettingsScreen extends ConsumerWidget {
                     value: ref.watch(reviewReplyProvider),
                     onChanged: (on) => ref.read(reviewReplyProvider.notifier).set(on),
                   ),
+                ),
+                SettingsRow(title: l10n.settingsSpeechSpeed),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  child: SegmentedButton<SpeechRate>(
+                    key: const Key('speech-rate'),
+                    segments: [
+                      ButtonSegment(value: SpeechRate.slow, label: Text(l10n.speechRateSlow)),
+                      ButtonSegment(value: SpeechRate.normal, label: Text(l10n.speechRateNormal)),
+                      ButtonSegment(value: SpeechRate.fast, label: Text(l10n.speechRateFast)),
+                    ],
+                    selected: {ref.watch(voicePreferencesProvider).rate},
+                    showSelectedIcon: false,
+                    onSelectionChanged: (selection) => ref.read(voicePreferencesProvider.notifier).setRate(selection.first),
+                  ),
+                ),
+                SettingsRow(
+                  title: l10n.settingsVoices,
+                  subtitle: l10n.settingsVoicesSubtitle,
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push(Routes.voices),
                 ),
               ],
             ),

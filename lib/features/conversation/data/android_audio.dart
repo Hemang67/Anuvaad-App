@@ -27,9 +27,35 @@ class AndroidAudio implements SpeechSynthPort, AudioOutputPort {
   }
 
   @override
-  Future<void> synthesize({required String text, required String locale, required String path}) async {
+  Future<List<VoiceOption>> voices(String locale) async {
     try {
-      await _methods.invokeMethod<void>('synthesize', {'text': text, 'locale': locale, 'path': path});
+      final raw = await _methods.invokeMethod<List<Object?>>('voices', {'locale': locale});
+      return [
+        for (final v in raw ?? const <Object?>[])
+          if (v is Map && v['name'] is String && v['network'] is bool && v['installed'] is bool)
+            VoiceOption(name: v['name'] as String, network: v['network'] as bool, installed: v['installed'] as bool),
+      ];
+    } on PlatformException {
+      return const [];
+    }
+  }
+
+  @override
+  Future<void> synthesize({
+    required String text,
+    required String locale,
+    required String path,
+    double rate = 1.0,
+    String? voice,
+  }) async {
+    try {
+      await _methods.invokeMethod<void>('synthesize', {
+        'text': text,
+        'locale': locale,
+        'path': path,
+        'rate': rate,
+        'voice': ?voice,
+      });
     } on PlatformException catch (e) {
       if (e.code == 'voiceMissing') throw VoiceMissing(locale);
       throw SynthesisFailed(e.code);

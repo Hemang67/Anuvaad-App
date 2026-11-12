@@ -21,6 +21,8 @@ class SettingsRepository {
   static const _autoDetect = 'auto_detect';
   static const _reviewReply = 'review_reply';
   static const _saveHistory = 'save_history';
+  static const _speechRate = 'speech_rate';
+  static const _voicePrefix = 'voice_';
 
   ThemeMode get themeMode => switch (_prefs.getString(_themeMode)) {
         'light' => ThemeMode.light,
@@ -83,4 +85,16 @@ class SettingsRepository {
   /// Save conversations on this phone (off by default, spec R12).
   bool get saveHistory => _prefs.getBool(_saveHistory) ?? false;
   Future<void> setSaveHistory(bool on) => _prefs.setBool(_saveHistory, on);
+
+  /// Speech speed name: 'slow', 'normal' (default) or 'fast'.
+  String? get speechRate => _prefs.getString(_speechRate);
+  Future<void> setSpeechRate(String name) => _prefs.setString(_speechRate, name);
+
+  /// Chosen voice per language code, stored as `voice_<code>`; a language without one uses the engine's default.
+  Map<String, String> get voices => {
+        for (final key in _prefs.getKeys())
+          if (key.startsWith(_voicePrefix) && _prefs.get(key) is String) key.substring(_voicePrefix.length): _prefs.getString(key)!,
+      };
+  Future<void> setVoice(String language, String? name) =>
+      name == null ? _prefs.remove('$_voicePrefix$language') : _prefs.setString('$_voicePrefix$language', name);
 }

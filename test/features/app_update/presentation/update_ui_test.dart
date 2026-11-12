@@ -229,8 +229,7 @@ void main() {
     Future<void> openSettings(WidgetTester tester) async {
       await tester.tap(find.widgetWithText(NavigationDestination, 'Settings'));
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('Release notes'), 200, scrollable: find.byType(Scrollable).first);
-      await tester.pumpAndSettle();
+      await scrollIntoView(tester, find.text('Release notes'));
     }
 
     testWidgets('update popup appears on launch when a newer build exists', (tester) async {

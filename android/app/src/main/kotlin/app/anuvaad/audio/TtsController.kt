@@ -29,14 +29,32 @@ class TtsController(private val activity: Activity) {
     fun availability(tag: String, result: MethodChannel.Result) =
         withEngine(result) { engine -> result.success(availabilityOf(engine, Locale.forLanguageTag(tag))) }
 
-    fun synthesize(text: String, tag: String, path: String, result: MethodChannel.Result) = withEngine(result) { engine ->
+    /** The engine's voices for a language (and country, when given), on-phone voices first. */
+    fun voices(tag: String, result: MethodChannel.Result) = withEngine(result) { engine ->
+        val locale = Locale.forLanguageTag(tag)
+        val list = engine.voices.orEmpty()
+            .filter { it.locale.language == locale.language && (locale.country.isEmpty() || it.locale.country.equals(locale.country, ignoreCase = true)) }
+            .sortedWith(compareBy({ it.isNetworkConnectionRequired }, { it.name }))
+            .map {
+                mapOf(
+                    "name" to it.name,
+                    "network" to it.isNetworkConnectionRequired,
+                    "installed" to !it.features.contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED),
+                )
+            }
+        result.success(list)
+    }
+
+    fun synthesize(text: String, tag: String, path: String, rate: Double, voice: String?, result: MethodChannel.Result) = withEngine(result) { engine ->
         val locale = Locale.forLanguageTag(tag)
         val set = engine.setLanguage(locale)
         if (set == TextToSpeech.LANG_MISSING_DATA || set == TextToSpeech.LANG_NOT_SUPPORTED) {
             result.error("voiceMissing", "No voice for $tag", null)
             return@withEngine
         }
-        engine.setSpeechRate(1.0f)
+        // The chosen voice, if the engine still has it; otherwise the language's default from setLanguage.
+        voice?.let { name -> engine.voices.orEmpty().firstOrNull { it.name == name }?.let { engine.voice = it } }
+        engine.setSpeechRate(rate.toFloat())
         val file = File(path)
         file.parentFile?.mkdirs()
         val utteranceId = UUID.randomUUID().toString()

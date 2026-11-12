@@ -4,15 +4,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../data/android_audio.dart';
+import '../../voices/application/voice_preferences.dart';
 import '../domain/voice.dart';
 
 /// Turns a translated segment into a WAV file in the cache, ready to play and replay.
 /// Files live in `<cache>/tts/` and are deleted by [clear] when the conversation closes, and by [sweep] when the
 /// next one opens, in case the app was closed before it could clean up.
 class VoiceService {
-  VoiceService({required this._synth, required this._cacheDir});
+  VoiceService({required this._synth, required this._cacheDir, this._voiceSettings});
 
   final SpeechSynthPort _synth;
+
+  /// Speed and voice for a language, read at each synthesis so a change applies from the next translation.
+  final ({double rate, String? voice}) Function(String language)? _voiceSettings;
   final Future<Directory> Function() _cacheDir;
   final _available = <String>{};
   Future<void>? _swept;
@@ -42,7 +46,8 @@ class VoiceService {
     await sweep();
     if (await availability(language) != VoiceAvailability.available) throw VoiceMissing(language);
     final path = '${(await _folder()).path}${Platform.pathSeparator}$segmentId.wav';
-    await _synth.synthesize(text: text, locale: language, path: path);
+    final settings = _voiceSettings?.call(language);
+    await _synth.synthesize(text: text, locale: language, path: path, rate: settings?.rate ?? 1.0, voice: settings?.voice);
     return path;
   }
 
@@ -62,6 +67,13 @@ class VoiceService {
   Future<Directory> _folder() async => Directory('${(await _cacheDir()).path}${Platform.pathSeparator}tts');
 }
 
-final voiceServiceProvider = Provider.autoDispose<VoiceService>(
-  (ref) => VoiceService(synth: ref.watch(speechSynthProvider), cacheDir: getTemporaryDirectory),
-);
+final voiceServiceProvider = Provider.autoDispose<VoiceService>((ref) {
+  // Followed with listen, not watch: changing the speed must not rebuild a conversation that is running.
+  var preferences = ref.read(voicePreferencesProvider);
+  ref.listen(voicePreferencesProvider, (_, next) => preferences = next);
+  return VoiceService(
+    synth: ref.watch(speechSynthProvider),
+    cacheDir: getTemporaryDirectory,
+    voiceSettings: (language) => (rate: preferences.rate.value, voice: preferences.voices[language]),
+  );
+});

@@ -811,4 +811,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get summarySaved => 'Saved to history';
+
+  @override
+  String get settingsSpeechSpeed => 'Speech speed';
+
+  @override
+  String get speechRateSlow => 'Slow';
+
+  @override
+  String get speechRateNormal => 'Normal';
+
+  @override
+  String get speechRateFast => 'Fast';
+
+  @override
+  String get settingsVoices => 'Voices';
+
+  @override
+  String get settingsVoicesSubtitle => 'Choose a voice for each language';
+
+  @override
+  String get voicesTitle => 'Voices';
+
+  @override
+  String get voicesIntro =>
+      'Choose the voice for each language. Default lets the phone choose.';
+
+  @override
+  String get voicesDefault => 'Default voice';
+
+  @override
+  String get voicesDefaultSubtitle => 'Chosen by the phone';
+
+  @override
+  String voicesOnPhone(int number) {
+    return 'Voice $number · on this phone';
+  }
+
+  @override
+  String voicesOnline(int number) {
+    return 'Voice $number · needs internet';
+  }
+
+  @override
+  String get voicesTest => 'Test';
+
+  @override
+  String voicesMissing(String language) {
+    return 'No $language voice on this phone yet. Install one from Languages.';
+  }
+
+  @override
+  String get voicesTestFailed => 'Couldn\'t play the test sentence.';
 }

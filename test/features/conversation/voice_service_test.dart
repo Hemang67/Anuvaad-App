@@ -86,4 +86,24 @@ void main() {
     await service.synthesize(segmentId: 's2', text: 'y', language: 'en-IN');
     expect(File(first).existsSync(), isTrue, reason: 'the sweep runs once per conversation');
   });
+
+  test('VoiceService uses the saved speed and voice', () async {
+    final tuned = VoiceService(
+      synth: synth,
+      cacheDir: () async => cache,
+      voiceSettings: (language) => (rate: language == 'hi-IN' ? 0.8 : 1.25, voice: language == 'hi-IN' ? 'hi-voice' : null),
+    );
+    await tuned.synthesize(segmentId: 's1', text: 'नमस्ते', language: 'hi-IN');
+    expect(synth.lastRate, 0.8);
+    expect(synth.lastVoice, 'hi-voice');
+    await tuned.synthesize(segmentId: 's2', text: 'Hello', language: 'en-IN');
+    expect(synth.lastRate, 1.25);
+    expect(synth.lastVoice, isNull);
+  });
+
+  test('without settings, voices use the normal speed and the default voice', () async {
+    await service.synthesize(segmentId: 's1', text: 'x', language: 'en-IN');
+    expect(synth.lastRate, 1.0);
+    expect(synth.lastVoice, isNull);
+  });
 }

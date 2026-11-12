@@ -13,6 +13,7 @@ import '../features/onboarding/application/onboarding_controller.dart';
 import '../features/onboarding/presentation/onboarding_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/splash/presentation/splash_screen.dart';
+import '../features/voices/presentation/voices_screen.dart';
 import 'app_shell.dart';
 import 'bootstrap.dart';
 import 'routes.dart';
@@ -72,6 +73,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.audioDevices,
         pageBuilder: (context, state) => _slideUp(state, const AudioDevicesScreen()),
       ),
+      GoRoute(path: Routes.voices, pageBuilder: (context, state) => _slideUp(state, const VoicesScreen())),
       GoRoute(
         path: Routes.history,
         pageBuilder: (context, state) => _slideUp(state, const HistoryScreen()),
