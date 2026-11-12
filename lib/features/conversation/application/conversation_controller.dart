@@ -19,6 +19,7 @@ import '../domain/translation.dart';
 import '../domain/voice.dart';
 import 'language_detection.dart';
 import 'mic_level.dart';
+import 'review_reply.dart';
 import 'output_router.dart';
 import 'translation_service.dart';
 import 'voice_service.dart';
@@ -603,6 +604,11 @@ class ConversationController extends Notifier<ConversationState> {
             offlineNotReady: false,
             translatedAt: _now(),
           ));
+      // With "Review my reply before playing" on, my reply waits for Play (or Edit, Discard).
+      if (segment.speaker == Speaker.me && ref.read(reviewReplyProvider)) {
+        _update(id, (s) => s.copyWith(speech: SpeechStatus.awaitingReview));
+        return;
+      }
       unawaited(_speak(id, auto: true));
     } on TranslationUnavailable catch (e) {
       if (ref.mounted) _update(id, (s) => s.copyWith(status: SegmentStatus.failed, offlineNotReady: e.offlineNotReady));
@@ -610,6 +616,28 @@ class ConversationController extends Notifier<ConversationState> {
       debugPrint('Translation failed: $error');
       if (ref.mounted) _update(id, (s) => s.copyWith(status: SegmentStatus.failed));
     }
+  }
+
+  /// Review: corrects what was heard and translates it again; the reply keeps waiting for Play.
+  Future<void> editReply(String id, String text) async {
+    final segment = _segment(id);
+    final trimmed = text.trim();
+    if (segment == null || segment.speech != SpeechStatus.awaitingReview || trimmed.isEmpty) return;
+    _paths.remove(id); // any old voice is for the old words
+    _update(id, (s) => s.copyWith(text: trimmed, status: SegmentStatus.translating));
+    await _translate(id);
+  }
+
+  /// Review: plays the reply to the other person.
+  Future<void> playReply(String id) async {
+    if (_segment(id)?.speech != SpeechStatus.awaitingReview) return;
+    await _speak(id, auto: false);
+  }
+
+  /// Review: throws the reply away; Listen mode carries on.
+  void discardReply(String id) {
+    if (_segment(id)?.speech != SpeechStatus.awaitingReview) return;
+    state = state.copyWith(segments: [for (final s in state.segments) if (s.id != id) s]);
   }
 
   /// Plays a segment's translation again (the card's Replay button).

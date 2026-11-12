@@ -19,6 +19,7 @@ class SettingsRepository {
   static const _lastUpdateCheck = 'last_update_check';
   static const _outputPrefix = 'output_for_';
   static const _autoDetect = 'auto_detect';
+  static const _reviewReply = 'review_reply';
 
   ThemeMode get themeMode => switch (_prefs.getString(_themeMode)) {
         'light' => ThemeMode.light,
@@ -73,4 +74,8 @@ class SettingsRepository {
   /// Automatic language detection (on by default).
   bool get autoDetect => _prefs.getBool(_autoDetect) ?? true;
   Future<void> setAutoDetect(bool on) => _prefs.setBool(_autoDetect, on);
+
+  /// Review my reply before playing (off by default).
+  bool get reviewReply => _prefs.getBool(_reviewReply) ?? false;
+  Future<void> setReviewReply(bool on) => _prefs.setBool(_reviewReply, on);
 }
