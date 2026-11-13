@@ -4,6 +4,15 @@ Release notes for Anuvaad. Each release needs an entry in exactly this format (s
 the heading `## X.Y.Z (BUILD) — YYYY-MM-DD`, optional `Mandatory: yes|no` and `Min supported build: N` lines,
 then `### What's new` and/or `### Fixed` with `- ` bullets. The app shows these notes in its update popup.
 
+## 0.5.0 (5) — 2026-11-13
+Mandatory: no
+Min supported build: 1
+### What's new
+- Conversations with the screen off: lock the phone or switch apps and the conversation keeps going, with a notification while it runs.
+- Reply from the lock screen with the notification's Speak button, or press play/pause on your earphones.
+- Reply without tapping (Android 14 and later, off by default): when Anuvaad hears your language, it translates it for them.
+- In a pocket the screen turns off by itself, as it does during a phone call.
+
 ## 0.4.0 (4) — 2026-11-13
 Mandatory: no
 Min supported build: 1
