@@ -70,14 +70,20 @@ class UpdateDownloader {
         }
         await target.delete();
       }
-      for (var attempt = 0;; attempt++) {
+      // Retries count only tries in a row that got nothing: a slow connection that keeps dropping but keeps
+      // making progress carries on to the end.
+      var failures = 0;
+      while (true) {
+        final before = await part.exists() ? await part.length() : 0;
         try {
           await _fetch(asset, part, onProgress: onProgress, cancelToken: cancelToken);
           break;
         } on Object catch (error) {
-          if (!_retryable(error) || attempt >= retryDelays.length) rethrow;
+          final after = await part.exists() ? await part.length() : 0;
+          failures = after > before ? 0 : failures + 1;
+          if (!_retryable(error) || failures > retryDelays.length) rethrow;
           debugPrint('Update download interrupted ($error); retrying');
-          await Future<void>.delayed(retryDelays[attempt]);
+          await Future<void>.delayed(retryDelays[failures == 0 ? 0 : failures - 1]);
         }
       }
       if (!await _matches(part, asset)) {
@@ -119,6 +125,8 @@ class UpdateDownloader {
       cancelToken: cancelToken,
       options: Options(
         responseType: ResponseType.stream,
+        // Slow phone networks (two hosts: GitHub, then its file server) need longer than the quick update check.
+        connectTimeout: const Duration(seconds: 20),
         receiveTimeout: const Duration(seconds: 30),
         headers: {if (start > 0) 'range': 'bytes=$start-'},
         validateStatus: (status) => status == 200 || status == 206 || status == 416,

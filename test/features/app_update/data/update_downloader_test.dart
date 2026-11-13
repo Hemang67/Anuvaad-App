@@ -149,7 +149,7 @@ void main() {
       failing.download(_asset(), onProgress: (_, _) {}),
       throwsA(isA<UpdateDownloadException>().having((e) => e.cancelled, 'cancelled', isFalse)),
     );
-    expect(calls, 6, reason: 'one try and five retries');
+    expect(calls, 7, reason: 'the try that got 100 bytes, then one try and five retries that got nothing');
     expect(File('${cache.path}/updates/anuvaad-0.1.1-arm64-v8a.apk.part').lengthSync(), 100);
 
     final ranges = <Object?>[];
@@ -160,6 +160,29 @@ void main() {
     final file = await again.download(_asset(), onProgress: (_, _) {});
     expect(file.readAsBytesSync(), _bytes);
     expect(ranges, ['bytes=100-']);
+  });
+
+  test('keeps going on a connection that keeps dropping, as long as each try gets further', () async {
+    var calls = 0;
+    final file = await downloader((options) {
+      calls++;
+      final range = options.headers['range'] as String?;
+      final from = range == null ? 0 : int.parse(RegExp(r'bytes=(\d+)-').firstMatch(range)!.group(1)!);
+      final count = (_bytes.length - from).clamp(0, 200);
+      if (from + count == _bytes.length) return rest(options);
+      return dropsAfter(count, from: from, status: from == 0 ? 200 : 206);
+    }).download(_asset(), onProgress: (_, _) {});
+    expect(file.readAsBytesSync(), _bytes);
+    expect(calls, greaterThan(6), reason: 'more drops than retries, but every try made progress');
+  });
+
+  test('a slow phone network gets 20 s to connect for the download', () async {
+    Duration? connect;
+    await downloader((options) {
+      connect = options.connectTimeout;
+      return _ok(options);
+    }).download(_asset(), onProgress: (_, _) {});
+    expect(connect, const Duration(seconds: 20));
   });
 
   test('a missing file (404) is not retried', () async {
