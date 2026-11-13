@@ -41,10 +41,10 @@ class AppLocalizationsGu extends AppLocalizations {
   String get navSettings => 'સેટિંગ્સ';
 
   @override
-  String get listOr => ' અથવા';
+  String get listOr => ' અથવા ';
 
   @override
-  String get listAnd => ' અને';
+  String get listAnd => ' અને ';
 
   @override
   String onboardingWelcomeBody(String languages) {
@@ -336,7 +336,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get settingsCheckUpdates => 'અપડેટ તપાસો';
 
   @override
-  String get settingsUpToDate => 'તમારી પાસે નવું સંસ્કરણ છે';
+  String get settingsUpToDate => 'તમારી પાસે સૌથી નવું સંસ્કરણ છે';
 
   @override
   String get settingsReleaseNotes => 'રિલીઝ નોંધો';
@@ -1076,7 +1076,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String latencyStats(String median, String p95) {
-    return 'મધ્યક $median s · p95 $p95 s';
+    return 'મધ્યસ્થ $median s · p95 $p95 s';
   }
 
   @override

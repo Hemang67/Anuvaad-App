@@ -41,10 +41,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get navSettings => 'सेटिंग्स';
 
   @override
-  String get listOr => ' या';
+  String get listOr => ' या ';
 
   @override
-  String get listAnd => ' और';
+  String get listAnd => ' और ';
 
   @override
   String onboardingWelcomeBody(String languages) {
@@ -81,7 +81,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get onboardingPrivacyStorage =>
-      'असली ऑडियो कभी सहेजा नहीं जाता। इतिहास तब तक बंद रहता है जब तक आप उसे चालू न करें।';
+      'मूल ऑडियो कभी सहेजा नहीं जाता। इतिहास तब तक बंद रहता है जब तक आप उसे चालू न करें।';
 
   @override
   String get onboardingPrivacyQuality =>
@@ -330,13 +330,13 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get whatsNewGotIt => 'समझ गया';
+  String get whatsNewGotIt => 'ठीक है';
 
   @override
   String get settingsCheckUpdates => 'अपडेट जाँचें';
 
   @override
-  String get settingsUpToDate => 'आपके पास नया संस्करण है';
+  String get settingsUpToDate => 'आपके पास सबसे नया संस्करण है';
 
   @override
   String get settingsReleaseNotes => 'रिलीज़ नोट्स';
@@ -933,7 +933,7 @@ class AppLocalizationsHi extends AppLocalizations {
       'डिफ़ॉल्ट रूप से बंद · इसी फ़ोन पर रहती है';
 
   @override
-  String get settingsRawAudio => 'असली ऑडियो';
+  String get settingsRawAudio => 'मूल ऑडियो';
 
   @override
   String get settingsRawAudioNever => 'कभी सहेजा नहीं जाता';
@@ -1006,7 +1006,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get privacyStoredAudio =>
-      'असली माइक्रोफ़ोन ऑडियो कभी सहेजा नहीं जाता।';
+      'माइक्रोफ़ोन का मूल ऑडियो कभी सहेजा नहीं जाता।';
 
   @override
   String get privacyStoredVoiceFiles =>
@@ -1081,7 +1081,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String latencyStats(String median, String p95) {
-    return 'मध्यमान $median s · p95 $p95 s';
+    return 'माध्यिका $median s · p95 $p95 s';
   }
 
   @override
