@@ -43,10 +43,12 @@ void main() {
   late Directory cache;
   late Dio dio;
   late _ByteServer server;
+  var retries = List.filled(5, Duration.zero);
 
   setUp(() async {
     cache = await Directory.systemTemp.createTemp('anuvaad_dl_');
     dio = Dio();
+    retries = List.filled(5, Duration.zero);
   });
   tearDown(() async {
     if (await cache.exists()) await cache.delete(recursive: true);
@@ -55,7 +57,7 @@ void main() {
   UpdateDownloader downloader(ResponseBody Function(RequestOptions) respond, {Directory? dir}) {
     server = _ByteServer(respond);
     dio.httpClientAdapter = server;
-    return UpdateDownloader(dio: dio, cacheDirectory: () async => dir ?? cache);
+    return UpdateDownloader(dio: dio, cacheDirectory: () async => dir ?? cache, retryDelays: retries);
   }
 
   List<String> leftovers() {
@@ -92,24 +94,92 @@ void main() {
     expect(leftovers(), isEmpty);
   });
 
-  test('network error mid-way throws UpdateDownloadException and deletes the .part file', () async {
-    ResponseBody broken(RequestOptions _) {
-      final controller = StreamController<Uint8List>();
-      controller.add(_bytes.sublist(0, 100));
-      scheduleMicrotask(() {
-        controller.addError(const SocketException('connection reset'));
-        controller.close();
-      });
-      return ResponseBody(controller.stream, 200, headers: {
-        Headers.contentLengthHeader: ['${_bytes.length}'],
-      });
-    }
+  /// A response that sends the first [count] bytes of [from] and then drops the connection.
+  ResponseBody dropsAfter(int count, {int from = 0, int status = 200}) {
+    final controller = StreamController<Uint8List>();
+    controller.add(_bytes.sublist(from, from + count));
+    scheduleMicrotask(() {
+      controller.addError(const SocketException('connection reset'));
+      controller.close();
+    });
+    return ResponseBody(controller.stream, status, headers: {
+      Headers.contentLengthHeader: ['${_bytes.length - from}'],
+    });
+  }
 
+  /// The rest of the file from the requested Range, as a server that supports resuming answers.
+  ResponseBody rest(RequestOptions options) {
+    final from = int.parse(RegExp(r'bytes=(\d+)-').firstMatch(options.headers['range'] as String)!.group(1)!);
+    return ResponseBody.fromBytes(_bytes.sublist(from), 206, headers: {
+      Headers.contentLengthHeader: ['${_bytes.length - from}'],
+    });
+  }
+
+  test('a dropped connection resumes where it stopped, asking only for the missing bytes', () async {
+    final ranges = <Object?>[];
+    final progress = <int>[];
+    final dl = downloader((options) {
+      ranges.add(options.headers['range']);
+      return ranges.length == 1 ? dropsAfter(100) : rest(options);
+    });
+    final file = await dl.download(_asset(), onProgress: (received, _) => progress.add(received));
+    expect(file.readAsBytesSync(), _bytes);
+    expect(ranges, [null, 'bytes=100-']);
+    expect(progress.last, _bytes.length);
+    expect(progress, orderedEquals([...progress]..sort()), reason: 'progress never goes backwards on a resume');
+    expect(leftovers(), ['anuvaad-0.1.1-arm64-v8a.apk']);
+  });
+
+  test('a server that ignores the Range starts the file over instead of appending', () async {
+    var calls = 0;
+    final file = await downloader((options) => ++calls == 1 ? dropsAfter(100) : _ok(options)).download(
+      _asset(),
+      onProgress: (_, _) {},
+    );
+    expect(file.readAsBytesSync(), _bytes);
+  });
+
+  test('after the automatic retries it gives up but keeps what it has; Try again resumes', () async {
+    var calls = 0;
+    final failing = downloader((options) {
+      if (++calls == 1) return dropsAfter(100);
+      throw DioException.connectionError(requestOptions: options, reason: 'offline');
+    });
     await expectLater(
-      downloader(broken).download(_asset(), onProgress: (_, _) {}),
+      failing.download(_asset(), onProgress: (_, _) {}),
       throwsA(isA<UpdateDownloadException>().having((e) => e.cancelled, 'cancelled', isFalse)),
     );
-    expect(leftovers(), isEmpty);
+    expect(calls, 6, reason: 'one try and five retries');
+    expect(File('${cache.path}/updates/anuvaad-0.1.1-arm64-v8a.apk.part').lengthSync(), 100);
+
+    final ranges = <Object?>[];
+    final again = downloader((options) {
+      ranges.add(options.headers['range']);
+      return rest(options);
+    });
+    final file = await again.download(_asset(), onProgress: (_, _) {});
+    expect(file.readAsBytesSync(), _bytes);
+    expect(ranges, ['bytes=100-']);
+  });
+
+  test('a missing file (404) is not retried', () async {
+    await expectLater(
+      downloader((_) => ResponseBody.fromString('Not Found', 404)).download(_asset(), onProgress: (_, _) {}),
+      throwsA(isA<UpdateDownloadException>()),
+    );
+    expect(server.requests, 1);
+  });
+
+  test('a leftover .part longer than the APK is thrown away and the download starts over', () async {
+    Directory('${cache.path}/updates').createSync();
+    File('${cache.path}/updates/anuvaad-0.1.1-arm64-v8a.apk.part').writeAsBytesSync([..._bytes, ..._bytes]);
+    final ranges = <Object?>[];
+    final file = await downloader((options) {
+      ranges.add(options.headers['range']);
+      return _ok(options);
+    }).download(_asset(), onProgress: (_, _) {});
+    expect(file.readAsBytesSync(), _bytes);
+    expect(ranges, [null]);
   });
 
   test('disk write failure surfaces as UpdateDownloadException and cleans up', () async {

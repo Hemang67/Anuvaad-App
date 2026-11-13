@@ -183,8 +183,9 @@ class UpdateController extends Notifier<UpdateState> {
     } on UpdateIntegrityException {
       state = UpdateFailed(decision, UpdateFailure.integrityFailed);
       return;
-    } on Object {
+    } on Object catch (error) {
       // UpdateDownloadException or anything unexpected: never leave the dialog stuck.
+      debugPrint('Update download failed: $error');
       state = UpdateFailed(decision, UpdateFailure.downloadFailed);
       return;
     }
