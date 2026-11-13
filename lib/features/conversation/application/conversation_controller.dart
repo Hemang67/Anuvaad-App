@@ -681,7 +681,8 @@ class ConversationController extends Notifier<ConversationState> {
       final started = await _service.start(
         notification,
         channelName: _strings().notifChannel,
-        earphoneButton: ref.read(earphoneButtonProvider),
+        // Meetings have no replies: the earphone button stays with music.
+        earphoneButton: ref.read(earphoneButtonProvider) && state.mode != ConversationMode.meeting,
       );
       if (!started) return;
       if (!ref.mounted || state.ended) {

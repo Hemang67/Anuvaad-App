@@ -1,4 +1,5 @@
 import 'package:anuvaad/core/permissions/microphone_permission.dart';
+import 'package:anuvaad/features/conversation/application/conversation_controller.dart';
 import 'package:anuvaad/features/conversation/data/android_conversation_service.dart';
 import 'package:anuvaad/features/conversation/domain/conversation_service.dart';
 import 'package:anuvaad/features/conversation/domain/segment.dart';
@@ -164,10 +165,26 @@ void main() {
       expect(service.buttons, [SessionCommand.playReply, SessionCommand.discardReply, SessionCommand.end]);
     });
 
-    test('a meeting has no Speak button', () async {
+    test('keeps the processor awake only while something is happening, not while it waits for you', () async {
+      await setUpWith({'review_reply': true});
+      await h.controller.startSpeaking();
+      expect(service.notification!.active, isTrue, reason: 'your turn');
+      await h.say('Hello');
+      expect(service.notification!.title, 'Your reply is ready');
+      expect(service.notification!.active, isFalse, reason: 'waiting for Play or Discard');
+
+      h.other = 'auto';
+      await setUpWith();
+      await h.controller.startListening();
+      expect(h.state.notice, ConversationNotice.chooseOtherLanguage);
+      expect(service.notification!.active, isFalse, reason: 'waiting for their language');
+    });
+
+    test('a meeting has no Speak button, and leaves the earphone button to music', () async {
       await h.controller.startMeeting('hi-IN');
       expect(service.notification!.text, 'Meeting · Hindi');
       expect(service.buttons, [SessionCommand.pause, SessionCommand.end]);
+      expect(service.earphoneButton, isFalse);
     });
 
     test('is not sent again when nothing it shows changed', () async {

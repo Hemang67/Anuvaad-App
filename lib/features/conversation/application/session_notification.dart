@@ -48,6 +48,8 @@ SessionNotification sessionNotificationFor(
       ],
       SessionAction(SessionCommand.end, l10n.notifEnd),
     ],
-    active: !s.paused && !s.ended,
+    // Only while something is happening; waiting for the user (their language, a reply to review) needs no processor.
+    active: const {SessionStatus.listening, SessionStatus.recording, SessionStatus.translating, SessionStatus.speaking}
+        .contains(status),
   );
 }

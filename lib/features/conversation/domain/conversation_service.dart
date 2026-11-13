@@ -44,7 +44,7 @@ class SessionNotification {
 
   final List<SessionAction> actions;
 
-  /// Listening or working (not paused): Android keeps the processor awake for it.
+  /// Listening, translating or speaking (not paused, not waiting for the user): Android keeps the processor awake.
   final bool active;
 
   Map<String, Object?> toMap() => {
