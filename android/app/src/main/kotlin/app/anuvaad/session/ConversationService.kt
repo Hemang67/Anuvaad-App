@@ -7,6 +7,9 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.media.AudioAttributes
+import android.media.AudioFormat
+import android.media.AudioTrack
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.os.Build
@@ -124,7 +127,10 @@ class ConversationService : Service() {
         foreground = true
         updateCpuLock(start.spec.active)
         holdPocketLock()
-        if (start.earphoneButton) listenToEarphoneButton()
+        if (start.earphoneButton) {
+            listenToEarphoneButton()
+            claimMediaButton()
+        }
         return true
     }
 
@@ -231,6 +237,43 @@ class ConversationService : Service() {
             )
             isActive = true
         }
+    }
+
+    /**
+     * Android sends media buttons to the app that played audio last (it ignores a session that never played), so a
+     * moment of silence makes that this app from the start of the conversation. No audio focus: music isn't paused.
+     */
+    private fun claimMediaButton() {
+        Thread {
+            try {
+                val rate = 16000
+                val samples = rate / 5
+                val track = AudioTrack.Builder()
+                    .setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                            .build(),
+                    )
+                    .setAudioFormat(
+                        AudioFormat.Builder()
+                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                            .setSampleRate(rate)
+                            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                            .build(),
+                    )
+                    .setTransferMode(AudioTrack.MODE_STATIC)
+                    .setBufferSizeInBytes(samples * 2)
+                    .build()
+                track.write(ShortArray(samples), 0, samples)
+                track.play()
+                Thread.sleep(400)
+                track.stop()
+                track.release()
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not claim the earphone button", e)
+            }
+        }.start()
     }
 
     private fun keyEventOf(intent: Intent): KeyEvent? =
