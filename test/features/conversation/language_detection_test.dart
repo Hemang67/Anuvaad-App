@@ -77,4 +77,12 @@ void main() {
           reason: 'a borrowed word or two is not a switch');
     });
   });
+
+  test('without counting evidence, the language the recognizer listened in wins over a stable language changed mid-turn (M3)',
+      () {
+    expect(
+      _decide(recognizedIn: 'hi-IN', stable: 'gu-IN'),
+      isA<UseLanguage>().having((o) => o.code, 'code', 'hi-IN').having((o) => o.detected, 'detected', false),
+    );
+  });
 }

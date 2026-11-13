@@ -83,4 +83,33 @@ void main() {
     expect(find.text('Meeting'), findsOneWidget);
     expect(recognizer.started, ['hi-IN']);
   });
+
+  testWidgets('Start during the microphone test stops the test, so it cannot cancel the meeting (I2)', (tester) async {
+    await openSetup(tester);
+    await scrollIntoView(tester, find.byKey(const Key('test-mic')));
+    await tester.tap(find.byKey(const Key('test-mic')));
+    await tester.pump();
+    await scrollIntoView(tester, find.byKey(const Key('meeting-consent')));
+    await tester.tap(find.byKey(const Key('meeting-consent')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('meeting-start')));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(recognizer.started, ['hi-IN', 'hi-IN']);
+    final cancelsBefore = recognizer.cancels;
+    await tester.pump(const Duration(seconds: 7));
+    expect(recognizer.cancels, cancelsBefore, reason: "the test's timer must not cancel the meeting's recognizer");
+  });
+
+  testWidgets('leaving the setup during the microphone test closes the microphone (I2)', (tester) async {
+    await openSetup(tester);
+    await scrollIntoView(tester, find.byKey(const Key('test-mic')));
+    await tester.tap(find.byKey(const Key('test-mic')));
+    await tester.pump();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(recognizer.cancels, 1);
+    await tester.pump(const Duration(seconds: 7));
+    expect(recognizer.cancels, 1);
+  });
 }

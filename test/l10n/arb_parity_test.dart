@@ -42,4 +42,26 @@ void main() {
       }
     }
   });
+
+  test('list separators keep their spaces (M4)', () {
+    for (final locale in ['en', 'hi', 'gu']) {
+      final arb = _arb(locale);
+      for (final key in ['listOr', 'listAnd']) {
+        final value = arb[key] as String;
+        expect(value.startsWith(' ') && value.endsWith(' '), isTrue, reason: '$locale.$key is "$value"');
+      }
+    }
+  });
+
+  test('wording fixes from review (M5)', () {
+    final hi = _arb('hi'), gu = _arb('gu');
+    expect(hi['latencyStats'], contains('माध्यिका'), reason: 'median, not mean');
+    expect(gu['latencyStats'], contains('મધ્યસ્થ'), reason: 'median, not mean');
+    expect(hi['whatsNewGotIt'], 'ठीक है', reason: 'not gendered');
+    for (final key in ['settingsRawAudio', 'privacyStoredAudio', 'onboardingPrivacyStorage']) {
+      expect(hi[key], isNot(contains('असली')), reason: 'raw audio is मूल, not "genuine"');
+    }
+    expect(hi['settingsUpToDate'], contains('सबसे नया'));
+    expect(gu['settingsUpToDate'], contains('સૌથી નવું'));
+  });
 }

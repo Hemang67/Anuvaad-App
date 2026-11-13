@@ -21,7 +21,9 @@ class LatencySample {
   });
 
   /// Measures [s]. End of speech falls back to the final result when the recognizer didn't report it.
-  factory LatencySample.fromSegment(Segment s, {required DateTime at, OutputKind? output}) {
+  /// [reviewed]: the reply waited for the user to check it, so stages after translation include reading time and are
+  /// left out; [edited]: the translation stage includes typing time too.
+  factory LatencySample.fromSegment(Segment s, {required DateTime at, OutputKind? output, bool reviewed = false, bool edited = false}) {
     int? between(DateTime? from, DateTime? to) {
       if (from == null || to == null) return null;
       final ms = to.difference(from).inMilliseconds;
@@ -38,10 +40,10 @@ class LatencySample {
       output: output,
       onsetToFirstPartialMs: between(s.speechStartAt, s.firstPartialAt),
       speechEndToFinalMs: between(s.speechEndAt, s.finalAt),
-      translationMs: between(s.finalAt, s.translatedAt),
-      synthesisMs: between(s.translatedAt, s.synthesizedAt),
-      playbackStartMs: between(s.synthesizedAt, s.playbackStartedAt),
-      speechEndToAudioMs: between(speechEnd, s.playbackStartedAt),
+      translationMs: edited ? null : between(s.finalAt, s.translatedAt),
+      synthesisMs: reviewed ? null : between(s.translatedAt, s.synthesizedAt),
+      playbackStartMs: reviewed ? null : between(s.synthesizedAt, s.playbackStartedAt),
+      speechEndToAudioMs: reviewed ? null : between(speechEnd, s.playbackStartedAt),
     );
   }
 

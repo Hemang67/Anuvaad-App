@@ -15,6 +15,8 @@ SessionStatus sessionStatus(ConversationState s) {
   if (s.segments.any((x) => x.status == SegmentStatus.translating || x.speech == SpeechStatus.preparing)) {
     return SessionStatus.translating;
   }
+  // Listen mode is waiting for the user to say which language they speak: the microphone is closed.
+  if (s.notice == ConversationNotice.chooseOtherLanguage) return SessionStatus.choosingLanguage;
   if (s.paused) return SessionStatus.paused;
   if (s.listenMode) return SessionStatus.listening;
   return SessionStatus.ready;

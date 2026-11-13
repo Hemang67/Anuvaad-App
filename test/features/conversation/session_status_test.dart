@@ -59,4 +59,9 @@ void main() {
     expect(sessionStatus(const ConversationState(paused: true)), SessionStatus.paused);
     expect(sessionStatus(const ConversationState(listenMode: true)), SessionStatus.listening);
   });
+
+  test('a pending language question is choosing the language, not listening (M8)', () {
+    const s = ConversationState(listenMode: true, notice: ConversationNotice.chooseOtherLanguage);
+    expect(sessionStatus(s), SessionStatus.choosingLanguage);
+  });
 }

@@ -103,6 +103,7 @@ class ConversationDetailScreen extends ConsumerWidget {
     );
     if (confirmed != true) return;
     await ref.read(historyRepositoryProvider).delete(id);
+    await ref.read(transcriptSharerProvider).clearShared();
     invalidateHistory(ref);
     if (context.mounted) context.pop();
   }

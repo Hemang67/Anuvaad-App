@@ -1,5 +1,9 @@
 import 'dart:io';
 
+import 'package:anuvaad/core/permissions/microphone_permission.dart';
+import 'package:anuvaad/features/conversation/application/translation_service.dart';
+import 'package:anuvaad/features/conversation/data/android_speech_recognizer.dart';
+import 'package:anuvaad/features/conversation/domain/speech_recognition.dart';
 import 'package:anuvaad/features/history/data/file_history_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -160,5 +164,40 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('audio-devices-screen')), findsOneWidget);
     });
+  });
+
+  testWidgets('after End with history on, Home lists the conversation just saved (I9)', (tester) async {
+    await repo.save(savedConversation('older', DateTime(2026, 11, 5, 9)));
+    final recognizer = FakeSpeechRecognizer();
+    await pumpAnuvaadApp(
+      tester,
+      prefs: {'onboarding_complete': true, 'my_language': 'en-IN', 'other_language': 'hi-IN', 'save_history': true},
+      history: repo,
+      overrides: [
+        speechRecognizerProvider.overrideWithValue(recognizer),
+        microphonePermissionProvider.overrideWithValue(FakeMicrophonePermission()),
+        translationServiceProvider.overrideWithValue(TranslationService(cloud: FakeTranslator(reply: (_) => 'Hello'), offline: FakeTranslator())),
+      ],
+    );
+    await scrollIntoView(tester, find.text('Recent conversations'));
+    expect(find.byKey(const Key('recent-older')), findsOneWidget);
+    // Back up past the recent list to the conversation buttons.
+    await tester.scrollUntilVisible(find.text('In-person conversation'), -200, scrollable: find.byType(Scrollable).first);
+    await tester.ensureVisible(find.text('In-person conversation'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('In-person conversation'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('listen-button')));
+    await tester.pumpAndSettle();
+    recognizer.emit(const FinalResult('नमस्ते'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('end-button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    final saved = await repo.list();
+    expect(saved, hasLength(2));
+    await scrollIntoView(tester, find.text('Recent conversations'));
+    expect(find.byKey(Key('recent-${saved.first.id}')), findsOneWidget);
   });
 }

@@ -306,4 +306,9 @@ class FakeTranscriptSharer implements TranscriptSharer {
 
   @override
   Future<void> shareText(String text, {required String fileName}) async => shared.add((text: text, fileName: fileName));
+
+  int clears = 0;
+
+  @override
+  Future<void> clearShared() async => clears++;
 }

@@ -9,6 +9,7 @@ import '../../../app/theme/anuvaad_colors.dart';
 import '../../../app/theme/theme_mode_controller.dart';
 import '../../../core/config/app_config.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/transcript_sharer.dart';
 import '../../app_update/application/update_controller.dart';
 import '../../conversation/application/language_detection.dart';
 import '../../conversation/application/review_reply.dart';
@@ -58,6 +59,7 @@ class SettingsScreen extends ConsumerWidget {
     await notifier.set(false);
     if (!keep) {
       await repository.deleteAll();
+      await ref.read(transcriptSharerProvider).clearShared();
       invalidateHistory(ref);
     }
   }
@@ -81,6 +83,7 @@ class SettingsScreen extends ConsumerWidget {
     );
     if (confirmed != true) return;
     await ref.read(historyRepositoryProvider).deleteAll();
+    await ref.read(transcriptSharerProvider).clearShared();
     invalidateHistory(ref);
     messenger
       ..hideCurrentSnackBar()

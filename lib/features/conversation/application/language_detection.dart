@@ -51,8 +51,10 @@ DetectionOutcome decideSourceLanguage({
   final detected = counts ? matchCoreLanguage(detection.locale, allowed) : null;
   final sure = detection?.confidence == LanguageConfidence.highlyConfident;
   if (stable != null) {
-    if (!counts) return UseLanguage(stable, detected: false, switched: false);
-    if (detected == null) return sure ? const Unclear() : UseLanguage(stable, detected: false, switched: false);
+    // No real evidence: the text is in the language the recognizer listened in (the user may have changed the
+    // stable language mid-turn; the next turn uses it).
+    if (!counts) return UseLanguage(recognizedIn, detected: false, switched: false);
+    if (detected == null) return sure ? const Unclear() : UseLanguage(recognizedIn, detected: false, switched: false);
     if (detected == stable) return UseLanguage(stable, detected: true, switched: false);
     if (sure || wordCount >= 3) return UseLanguage(detected, detected: true, switched: true);
     return const Unclear();

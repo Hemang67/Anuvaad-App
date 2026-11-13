@@ -31,6 +31,32 @@ class _MeetingSetupScreenState extends ConsumerState<MeetingSetupScreen> {
   _TestState _test = _TestState.idle;
   String _heard = '';
 
+  // The microphone test in progress, if any.
+  SpeechRecognizerPort? _testRecognizer;
+  Completer<String>? _testDone;
+  Timer? _testTimer;
+  StreamSubscription<RecognitionEvent>? _testEvents;
+
+  /// Start and leaving the screen end a test still listening, so its timer can't cancel the meeting's recognizer
+  /// and the microphone doesn't stay open behind Home.
+  Future<void> _stopTest() async {
+    final done = _testDone;
+    if (done == null) return;
+    _testDone = null;
+    _testTimer?.cancel();
+    _testTimer = null;
+    unawaited(_testEvents?.cancel());
+    _testEvents = null;
+    if (!done.isCompleted) done.complete('');
+    await _testRecognizer?.cancel();
+  }
+
+  @override
+  void dispose() {
+    unawaited(_stopTest());
+    super.dispose();
+  }
+
   /// One short recognition in the meeting's language: proof the phone hears the meeting.
   Future<void> _testMicrophone(String locale) async {
     setState(() => _test = _TestState.listening);
@@ -42,13 +68,14 @@ class _MeetingSetupScreenState extends ConsumerState<MeetingSetupScreen> {
       return;
     }
     final recognizer = ref.read(speechRecognizerProvider);
-    final done = Completer<String>();
+    _testRecognizer = recognizer;
+    final done = _testDone = Completer<String>();
     var partial = '';
     void finish(String text) {
       if (!done.isCompleted) done.complete(text.trim());
     }
 
-    final events = recognizer.events.listen((event) {
+    _testEvents = recognizer.events.listen((event) {
       switch (event) {
         case PartialResult(:final text):
           partial = text;
@@ -60,7 +87,7 @@ class _MeetingSetupScreenState extends ConsumerState<MeetingSetupScreen> {
           break;
       }
     });
-    final timeout = Timer(const Duration(seconds: 6), () {
+    _testTimer = Timer(const Duration(seconds: 6), () {
       finish(partial);
       unawaited(recognizer.cancel());
     });
@@ -70,9 +97,14 @@ class _MeetingSetupScreenState extends ConsumerState<MeetingSetupScreen> {
     } catch (_) {
       _heard = '';
     } finally {
-      timeout.cancel();
-      // Not awaited: the answer is in, and waiting on the cancel only delays showing it.
-      unawaited(events.cancel());
+      if (identical(_testDone, done)) {
+        _testDone = null;
+        _testTimer?.cancel();
+        _testTimer = null;
+        // Not awaited: the answer is in, and waiting on the cancel only delays showing it.
+        unawaited(_testEvents?.cancel());
+        _testEvents = null;
+      }
     }
     if (mounted) setState(() => _test = _heard.isEmpty ? _TestState.silent : _TestState.heard);
   }
@@ -163,7 +195,11 @@ class _MeetingSetupScreenState extends ConsumerState<MeetingSetupScreen> {
               key: const Key('meeting-start'),
               child: FilledButton.icon(
                 onPressed: _consent
-                    ? () => context.pushReplacement(Routes.meetingConversation(language == autoDetect ? null : language))
+                    ? () async {
+                        await _stopTest();
+                        if (!context.mounted) return;
+                        context.pushReplacement(Routes.meetingConversation(language == autoDetect ? null : language));
+                      }
                     : null,
                 icon: const Icon(Icons.hearing),
                 label: Text(l10n.meetingStart),
