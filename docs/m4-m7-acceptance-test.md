@@ -103,6 +103,7 @@ Pass: at least 90% D+U, at most 5% W.
 
 ## 12. Latency (spec R35)
 
+- [ ] Turn off **Review my reply** in Settings first: replies that wait for review leave out the stages after translation.
 - [ ] Do 20 turns per direction you use, on good Wi-Fi.
 - [ ] Settings → Latency report shows each pair; note the **End of speech → first audio** median and p95 below.
 - [ ] Export CSV and attach it to the acceptance report.
