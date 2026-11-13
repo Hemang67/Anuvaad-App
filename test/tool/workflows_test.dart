@@ -52,9 +52,14 @@ void main() {
   });
 
   test('every release APK is checked for the permissions screen-off conversations need', () {
-    final script = File('tool/release/check_apk.sh').readAsStringSync();
+    // The words the loop really iterates (continuation lines joined), so a broken line can't pass.
+    final script = File('tool/release/check_apk.sh').readAsStringSync().replaceAll('\\\n', ' ');
+    final loop = RegExp(r'^for permission in (.+); do$', multiLine: true).firstMatch(script);
+    expect(loop, isNotNull);
+    final words = loop!.group(1)!.trim().split(RegExp(r'\s+'));
+    expect(words, everyElement(matches(RegExp(r'^android\.permission\.[A-Z_]+$'))));
     for (final permission in ['RECORD_AUDIO', 'FOREGROUND_SERVICE_MICROPHONE', 'POST_NOTIFICATIONS']) {
-      expect(script, contains('android.permission.$permission'));
+      expect(words, contains('android.permission.$permission'));
     }
   });
 }
