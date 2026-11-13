@@ -20,6 +20,9 @@ class SettingsRepository {
   static const _outputPrefix = 'output_for_';
   static const _autoDetect = 'auto_detect';
   static const _reviewReply = 'review_reply';
+  static const _screenOffListening = 'screen_off_listening';
+  static const _earphoneButton = 'earphone_button';
+  static const _autoReply = 'auto_reply';
   static const _saveHistory = 'save_history';
   static const _speechRate = 'speech_rate';
   static const _voicePrefix = 'voice_';
@@ -82,6 +85,18 @@ class SettingsRepository {
   /// Review my reply before playing (off by default).
   bool get reviewReply => _prefs.getBool(_reviewReply) ?? false;
   Future<void> setReviewReply(bool on) => _prefs.setBool(_reviewReply, on);
+
+  /// A conversation keeps going with the screen off or the app in the background (on by default).
+  bool get screenOffListening => _prefs.getBool(_screenOffListening) ?? true;
+  Future<void> setScreenOffListening(bool on) => _prefs.setBool(_screenOffListening, on);
+
+  /// During a conversation the earphones' play/pause button replies (on by default).
+  bool get earphoneButton => _prefs.getBool(_earphoneButton) ?? true;
+  Future<void> setEarphoneButton(bool on) => _prefs.setBool(_earphoneButton, on);
+
+  /// Speech in my own language during Listen counts as my reply (off by default; Android 14+).
+  bool get autoReply => _prefs.getBool(_autoReply) ?? false;
+  Future<void> setAutoReply(bool on) => _prefs.setBool(_autoReply, on);
 
   /// Save conversations on this phone (off by default, spec R12).
   bool get saveHistory => _prefs.getBool(_saveHistory) ?? false;

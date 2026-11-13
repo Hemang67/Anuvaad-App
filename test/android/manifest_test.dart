@@ -15,4 +15,17 @@ void main() {
           reason: '$domain is excluded from both cloud backup and device transfer');
     }
   });
+
+  test('the conversation service may keep the microphone with the screen off, and nothing else', () {
+    final manifest = File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
+    for (final permission in ['FOREGROUND_SERVICE', 'FOREGROUND_SERVICE_MICROPHONE', 'POST_NOTIFICATIONS', 'WAKE_LOCK']) {
+      expect(manifest, contains('<uses-permission android:name="android.permission.$permission" />'));
+    }
+    final service = RegExp(r'<service[^>]*ConversationService[^>]*>', dotAll: true).stringMatch(manifest);
+    expect(service, isNotNull);
+    expect(service, contains('android:foregroundServiceType="microphone"'));
+    expect(service, contains('android:exported="false"'));
+    expect(manifest, isNot(contains('FOREGROUND_SERVICE_LOCATION')));
+    expect(manifest, isNot(contains('FOREGROUND_SERVICE_CAMERA')));
+  });
 }

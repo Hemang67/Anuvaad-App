@@ -695,5 +695,31 @@
         "type": "String"
       }
     }
-  }
+  },
+  "notifChannel": "Conversations",
+  "@notifChannel": {"description": "Name of the notification channel in Android settings"},
+  "notifListeningTo": "Listening to {language}",
+  "@notifListeningTo": {"placeholders": {"language": {"type": "String"}}},
+  "notifListening": "Listening",
+  "notifYourTurn": "Your turn: speak now",
+  "notifTranslating": "Translating…",
+  "notifSpeaking": "Speaking the translation",
+  "notifReviewing": "Your reply is ready",
+  "notifPaused": "Paused",
+  "notifChooseLanguage": "Open Anuvaad to choose their language",
+  "notifReady": "Ready to listen",
+  "notifMeeting": "Meeting · {language}",
+  "@notifMeeting": {"placeholders": {"language": {"type": "String"}}},
+  "notifDone": "Done",
+  "@notifDone": {"description": "Notification button: sends the reply being spoken"},
+  "notifEnd": "End",
+  "@notifEnd": {"description": "Notification button: ends the conversation"},
+  "settingsScreenOff": "Keep listening with the screen off",
+  "settingsScreenOffSubtitle": "Conversations keep going when you lock the phone or switch apps. A notification shows while one runs.",
+  "settingsEarphoneButton": "Reply with your earphone button",
+  "settingsEarphoneButtonSubtitle": "During a conversation, press play/pause on your earphones to reply, and again to send it",
+  "settingsAutoReply": "Reply without tapping",
+  "settingsAutoReplySubtitle": "When it hears your language, it translates it for them. Mixed languages can confuse it.",
+  "settingsAutoReplyUnsupported": "Needs Android 14 or later.",
+  "privacyScreenOff": "With the screen off, a conversation uses the microphone only while its notification shows. End stops it."
 }

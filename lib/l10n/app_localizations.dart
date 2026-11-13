@@ -2067,6 +2067,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Translation: {text}'**
   String a11yTranslation(String text);
+
+  /// Name of the notification channel in Android settings
+  ///
+  /// In en, this message translates to:
+  /// **'Conversations'**
+  String get notifChannel;
+
+  /// No description provided for @notifListeningTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening to {language}'**
+  String notifListeningTo(String language);
+
+  /// No description provided for @notifListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening'**
+  String get notifListening;
+
+  /// No description provided for @notifYourTurn.
+  ///
+  /// In en, this message translates to:
+  /// **'Your turn: speak now'**
+  String get notifYourTurn;
+
+  /// No description provided for @notifTranslating.
+  ///
+  /// In en, this message translates to:
+  /// **'Translating…'**
+  String get notifTranslating;
+
+  /// No description provided for @notifSpeaking.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaking the translation'**
+  String get notifSpeaking;
+
+  /// No description provided for @notifReviewing.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reply is ready'**
+  String get notifReviewing;
+
+  /// No description provided for @notifPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get notifPaused;
+
+  /// No description provided for @notifChooseLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Anuvaad to choose their language'**
+  String get notifChooseLanguage;
+
+  /// No description provided for @notifReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to listen'**
+  String get notifReady;
+
+  /// No description provided for @notifMeeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting · {language}'**
+  String notifMeeting(String language);
+
+  /// Notification button: sends the reply being spoken
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get notifDone;
+
+  /// Notification button: ends the conversation
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get notifEnd;
+
+  /// No description provided for @settingsScreenOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep listening with the screen off'**
+  String get settingsScreenOff;
+
+  /// No description provided for @settingsScreenOffSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversations keep going when you lock the phone or switch apps. A notification shows while one runs.'**
+  String get settingsScreenOffSubtitle;
+
+  /// No description provided for @settingsEarphoneButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply with your earphone button'**
+  String get settingsEarphoneButton;
+
+  /// No description provided for @settingsEarphoneButtonSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'During a conversation, press play/pause on your earphones to reply, and again to send it'**
+  String get settingsEarphoneButtonSubtitle;
+
+  /// No description provided for @settingsAutoReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply without tapping'**
+  String get settingsAutoReply;
+
+  /// No description provided for @settingsAutoReplySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When it hears your language, it translates it for them. Mixed languages can confuse it.'**
+  String get settingsAutoReplySubtitle;
+
+  /// No description provided for @settingsAutoReplyUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs Android 14 or later.'**
+  String get settingsAutoReplyUnsupported;
+
+  /// No description provided for @privacyScreenOff.
+  ///
+  /// In en, this message translates to:
+  /// **'With the screen off, a conversation uses the microphone only while its notification shows. End stops it.'**
+  String get privacyScreenOff;
 }
 
 class _AppLocalizationsDelegate

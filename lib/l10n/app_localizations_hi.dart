@@ -1148,4 +1148,76 @@ class AppLocalizationsHi extends AppLocalizations {
   String a11yTranslation(String text) {
     return 'अनुवाद: $text';
   }
+
+  @override
+  String get notifChannel => 'बातचीत';
+
+  @override
+  String notifListeningTo(String language) {
+    return '$language सुन रहा है';
+  }
+
+  @override
+  String get notifListening => 'सुन रहा है';
+
+  @override
+  String get notifYourTurn => 'आपकी बारी: अब बोलें';
+
+  @override
+  String get notifTranslating => 'अनुवाद हो रहा है…';
+
+  @override
+  String get notifSpeaking => 'अनुवाद सुनाया जा रहा है';
+
+  @override
+  String get notifReviewing => 'आपका जवाब तैयार है';
+
+  @override
+  String get notifPaused => 'रुका हुआ';
+
+  @override
+  String get notifChooseLanguage => 'उनकी भाषा चुनने के लिए Anuvaad खोलें';
+
+  @override
+  String get notifReady => 'सुनने के लिए तैयार';
+
+  @override
+  String notifMeeting(String language) {
+    return 'मीटिंग · $language';
+  }
+
+  @override
+  String get notifDone => 'हो गया';
+
+  @override
+  String get notifEnd => 'समाप्त करें';
+
+  @override
+  String get settingsScreenOff => 'स्क्रीन बंद होने पर भी सुनते रहें';
+
+  @override
+  String get settingsScreenOffSubtitle =>
+      'फ़ोन लॉक करने या दूसरा ऐप खोलने पर भी बातचीत चलती रहती है। चलते समय एक सूचना दिखती है।';
+
+  @override
+  String get settingsEarphoneButton => 'ईयरफ़ोन के बटन से जवाब दें';
+
+  @override
+  String get settingsEarphoneButtonSubtitle =>
+      'बातचीत के दौरान जवाब देने के लिए ईयरफ़ोन पर play/pause दबाएँ, और भेजने के लिए फिर से दबाएँ';
+
+  @override
+  String get settingsAutoReply => 'बिना टैप किए जवाब दें';
+
+  @override
+  String get settingsAutoReplySubtitle =>
+      'जब यह आपकी भाषा सुनता है, तो उनके लिए उसका अनुवाद कर देता है। मिली-जुली भाषा से इसमें गलती हो सकती है।';
+
+  @override
+  String get settingsAutoReplyUnsupported =>
+      'इसके लिए Android 14 या उसके बाद का वर्शन चाहिए।';
+
+  @override
+  String get privacyScreenOff =>
+      'स्क्रीन बंद होने पर बातचीत माइक्रोफ़ोन का उपयोग तभी करती है जब उसकी सूचना दिख रही हो। समाप्त करने पर यह रुक जाता है।';
 }

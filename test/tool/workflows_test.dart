@@ -50,4 +50,11 @@ void main() {
     expect((on['push'] as YamlMap)['tags'], ['v*.*.*']);
     expect((on['push'] as YamlMap).containsKey('branches'), isFalse);
   });
+
+  test('every release APK is checked for the permissions screen-off conversations need', () {
+    final script = File('tool/release/check_apk.sh').readAsStringSync();
+    for (final permission in ['RECORD_AUDIO', 'FOREGROUND_SERVICE_MICROPHONE', 'POST_NOTIFICATIONS']) {
+      expect(script, contains('android.permission.$permission'));
+    }
+  });
 }

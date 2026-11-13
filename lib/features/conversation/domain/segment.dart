@@ -76,7 +76,9 @@ class Segment {
   final bool detected;
 
   Segment copyWith({
+    Speaker? speaker,
     String? sourceLanguage,
+    String? targetLanguage,
     bool? detected,
     DateTime? speechStartAt,
     DateTime? speechEndAt,
@@ -96,9 +98,9 @@ class Segment {
       Segment(
         id: id,
         seq: seq,
-        speaker: speaker,
+        speaker: speaker ?? this.speaker,
         sourceLanguage: sourceLanguage ?? this.sourceLanguage,
-        targetLanguage: targetLanguage,
+        targetLanguage: targetLanguage ?? this.targetLanguage,
         startedAt: startedAt,
         text: text ?? this.text,
         isFinal: isFinal ?? this.isFinal,

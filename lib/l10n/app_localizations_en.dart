@@ -1146,4 +1146,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11yTranslation(String text) {
     return 'Translation: $text';
   }
+
+  @override
+  String get notifChannel => 'Conversations';
+
+  @override
+  String notifListeningTo(String language) {
+    return 'Listening to $language';
+  }
+
+  @override
+  String get notifListening => 'Listening';
+
+  @override
+  String get notifYourTurn => 'Your turn: speak now';
+
+  @override
+  String get notifTranslating => 'Translating…';
+
+  @override
+  String get notifSpeaking => 'Speaking the translation';
+
+  @override
+  String get notifReviewing => 'Your reply is ready';
+
+  @override
+  String get notifPaused => 'Paused';
+
+  @override
+  String get notifChooseLanguage => 'Open Anuvaad to choose their language';
+
+  @override
+  String get notifReady => 'Ready to listen';
+
+  @override
+  String notifMeeting(String language) {
+    return 'Meeting · $language';
+  }
+
+  @override
+  String get notifDone => 'Done';
+
+  @override
+  String get notifEnd => 'End';
+
+  @override
+  String get settingsScreenOff => 'Keep listening with the screen off';
+
+  @override
+  String get settingsScreenOffSubtitle =>
+      'Conversations keep going when you lock the phone or switch apps. A notification shows while one runs.';
+
+  @override
+  String get settingsEarphoneButton => 'Reply with your earphone button';
+
+  @override
+  String get settingsEarphoneButtonSubtitle =>
+      'During a conversation, press play/pause on your earphones to reply, and again to send it';
+
+  @override
+  String get settingsAutoReply => 'Reply without tapping';
+
+  @override
+  String get settingsAutoReplySubtitle =>
+      'When it hears your language, it translates it for them. Mixed languages can confuse it.';
+
+  @override
+  String get settingsAutoReplyUnsupported => 'Needs Android 14 or later.';
+
+  @override
+  String get privacyScreenOff =>
+      'With the screen off, a conversation uses the microphone only while its notification shows. End stops it.';
 }

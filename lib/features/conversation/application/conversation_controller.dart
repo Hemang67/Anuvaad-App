@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../app/app_language.dart';
 import '../../../app/bootstrap.dart';
 import '../../../core/permissions/microphone_permission.dart';
 import '../../../core/settings/settings_providers.dart';
@@ -15,11 +16,14 @@ import '../../diagnostics/domain/latency_sample.dart';
 import '../../history/application/history_providers.dart';
 import '../../history/domain/history_repository.dart';
 import '../../history/domain/saved_conversation.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../language_settings/application/language_preferences_controller.dart';
+import '../data/android_conversation_service.dart';
 import '../data/android_audio.dart';
 import '../data/android_speech_recognizer.dart';
 import '../data/offline_models.dart';
 import '../domain/audio_output.dart';
+import '../domain/conversation_service.dart';
 import '../domain/segment.dart';
 import '../domain/speech_recognition.dart';
 import '../domain/translation.dart';
@@ -27,6 +31,8 @@ import '../domain/voice.dart';
 import 'language_detection.dart';
 import 'mic_level.dart';
 import 'review_reply.dart';
+import 'screen_off_settings.dart';
+import 'session_notification.dart';
 import 'output_router.dart';
 import 'translation_service.dart';
 import 'voice_service.dart';
@@ -228,6 +234,18 @@ class ConversationController extends Notifier<ConversationState> {
   /// The other person's language was picked by the user (Change, or a meeting language): detection doesn't override it.
   bool _languagePicked = false;
 
+  /// Android's conversation service: while it runs, the conversation keeps its microphone with the screen off or the
+  /// app in the background, and its notification shows what is happening (with buttons).
+  late ConversationServicePort _service;
+  StreamSubscription<SessionCommand>? _commands;
+  bool _serviceRunning = false;
+  bool _serviceStarting = false;
+  SessionNotification? _shown;
+  bool _notificationQueued = false;
+
+  /// Listen turns that also listen for my own language ("Reply without tapping").
+  final _replyDetectFor = <String>{};
+
   /// Captured at build for work that finishes after the screen has closed.
   late DateTime Function() _clock;
   late HistoryRevision _historyRevision;
@@ -244,7 +262,8 @@ class ConversationController extends Notifier<ConversationState> {
     final clock = _clock = ref.read(clockProvider);
     final revision = _historyRevision = ref.read(historyRevisionProvider.notifier);
     _audioEvents = audio.events.listen(_onAudio);
-    // Backgrounding releases the microphone (spec §0.4).
+    final service = _service = ref.watch(conversationServiceProvider);
+    // Backgrounding releases the microphone unless the conversation service is running (screen off, other apps).
     _lifecycle = AppLifecycleListener(
       onHide: _onBackground,
       onPause: _onBackground,
@@ -255,6 +274,7 @@ class ConversationController extends Notifier<ConversationState> {
     listenSelf((previous, next) {
       _lastState = next;
       if (previous != null && _busy(previous) && !_busy(next)) scheduleMicrotask(_maybeRearm);
+      if (_serviceRunning) _queueNotification();
     });
     // Files from a conversation the app never finished closing (killed, swiped away) go now.
     unawaited(voice.sweep().catchError((Object error) => debugPrint('Could not clear old voice files: $error')));
@@ -276,6 +296,12 @@ class ConversationController extends Notifier<ConversationState> {
       _events?.cancel();
       _audioEvents?.cancel();
       _lifecycle?.dispose();
+      _commands?.cancel();
+      // Leaving the conversation screen ends it: no notification, no microphone.
+      if (_serviceRunning) {
+        _serviceRunning = false;
+        unawaited(service.stop());
+      }
     });
     return const ConversationState();
   }
@@ -360,6 +386,7 @@ class ConversationController extends Notifier<ConversationState> {
     if (state.ended) return;
     _turnGen++;
     state = state.copyWith(listenMode: false, paused: false, ended: true, sessionEndedAt: _now());
+    _stopService();
     await cancelTurn();
     await stopSpeaking();
     if (ref.mounted && _settings.saveHistory) await _save();
@@ -449,7 +476,8 @@ class ConversationController extends Notifier<ConversationState> {
     bool cancelled() => !ref.mounted || generation != _turnGen || state.ended;
     try {
       final my = ref.read(languagePreferencesProvider).myLanguage;
-      final detectAmong = speaker == Speaker.other ? await _detectAmong(my) : const <String>[];
+      final detection = speaker == Speaker.other ? await _detection(my) : _noDetection;
+      final detectAmong = detection.detectAmong;
       if (cancelled()) return;
       // Automatic: the stable language if there is one, else the first candidate while the recognizer detects.
       final other = _otherLanguage() ?? (detectAmong.isEmpty ? null : detectAmong.first);
@@ -467,6 +495,8 @@ class ConversationController extends Notifier<ConversationState> {
         if (ref.mounted) _leaveListenMode(); // never ask again and again for the microphone
         return;
       }
+      if (cancelled()) return;
+      await _ensureService();
       if (cancelled()) return;
       if (!await _recognizer.isAvailable()) {
         if (ref.mounted) {
@@ -489,7 +519,8 @@ class ConversationController extends Notifier<ConversationState> {
       _silenceSince ??= segment.startedAt;
       _sessionId ??= _uuid.v4();
       _myLanguage ??= my;
-      if (detectAmong.isNotEmpty) _allowedFor[segment.id] = detectAmong;
+      if (detection.decide) _allowedFor[segment.id] = [for (final c in detectAmong) if (c != my) c];
+      if (detection.mine) _replyDetectFor.add(segment.id);
       state = state.copyWith(
         segments: [...state.segments, segment],
         activeSpeaker: speaker,
@@ -507,13 +538,24 @@ class ConversationController extends Notifier<ConversationState> {
     }
   }
 
-  /// In Automatic mode with detection on and supported: the core languages that aren't mine; otherwise none.
-  Future<List<String>> _detectAmong(String my) async {
-    if (_languagePicked) return const []; // the user chose: listen in that language only
-    if (ref.read(languagePreferencesProvider).otherLanguage != autoDetect || !ref.read(autoDetectProvider)) return const [];
+  static const _noDetection = (detectAmong: <String>[], decide: false, mine: false);
+
+  /// What a Listen turn asks the recognizer to detect (only where it can: Android 14+). [decide]: their language is
+  /// Automatic, so detection picks it among the core languages that aren't mine (unless the user picked one).
+  /// [mine]: "Reply without tapping" is on, so my own language is listened for too (never in a meeting).
+  Future<({List<String> detectAmong, bool decide, bool mine})> _detection(String my) async {
+    final decide = !_languagePicked &&
+        ref.read(languagePreferencesProvider).otherLanguage == autoDetect &&
+        ref.read(autoDetectProvider);
+    final mine = ref.read(autoReplyProvider) && state.mode != ConversationMode.meeting;
+    if (!decide && !mine) return _noDetection;
     final supported = _supportsDetection ??= await _recognizer.supportsLanguageDetection();
-    if (!supported || !ref.mounted) return const [];
-    return [for (final l in ref.read(languageRegistryProvider).coreLanguages) if (l.code != my) l.code];
+    if (!supported || !ref.mounted) return _noDetection;
+    final theirs = decide
+        ? [for (final l in ref.read(languageRegistryProvider).coreLanguages) if (l.code != my) l.code]
+        : [?_otherLanguage()];
+    if (theirs.isEmpty) return _noDetection; // nothing to listen in: Listen asks for their language
+    return (detectAmong: [...theirs, if (mine) my], decide: decide, mine: mine);
   }
 
   /// The user's answer to "Language unclear": the same language translates the card; another one drops it
@@ -614,8 +656,10 @@ class ConversationController extends Notifier<ConversationState> {
 
   void _onBackground() {
     _foreground = false;
-    _turnGen++;
     _checkpoint();
+    // With the conversation service running, the conversation carries on: screen off, or another app on top.
+    if (_serviceRunning && !state.ended) return;
+    _turnGen++;
     // A running session pauses (Listen resumes it); otherwise just release the microphone and stop playback.
     if (!state.ended && (state.listenMode || _activeId != null || _playing != null)) {
       unawaited(pause());
@@ -626,6 +670,108 @@ class ConversationController extends Notifier<ConversationState> {
   }
 
   void _onForeground() => _foreground = true;
+
+  /// Starts the conversation service on the first turn the user starts (Android allows that only while the app is on
+  /// screen). If Android refuses, the conversation pauses in the background as before.
+  Future<void> _ensureService() async {
+    if (_serviceRunning || _serviceStarting || !_foreground || !ref.read(screenOffListeningProvider)) return;
+    _serviceStarting = true;
+    try {
+      final notification = _notification();
+      final started = await _service.start(
+        notification,
+        channelName: _strings().notifChannel,
+        earphoneButton: ref.read(earphoneButtonProvider),
+      );
+      if (!started) return;
+      if (!ref.mounted || state.ended) {
+        unawaited(_service.stop()); // closed or ended meanwhile
+        return;
+      }
+      _serviceRunning = true;
+      _shown = notification;
+      _commands ??= _service.commands.listen(_onCommand);
+      _queueNotification(); // the conversation may have moved on while it started
+    } catch (error) {
+      // An extra: the conversation itself never depends on it.
+      debugPrint('Could not keep the conversation going with the screen off: $error');
+    } finally {
+      _serviceStarting = false;
+    }
+  }
+
+  void _stopService() {
+    if (!_serviceRunning) return;
+    _serviceRunning = false;
+    _shown = null;
+    unawaited(_service.stop());
+  }
+
+  /// One notification update per burst of changes, and none when what it shows is the same.
+  void _queueNotification() {
+    if (_notificationQueued) return;
+    _notificationQueued = true;
+    scheduleMicrotask(() {
+      _notificationQueued = false;
+      if (!ref.mounted || !_serviceRunning) return;
+      try {
+        final next = _notification();
+        if (next == _shown) return;
+        _shown = next;
+        unawaited(_service.update(next));
+      } catch (error) {
+        debugPrint('Could not update the conversation notification: $error');
+      }
+    });
+  }
+
+  SessionNotification _notification() {
+    final registry = ref.read(languageRegistryProvider);
+    final my = _myLanguage ?? ref.read(languagePreferencesProvider).myLanguage;
+    final other = _otherLanguage();
+    return sessionNotificationFor(
+      state,
+      l10n: _strings(),
+      myName: registry.byCode(my)?.displayName ?? my,
+      otherName: other == null ? null : registry.byCode(other)?.displayName ?? other,
+    );
+  }
+
+  /// The app's own language (Settings → App language, else the phone's), for text outside any screen.
+  AppLocalizations _strings() {
+    final chosen = ref.read(appLanguageProvider);
+    final code = chosen == 'system' ? WidgetsBinding.instance.platformDispatcher.locale.languageCode : chosen;
+    return lookupAppLocalizations(Locale(appLanguages.contains(code) ? code : 'en'));
+  }
+
+  /// The notification's buttons and the earphones' play/pause button.
+  void _onCommand(SessionCommand command) {
+    if (!ref.mounted) return;
+    switch (command) {
+      case SessionCommand.listen:
+        unawaited(startListening());
+      case SessionCommand.speak:
+        unawaited(startSpeaking());
+      case SessionCommand.finishReply:
+        unawaited(finishReply());
+      case SessionCommand.pause:
+        unawaited(pause());
+      case SessionCommand.end:
+        unawaited(endSession());
+      case SessionCommand.playReply:
+        final waiting = _awaitingReview();
+        if (waiting != null) unawaited(playReply(waiting.id));
+      case SessionCommand.discardReply:
+        final waiting = _awaitingReview();
+        if (waiting != null) discardReply(waiting.id);
+      case SessionCommand.earphoneButton:
+        unawaited(onEarphoneButton());
+      case SessionCommand.stopped:
+        // Android ended the service: from now on the background pauses the conversation, as before.
+        _serviceRunning = false;
+        _shown = null;
+    }
+  }
 
   void _onEvent(RecognitionEvent event) {
     final id = _activeId;
@@ -717,7 +863,37 @@ class ConversationController extends Notifier<ConversationState> {
     _setLevel(0);
     final allowed = _allowedFor.remove(id) ?? const <String>[];
     final detection = _detections.remove(id);
+    final listenedForMine = _replyDetectFor.remove(id);
     final segment = _segment(id);
+    final words = text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+    final my = _myLanguage ?? ref.read(languagePreferencesProvider).myLanguage;
+    final theirs = _otherLanguage();
+    if (segment != null &&
+        segment.speaker == Speaker.other &&
+        listenedForMine &&
+        theirs != null &&
+        spokeIn(my, detection: detection, wordCount: words)) {
+      // "Reply without tapping": I spoke, not them. My words go to them, in their language; theirs stays as it was.
+      state = state.copyWith(
+        segments: [
+          for (final s in state.segments)
+            s.id == id
+                ? s.copyWith(
+                    speaker: Speaker.me,
+                    sourceLanguage: my,
+                    targetLanguage: theirs,
+                    text: text,
+                    isFinal: true,
+                    status: SegmentStatus.translating,
+                    finalAt: _now(),
+                  )
+                : s,
+        ],
+        activeSpeaker: null,
+      );
+      unawaited(_translate(id));
+      return;
+    }
     var status = SegmentStatus.translating;
     String? source;
     var detected = false;
@@ -727,7 +903,7 @@ class ConversationController extends Notifier<ConversationState> {
         stable: state.otherLanguageOverride,
         detection: detection,
         allowed: allowed,
-        wordCount: text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length,
+        wordCount: words,
       );
       switch (outcome) {
         case UseLanguage(:final code, detected: final isDetected):
@@ -761,6 +937,7 @@ class ConversationController extends Notifier<ConversationState> {
   /// Removes an unfinished card. A null [notice] keeps whatever notice is showing.
   void _drop(String id, ConversationNotice? notice, {String? language}) {
     _activeId = null;
+    _replyDetectFor.remove(id);
     _completeTurn();
     _setLevel(0);
     final segments = [for (final s in state.segments) if (s.id != id) s];
@@ -795,7 +972,7 @@ class ConversationController extends Notifier<ConversationState> {
 
   /// Starts the next Listen turn when Listen mode is on and nothing else is going on (R29: never over playback).
   void _maybeRearm() {
-    if (!ref.mounted || !state.listenMode || state.paused || state.ended || !_foreground) return;
+    if (!ref.mounted || !state.listenMode || state.paused || state.ended || !_canRun) return;
     if (_holdRearm > 0 || _activeId != null || _starting || _playing != null || _busy(state)) return;
     unawaited(startTurn(Speaker.other, clearNotice: false));
   }
@@ -873,6 +1050,31 @@ class ConversationController extends Notifier<ConversationState> {
     state = state.copyWith(segments: [for (final s in state.segments) if (s.id != id) s]);
   }
 
+  /// Sends my reply now (the notification's Done, the earphone button) instead of waiting for me to go quiet.
+  Future<void> finishReply() async {
+    if (state.activeSpeaker != Speaker.me || _activeId == null) return;
+    _setLevel(0);
+    await _recognizer.stop();
+  }
+
+  /// The earphones' play/pause button: plays a reply waiting for review, else sends the reply being spoken, else
+  /// starts one. Meetings have no replies.
+  Future<void> onEarphoneButton() async {
+    if (state.ended || state.mode == ConversationMode.meeting || !ref.read(earphoneButtonProvider)) return;
+    final waiting = _awaitingReview();
+    if (waiting != null) return playReply(waiting.id);
+    if (state.activeSpeaker == Speaker.me) return finishReply();
+    await startSpeaking();
+  }
+
+  Segment? _awaitingReview() {
+    Segment? found;
+    for (final s in state.segments) {
+      if (s.speech == SpeechStatus.awaitingReview) found = s;
+    }
+    return found;
+  }
+
   /// Plays a segment's translation again (the card's Replay button).
   Future<void> replay(String segmentId) async {
     final segment = _segment(segmentId);
@@ -911,7 +1113,10 @@ class ConversationController extends Notifier<ConversationState> {
       _activeId == null && !_starting && !state.paused && !state.ended && segment.seq >= _lastSpokenSeq;
 
   /// Checked again just before playing: nothing was stopped meanwhile (a turn, Home), and the microphone is closed.
-  bool _mayStillPlay(int generation) => generation == _speechGen && _foreground && _activeId == null && !_starting;
+  bool _mayStillPlay(int generation) => generation == _speechGen && _canRun && _activeId == null && !_starting;
+
+  /// On screen, or carrying on with the screen off under the conversation service.
+  bool get _canRun => _foreground || _serviceRunning;
 
   Future<void> _speak(String id, {required bool auto}) async {
     final segment = _segment(id);
@@ -921,7 +1126,7 @@ class ConversationController extends Notifier<ConversationState> {
       _measure(id);
       return; // stays SpeechStatus.none; Replay plays it
     }
-    if (!_foreground || (!auto && (_activeId != null || _starting))) return;
+    if (!_canRun || (!auto && (_activeId != null || _starting))) return;
     if (auto) _lastSpokenSeq = segment.seq;
     final generation = _speechGen;
     _update(id, (s) => s.copyWith(speech: SpeechStatus.preparing));

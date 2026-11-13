@@ -5,6 +5,12 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- Speech recognition for conversations; asked at runtime on the first Listen or Speak. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Conversations with the screen off: a microphone foreground service with a notification while it runs. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Keeps the processor awake while a conversation is listening, and turns the screen off in a pocket. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <application
         android:label="Anuvaad"
         android:name="${applicationName}"
@@ -33,6 +39,10 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <service
+            android:name=".session.ConversationService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <provider

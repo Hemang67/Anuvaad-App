@@ -20,7 +20,7 @@ class PrivacyScreen extends ConsumerWidget {
       (l10n.privacyLeavesTitle, [l10n.privacyLeavesUpdates, l10n.privacyLeavesAudio, l10n.privacyLeavesText, l10n.privacyLeavesVoices]),
       (l10n.privacyGoesTitle, [l10n.privacyGoesServer, l10n.privacyGoesOffline, l10n.privacyGoesReleases]),
       (l10n.privacyStoredTitle, [l10n.privacyStoredAudio, l10n.privacyStoredVoiceFiles, l10n.privacyStoredHistory, l10n.privacyStoredLatency]),
-      (l10n.privacyControlsTitle, [l10n.privacyControlsHistory, l10n.privacyControlsMic]),
+      (l10n.privacyControlsTitle, [l10n.privacyControlsHistory, l10n.privacyControlsMic, l10n.privacyScreenOff]),
     ];
     return Scaffold(
       key: const Key('privacy-screen'),

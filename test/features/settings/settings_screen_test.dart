@@ -179,7 +179,46 @@ void main() {
       }
       await scrollIntoView(tester, find.textContaining('Raw microphone audio is never saved'));
       expect(find.textContaining('latency report keeps timings only'), findsOneWidget);
+      await scrollIntoView(tester, find.textContaining('only while its notification shows'));
       await scrollIntoView(tester, find.text('Contact details will be added before public launch.'));
     });
+  });
+
+  testWidgets('Settings has the screen-off switches, saved: screen off and earphone button on, replies without tapping off',
+      (tester) async {
+    final prefs = await pumpAnuvaadApp(tester, prefs: {'onboarding_complete': true}, overrides: [
+      speechRecognizerProvider.overrideWithValue(FakeSpeechRecognizer()..detectionSupported = true),
+    ]);
+    await tester.tap(find.widgetWithText(NavigationDestination, 'Settings'));
+    await tester.pumpAndSettle();
+    for (final key in ['screen-off-switch', 'earphone-button-switch', 'auto-reply-switch']) {
+      await scrollIntoView(tester, find.byKey(Key(key)));
+    }
+    expect(find.text('Keep listening with the screen off'), findsOneWidget);
+    expect(tester.widget<Switch>(find.byKey(const Key('screen-off-switch'))).value, isTrue);
+    expect(tester.widget<Switch>(find.byKey(const Key('earphone-button-switch'))).value, isTrue);
+    expect(tester.widget<Switch>(find.byKey(const Key('auto-reply-switch'))).value, isFalse);
+    await tester.tap(find.byKey(const Key('auto-reply-switch')));
+    await tester.pumpAndSettle();
+    await scrollIntoView(tester, find.byKey(const Key('earphone-button-switch')));
+    await tester.tap(find.byKey(const Key('earphone-button-switch')));
+    await tester.pumpAndSettle();
+    await scrollIntoView(tester, find.byKey(const Key('screen-off-switch')));
+    await tester.tap(find.byKey(const Key('screen-off-switch')));
+    await tester.pumpAndSettle();
+    expect(prefs.getBool('auto_reply'), isTrue);
+    expect(prefs.getBool('earphone_button'), isFalse);
+    expect(prefs.getBool('screen_off_listening'), isFalse);
+  });
+
+  testWidgets('replies without tapping need Android 14 or later', (tester) async {
+    await pumpAnuvaadApp(tester, prefs: {'onboarding_complete': true}, overrides: [
+      speechRecognizerProvider.overrideWithValue(FakeSpeechRecognizer()..detectionSupported = false),
+    ]);
+    await tester.tap(find.widgetWithText(NavigationDestination, 'Settings'));
+    await tester.pumpAndSettle();
+    await scrollIntoView(tester, find.byKey(const Key('auto-reply-switch')));
+    expect(tester.widget<Switch>(find.byKey(const Key('auto-reply-switch'))).onChanged, isNull);
+    expect(tester.widget<Switch>(find.byKey(const Key('auto-reply-switch'))).value, isFalse);
   });
 }

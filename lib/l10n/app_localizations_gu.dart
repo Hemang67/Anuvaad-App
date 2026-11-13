@@ -1143,4 +1143,76 @@ class AppLocalizationsGu extends AppLocalizations {
   String a11yTranslation(String text) {
     return 'અનુવાદ: $text';
   }
+
+  @override
+  String get notifChannel => 'વાતચીત';
+
+  @override
+  String notifListeningTo(String language) {
+    return '$language સાંભળે છે';
+  }
+
+  @override
+  String get notifListening => 'સાંભળે છે';
+
+  @override
+  String get notifYourTurn => 'તમારો વારો: હવે બોલો';
+
+  @override
+  String get notifTranslating => 'અનુવાદ થઈ રહ્યો છે…';
+
+  @override
+  String get notifSpeaking => 'અનુવાદ સંભળાવાય છે';
+
+  @override
+  String get notifReviewing => 'તમારો જવાબ તૈયાર છે';
+
+  @override
+  String get notifPaused => 'થોભાવેલું';
+
+  @override
+  String get notifChooseLanguage => 'તેમની ભાષા પસંદ કરવા Anuvaad ખોલો';
+
+  @override
+  String get notifReady => 'સાંભળવા માટે તૈયાર';
+
+  @override
+  String notifMeeting(String language) {
+    return 'મીટિંગ · $language';
+  }
+
+  @override
+  String get notifDone => 'થઈ ગયું';
+
+  @override
+  String get notifEnd => 'સમાપ્ત કરો';
+
+  @override
+  String get settingsScreenOff => 'સ્ક્રીન બંધ હોય ત્યારે પણ સાંભળતા રહો';
+
+  @override
+  String get settingsScreenOffSubtitle =>
+      'ફોન લૉક કરો કે બીજી ઍપ ખોલો ત્યારે પણ વાતચીત ચાલુ રહે છે. ચાલુ હોય ત્યારે એક સૂચના દેખાય છે.';
+
+  @override
+  String get settingsEarphoneButton => 'ઇયરફોનના બટનથી જવાબ આપો';
+
+  @override
+  String get settingsEarphoneButtonSubtitle =>
+      'વાતચીત દરમિયાન જવાબ આપવા ઇયરફોન પર play/pause દબાવો, અને મોકલવા ફરી દબાવો';
+
+  @override
+  String get settingsAutoReply => 'ટૅપ કર્યા વિના જવાબ આપો';
+
+  @override
+  String get settingsAutoReplySubtitle =>
+      'જ્યારે તે તમારી ભાષા સાંભળે, ત્યારે તેમના માટે તેનો અનુવાદ કરે છે. ભેળસેળવાળી ભાષાથી તેમાં ભૂલ થઈ શકે છે.';
+
+  @override
+  String get settingsAutoReplyUnsupported =>
+      'આ માટે Android 14 કે પછીનું વર્ઝન જોઈએ.';
+
+  @override
+  String get privacyScreenOff =>
+      'સ્ક્રીન બંધ હોય ત્યારે વાતચીત માઇક્રોફોનનો ઉપયોગ ત્યારે જ કરે છે જ્યારે તેની સૂચના દેખાતી હોય. સમાપ્ત કરવાથી તે અટકે છે.';
 }

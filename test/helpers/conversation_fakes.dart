@@ -6,6 +6,7 @@ import 'package:anuvaad/shared/transcript_sharer.dart';
 import 'package:anuvaad/core/permissions/microphone_permission.dart';
 import 'package:anuvaad/features/conversation/data/offline_models.dart';
 import 'package:anuvaad/features/conversation/domain/audio_output.dart';
+import 'package:anuvaad/features/conversation/domain/conversation_service.dart';
 import 'package:anuvaad/features/conversation/domain/speech_recognition.dart';
 import 'package:anuvaad/features/conversation/domain/translation.dart';
 import 'package:anuvaad/features/conversation/domain/voice.dart';
@@ -311,4 +312,49 @@ class FakeTranscriptSharer implements TranscriptSharer {
 
   @override
   Future<void> clearShared() async => clears++;
+}
+
+/// Android's ongoing-conversation service: records starts, notifications and stops; [send] taps a button.
+class FakeConversationService implements ConversationServicePort {
+  /// False: Android refuses to start it (as it does from the background).
+  bool accept = true;
+  int startCalls = 0;
+  int stops = 0;
+  bool running = false;
+  bool? earphoneButton;
+  String? channelName;
+
+  /// Every notification shown, in order (the one at start first).
+  final shown = <SessionNotification>[];
+  final _commands = StreamController<SessionCommand>.broadcast();
+
+  SessionNotification? get notification => shown.isEmpty ? null : shown.last;
+  List<SessionCommand> get buttons => [for (final a in notification?.actions ?? const <SessionAction>[]) a.command];
+
+  void send(SessionCommand command) => _commands.add(command);
+
+  @override
+  Future<bool> start(SessionNotification notification, {required String channelName, required bool earphoneButton}) async {
+    startCalls++;
+    if (!accept) return false;
+    running = true;
+    this.channelName = channelName;
+    this.earphoneButton = earphoneButton;
+    shown.add(notification);
+    return true;
+  }
+
+  @override
+  Future<void> update(SessionNotification notification) async {
+    if (running) shown.add(notification);
+  }
+
+  @override
+  Future<void> stop() async {
+    stops++;
+    running = false;
+  }
+
+  @override
+  Stream<SessionCommand> get commands => _commands.stream;
 }

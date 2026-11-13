@@ -12,6 +12,7 @@ import 'package:anuvaad/shared/transcript_sharer.dart';
 import 'package:anuvaad/core/settings/settings_providers.dart';
 import 'package:anuvaad/features/conversation/application/voice_service.dart';
 import 'package:anuvaad/features/conversation/data/android_audio.dart';
+import 'package:anuvaad/features/conversation/data/android_conversation_service.dart';
 import 'package:anuvaad/features/conversation/data/offline_models.dart';
 import 'package:flutter/widgets.dart' show Scrollable;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,6 +38,8 @@ Future<SharedPreferences> pumpAnuvaadApp(
   FakeScreenAwake? screenAwake,
   HistoryRepository? history,
   FakeTranscriptSharer? sharer,
+  /// Android's conversation service; by default it refuses to start (conversations pause in the background).
+  FakeConversationService? conversationService,
   LatencyLog? latency,
 }) async {
   final audioFake = audio ?? FakeAudioOutput();
@@ -60,6 +63,7 @@ Future<SharedPreferences> pumpAnuvaadApp(
       // Saved conversations live in a temp folder; sharing never opens Android's share sheet.
       historyRepositoryProvider.overrideWithValue(history ?? FileHistoryRepository(() async => cache)),
       transcriptSharerProvider.overrideWithValue(sharer ?? FakeTranscriptSharer()),
+      conversationServiceProvider.overrideWithValue(conversationService ?? (FakeConversationService()..accept = false)),
       latencyLogProvider.overrideWithValue(latency ?? LatencyLog(() async => cache)),
       // The device-info plugin never answers in widget tests.
       deviceDescriptionProvider.overrideWith((ref) async => (model: 'Test phone', android: '15')),

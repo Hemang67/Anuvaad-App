@@ -13,6 +13,7 @@ import '../../../shared/transcript_sharer.dart';
 import '../../app_update/application/update_controller.dart';
 import '../../conversation/application/language_detection.dart';
 import '../../conversation/application/review_reply.dart';
+import '../../conversation/application/screen_off_settings.dart';
 import '../../history/application/history_providers.dart';
 import '../../voices/application/voice_preferences.dart';
 import 'widgets.dart';
@@ -167,6 +168,33 @@ class SettingsScreen extends ConsumerWidget {
                     key: const Key('review-reply-switch'),
                     value: ref.watch(reviewReplyProvider),
                     onChanged: (on) => ref.read(reviewReplyProvider.notifier).set(on),
+                  ),
+                ),
+                SettingsRow(
+                  title: l10n.settingsScreenOff,
+                  subtitle: l10n.settingsScreenOffSubtitle,
+                  trailing: Switch(
+                    key: const Key('screen-off-switch'),
+                    value: ref.watch(screenOffListeningProvider),
+                    onChanged: (on) => ref.read(screenOffListeningProvider.notifier).set(on),
+                  ),
+                ),
+                SettingsRow(
+                  title: l10n.settingsEarphoneButton,
+                  subtitle: l10n.settingsEarphoneButtonSubtitle,
+                  trailing: Switch(
+                    key: const Key('earphone-button-switch'),
+                    value: ref.watch(earphoneButtonProvider),
+                    onChanged: (on) => ref.read(earphoneButtonProvider.notifier).set(on),
+                  ),
+                ),
+                SettingsRow(
+                  title: l10n.settingsAutoReply,
+                  subtitle: detection ? l10n.settingsAutoReplySubtitle : l10n.settingsAutoReplyUnsupported,
+                  trailing: Switch(
+                    key: const Key('auto-reply-switch'),
+                    value: detection && ref.watch(autoReplyProvider),
+                    onChanged: detection ? (on) => ref.read(autoReplyProvider.notifier).set(on) : null,
                   ),
                 ),
                 SettingsRow(title: l10n.settingsSpeechSpeed),

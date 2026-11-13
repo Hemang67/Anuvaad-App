@@ -63,6 +63,14 @@ DetectionOutcome decideSourceLanguage({
   return const Unclear();
 }
 
+/// "Reply without tapping": the turn was spoken in [code], by the same evidence a language switch needs (a highly
+/// confident detection, or a confident one over at least three words), so a borrowed word or two never counts.
+bool spokeIn(String code, {required ({String locale, LanguageConfidence confidence})? detection, required int wordCount}) {
+  if (detection == null || matchCoreLanguage(detection.locale, [code]) == null) return false;
+  return detection.confidence == LanguageConfidence.highlyConfident ||
+      (detection.confidence == LanguageConfidence.confident && wordCount >= 3);
+}
+
 /// "Automatic language detection" in Settings (on by default, as in the prototype).
 class AutoDetectController extends Notifier<bool> {
   @override
